@@ -23,6 +23,8 @@ int Recorder::patestCallback(  const void *inputBuffer,void *outputBuffer,
     }
     return paContinue;
 }
+
+
 Recorder::Recorder()
 {
     PaError err;
@@ -41,11 +43,17 @@ Recorder::Recorder()
     if(err != paNoError) {cout << Pa_GetErrorText( err ) << endl; err = Pa_Terminate(); }
     err=Pa_StartStream(stream);
 }
-vector<float> Recorder::GetAudioData(int lenght ,int OffSet) /*OffSet= Get data from x milliseconds ago. Lenght=Lenght of recorded audio in ms*/ 
+
+
+void Recorder::GetAudioData(int lenght ,int OffSet,fftw_complex * outarray) /*OffSet= Get data from x milliseconds ago. Lenght=Lenght of recorded audio in ms*/ 
 {
     //The buffer only have a certain lenght, don't request samples which has been thrown away!
     //Also, don't request future samples!
-    if (OffSet+lenght>(RECBUFLENGHT*1000)*0.9 or OffSet<0) cout << "Error getting Audio Data!!! Don't request Samples we don't have!!!" << endl;
+    if (OffSet+lenght>(RECBUFLENGHT*1000)*0.9 or OffSet<0) 
+    {   
+        cout << "Error getting Audio Data!!! Don't request Samples we don't have!!!" << endl;
+        return;
+    }
     //endpoint is the last sample to put in our vector
     int endPoint=RecData.NextRec;
     endPoint -=(SAMPLE_RATE*OffSet)/1000;
@@ -54,18 +62,20 @@ vector<float> Recorder::GetAudioData(int lenght ,int OffSet) /*OffSet= Get data 
     int startPoint=endPoint-(SAMPLE_RATE*lenght)/1000;
     if (startPoint<0) startPoint+=SAMPLE_RATE*RECBUFLENGHT;
     //Now, put the requsted samples into a vector
-    vector<float> returnvec;
-    returnvec.reserve((SAMPLE_RATE*lenght)/1000);
     int i=startPoint;
+    int j=0;
     while(i!=endPoint)
     {
-        returnvec.push_back(RecData.recBuff[i]);
+        outarray[j][0]=RecData.recBuff[i];
+        outarray[j][1]=0;
         i++;
+        j++;
         if (i==SAMPLE_RATE*RECBUFLENGHT) i=0;
     }
-    return returnvec;
 
 }
+
+
 Recorder::~Recorder()
 {
     PaError err;

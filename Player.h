@@ -13,6 +13,8 @@ struct BeepObject
     float freq2;
     int samplesLeft;
 };
+
+
 class DualTonePlayer
 {
     private:
@@ -29,4 +31,6 @@ class DualTonePlayer
         void PlayDTMF(char tone,int duration);
         
 };
+
+
 void DualTonePlayerCallBack(void *DualToneP, Uint8 *_stream, int _length);

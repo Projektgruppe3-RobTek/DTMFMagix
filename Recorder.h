@@ -4,6 +4,7 @@
 #include<array>
 #include <ctime>
 #include <vector>
+#include <fftw3.h>
 #define SAMPLE_RATE 44100
 #define RECBUFLENGHT 10
 typedef struct
@@ -24,6 +25,6 @@ private:
 public:
     Recorder();
     ~Recorder();
-    std::vector<float> GetAudioData(int lenght ,int OffSet=0);
+    void GetAudioData(int lenght ,int OffSet,fftw_complex * outarray);
 
 };
