@@ -1,7 +1,7 @@
 CC=clang++ #Compiler
-CFLAGS= -c -std=c++11  -Ofast#Compiler Flags
+CFLAGS= -c -std=c++11  -g#Compiler Flags
 LDFLAGS=-lportaudio -lSDL2 -lallegro -lallegro_primitives -lfftw3 #Linker options
-SOURCES=Player.cpp Recorder.cpp main.cpp   #cpp files
+SOURCES=Player.cpp Recorder.cpp main.cpp Goertzel.cpp   #cpp files
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files
 EXECUTEABLE=DTMFMagix #Output name
 

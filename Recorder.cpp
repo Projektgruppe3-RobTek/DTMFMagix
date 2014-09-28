@@ -45,7 +45,7 @@ Recorder::Recorder()
 }
 
 
-void Recorder::GetAudioData(int lenght ,int OffSet,fftw_complex * outarray) /*OffSet= Get data from x milliseconds ago. Lenght=Lenght of recorded audio in ms*/ 
+void Recorder::GetAudioData(int lenght ,int OffSet,float * outarray) /*OffSet= Get data from x milliseconds ago. Lenght=Lenght of recorded audio in ms*/ 
 {
     //The buffer only have a certain lenght, don't request samples which has been thrown away!
     //Also, don't request future samples!
@@ -66,8 +66,8 @@ void Recorder::GetAudioData(int lenght ,int OffSet,fftw_complex * outarray) /*Of
     int j=0;
     while(i!=endPoint)
     {
-        outarray[j][0]=RecData.recBuff[i];
-        outarray[j][1]=0;
+        outarray[j]=RecData.recBuff[i];
+        //outarray[j][1]=0;
         i++;
         j++;
         if (i==SAMPLE_RATE*RECBUFLENGHT) i=0;

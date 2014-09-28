@@ -25,6 +25,6 @@ private:
 public:
     Recorder();
     ~Recorder();
-    void GetAudioData(int lenght ,int OffSet,fftw_complex * outarray);
+    void GetAudioData(int lenght ,int OffSet,float * outarray);
 
 };
