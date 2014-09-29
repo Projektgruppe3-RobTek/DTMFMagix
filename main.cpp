@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <ctime>
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
 #include <cmath>
 #include <sys/time.h>
 #include "Goertzel.h"
