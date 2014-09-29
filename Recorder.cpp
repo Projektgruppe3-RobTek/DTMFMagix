@@ -37,7 +37,7 @@ Recorder::Recorder()
                                 0,
                                 paFloat32,
                                 SAMPLE_RATE,
-                                1024,
+                                1024, //This may need to be changed (lowered, but this may introduce noise/artifacts. Testing is needed)
                                 patestCallback,
                                 &RecData );
     if(err != paNoError) {cout << Pa_GetErrorText( err ) << endl; err = Pa_Terminate(); }
@@ -54,14 +54,14 @@ void Recorder::GetAudioData(int lenght ,int OffSet,float * outarray) /*OffSet= G
         cout << "Error getting Audio Data!!! Don't request Samples we don't have!!!" << endl;
         return;
     }
-    //endpoint is the last sample to put in our vector
+    //endpoint is the last sample to put in our array
     int endPoint=RecData.NextRec;
     endPoint -=(SAMPLE_RATE*OffSet)/1000;
     if (endPoint<0) endPoint+=SAMPLE_RATE*RECBUFLENGHT;
-    //startPoint is the first sample to put in our vector
+    //startPoint is the first sample to put in our array
     int startPoint=endPoint-(SAMPLE_RATE*lenght)/1000;
     if (startPoint<0) startPoint+=SAMPLE_RATE*RECBUFLENGHT;
-    //Now, put the requsted samples into a vector
+    //Now, put the requsted samples into a array
     int i=startPoint;
     int j=0;
     while(i!=endPoint)

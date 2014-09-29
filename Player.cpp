@@ -66,6 +66,7 @@ void DualTonePlayer::generateSamples(Sint16 *stream, int length)
 
 void DualTonePlayer::beep(float freq1,float freq2,int duration)
 {
+    if (duration==0) return;
     BeepObject bo;
     bo.freq1=freq1;
     bo.freq2=freq2;

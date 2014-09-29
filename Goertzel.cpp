@@ -1,6 +1,7 @@
 #include "Goertzel.h"
 using namespace std;
-float goertzel_mag(int numSamples,int TARGET_FREQUENCY,int SAMPLING_RATE, float* data)
+float goertzel_mag(int numSamples,int TARGET_FREQUENCY,int SAMPLING_RATE, float* data)  //This implementation is taken/borowed/stolen/etc. from Stackoverflow.
+                                                                                        //It would be wise to rewrite it. Shouldn't be too difficult.
 {
     int     k,i;
     float   floatnumSamples;

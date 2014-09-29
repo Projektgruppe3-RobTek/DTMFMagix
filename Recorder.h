@@ -7,6 +7,7 @@
 #include <fftw3.h>
 #define SAMPLE_RATE 44100
 #define RECBUFLENGHT 10
+#define M_PI 3.14159265359
 typedef struct
 {
     std::array<float,SAMPLE_RATE*RECBUFLENGHT> recBuff; //don't do this! may cause lag! don't use dynamic memory. Maybe use a ringbuffer instead. Size?    
