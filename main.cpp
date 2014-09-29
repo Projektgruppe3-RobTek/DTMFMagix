@@ -6,13 +6,14 @@
 #include <ctime>
 #include <cmath>
 #include <sys/time.h>
+#include <unistd.h>
 #include "Goertzel.h"
 #include <vector>
 #define SIZEX 1200
 #define SIZEY 600
-#define TONELENGHT 50
-#define SILENTLENGHT 0
-#define SILENTLIMIT 0
+#define TONELENGHT 25
+#define SILENTLENGHT 10
+#define SILENTLIMIT 0.0
 #define M_PI 3.14159265359
 int Freqarray1[]={697,770,852,941};
 int Freqarray2[]={1209,1336,1477,1633};
@@ -41,8 +42,8 @@ bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0)
 
 void PlaySync(DualTonePlayer &Player)
 {
-    for(int k=0;k<1000;k++)
-    for (int i=0;i<4;i++) {Player.PlayDTMF(SyncSequence[i],TONELENGHT); }
+    for(int k=0;k<5;k++)
+    for (int i=0;i<4;i++) {Player.PlayDTMF(SyncSequence[i],TONELENGHT);}
 }
 struct SyncData
 {
@@ -104,15 +105,23 @@ int main(int argc, char **argv)
     DualTonePlayer Player;
     Recorder Rec;
     PlaySync(Player);
-    //for(int i=0;i<100;i++) for(int j=0;j<16;j++) {Player.PlayDTMF(DTMFTones[1],TONELENGHT); Player.PlayDTMF(' ',SILENTLENGHT); }
+    for(int i=0;i<100;i++) for(int j=0;j<16;j++) {Player.PlayDTMF(DTMFTones[j],TONELENGHT); Player.PlayDTMF(' ',SILENTLENGHT); }
     
     long long synctime=GetSync(Rec);
     //We are now synced!
-    cout << synctime << endl;
-    return 0;
-    char LastTone=' ';
+    timeval tv;
+    int SamplesSinceSync=0;
+    cout << "We got "<< synctime <<" as synctime!" << endl;
     while(true)
     {   
+        gettimeofday(&tv,NULL);
+        while(synctime+SILENTLENGHT*1000+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync+1)>tv.tv_sec*1000000+tv.tv_usec)
+        {
+            usleep(1000);
+            gettimeofday(&tv,NULL);
+        }
+        SamplesSinceSync++;
+        //cout << (tv.tv_sec*1000000+tv.tv_usec-synctime)/1000. << endl;
         auto in=Rec.GetAudioData(TONELENGHT,0);
         float max=0;
         int freq1Index;
@@ -130,8 +139,7 @@ int main(int argc, char **argv)
         }
         Pa_Sleep(10);
         auto Tone=DTMFTones[freq1Index*4+freq2Index];
-        /*if (Tone!=LastTone)*/ cout << Tone << endl;
-        LastTone=Tone;
+         cout << Tone << endl;
         
     }
     
