@@ -4,7 +4,6 @@
 #include<array>
 #include <ctime>
 #include <vector>
-#include <fftw3.h>
 #define SAMPLE_RATE 44100
 #define RECBUFLENGHT 10
 #define M_PI 3.14159265359

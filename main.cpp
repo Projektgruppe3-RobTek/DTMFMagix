@@ -87,13 +87,16 @@ int main(int argc, char **argv)
     //long long synctime=GetSync(Rec,in);
     while(true)
     {   
+        Rec.GetAudioData(TONELENGHT,0,in);
         float max=0;
         int freq1Index;
         for(int k=0;k<4;k++)
         {
             float gMag=goertzel_mag(SAMPLE_RATE*TONELENGHT/1000,Freqarray1[k],SAMPLE_RATE,in);
+            cout << gMag << endl;
             if (gMag>max) {max=gMag; freq1Index=k;}
         }
+        max=0;
         int freq2Index;
         for(int k=0;k<4;k++)
         {
@@ -101,7 +104,7 @@ int main(int argc, char **argv)
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
         Pa_Sleep(10);
-        cout << DTMFTones[freq1Index*4+freq2Index] << endl;
+        //cout << DTMFTones[freq1Index*4+freq2Index] << endl;
         
     }
     
