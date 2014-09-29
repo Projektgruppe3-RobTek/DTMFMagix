@@ -25,6 +25,6 @@ private:
 public:
     Recorder();
     ~Recorder();
-    void GetAudioData(int lenght ,int OffSet,float * outarray);
+    std::vector<float> GetAudioData(int lenght ,int OffSet);
 
 };
