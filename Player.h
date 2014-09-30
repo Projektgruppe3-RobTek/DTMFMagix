@@ -5,19 +5,17 @@
 #include <iostream>
 #define M_PI 3.14159265359
 
-const int AMPLITUDE =28000;
-const int FREQUENCY =44100;
+const int AMPLITUDE = 28000;
+const int FREQUENCY = 44100;
 
-struct BeepObject
-{
+struct BeepObject{
     float freq1;
     float freq2;
     int samplesLeft;
 };
 
 
-class DualTonePlayer
-{
+class DualTonePlayer{
     private:
         double v1;
         double v2;
@@ -26,10 +24,10 @@ class DualTonePlayer
     public:
         DualTonePlayer();
         ~DualTonePlayer();
-        void beep(float freq1, float freq2,int duration);
-        void generateSamples(Sint16 *stream,int lenght);
+        void beep(float freq1, float freq2, int duration);
+        void generateSamples(Sint16 *stream, int lenght);
         void WaitForFinish();
-        void PlayDTMF(char tone,int duration);
+        void PlayDTMF(char tone, int duration);
         
 };
 

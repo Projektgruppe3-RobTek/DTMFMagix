@@ -11,13 +11,14 @@
 #include <vector>
 #define SIZEX 1200
 #define SIZEY 600
-#define TONELENGHT 25
+#define TONELENGHT 50
 #define SILENTLENGHT 10
 #define SILENTLIMIT 0.0
 #define M_PI 3.14159265359
 int Freqarray1[]={697,770,852,941};
 int Freqarray2[]={1209,1336,1477,1633};
-char SyncSequence[]={'1','2','3','4'}; //Should not contain the same note two times in a row.
+char SyncSequence[]={'a','6','8','*'}; //Should not contain the same note two times in a row.
+char SyncEnd[]={'1','0','1','1'};
 char DTMFTones[]={'1','2','3','a','4','5','6','b','7','8','9','c','*','0','#','d',' '};
 
 using namespace std;
@@ -94,7 +95,50 @@ long long GetSync(Recorder &Rec) //Sync on the SyncSequence and output the start
         LastNote=Note;
         
     }
-    return SData.tv.tv_sec*1000000+SData.tv.tv_usec;
+    long long synctime=SData.tv.tv_sec*1000000+SData.tv.tv_usec+TONELENGHT*1000;
+    /*int SamplesSinceSync=0;
+    while(!ArrayComp(RecordedSequence,SyncEnd,4,SequenceCounter))
+    {
+        timeval tv;
+        gettimeofday(&tv,NULL);
+        while(synctime+(TONELENGHT)*1000*(SamplesSinceSync+1)>=tv.tv_sec*1000000+tv.tv_usec){
+            usleep(1000);
+            gettimeofday(&tv,NULL);
+        }
+        SamplesSinceSync++;
+        auto in=Rec.GetAudioData(TONELENGHT,0);
+        float max=0;
+        int freq1Index;
+        for(int k=0;k<4;k++)
+        {
+            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
+            if (gMag>max) {max=gMag; freq1Index=k;}
+        }
+        max=0;
+        int freq2Index;
+        for(int k=0;k<4;k++)
+        {
+            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
+            if (gMag>max) {max=gMag; freq2Index=k;}
+        }
+        auto Note=DTMFTones[freq1Index*4+freq2Index];
+        if (Note==LastNote) 
+        {
+            continue;
+            //cout << Note << endl;
+        }
+        else
+        {
+            RecordedSequence[SequenceCounter]=Note;
+            SequenceCounter=(SequenceCounter+1)%4;
+            
+            for(int j=0;j<4;j++) cout << RecordedSequence[j];
+            cout << endl;
+        }
+        LastNote=Note;
+        
+    }*/
+    return synctime;//+(TONELENGHT)*1000*(SamplesSinceSync+1);
 }
 
 int main(int argc, char **argv)
@@ -115,7 +159,7 @@ int main(int argc, char **argv)
     while(true)
     {   
         gettimeofday(&tv,NULL);
-        while(synctime+SILENTLENGHT*1000+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync+1)>tv.tv_sec*1000000+tv.tv_usec)
+        while(synctime+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync+1)>tv.tv_sec*1000000+tv.tv_usec)
         {
             usleep(1000);
             gettimeofday(&tv,NULL);
@@ -137,9 +181,9 @@ int main(int argc, char **argv)
             float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
-        Pa_Sleep(10);
         auto Tone=DTMFTones[freq1Index*4+freq2Index];
-         cout << Tone << endl;
+        for(int a=0;a<=freq1Index*4+freq2Index;a++) cout << Tone;
+        cout << endl;
         
     }
     
