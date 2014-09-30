@@ -37,7 +37,7 @@ Recorder::Recorder()
                                 0,
                                 paFloat32,
                                 SAMPLE_RATE,
-                                1, //This may need to be changed (lowered, but this may introduce noise/artifacts. Testing is needed)
+                                10, //This may need to be changed (lowered, but this may introduce noise/artifacts. Testing is needed)
                                     //Setting to one apperently don't cause artefacts (need confirmation), but much greater CPU usage.
                                 patestCallback,
                                 &RecData );

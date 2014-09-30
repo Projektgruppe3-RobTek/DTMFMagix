@@ -18,7 +18,7 @@
 int Freqarray1[]={697,770,852,941};
 int Freqarray2[]={1209,1336,1477,1633};
 char SyncSequence[]={'a','6','8','*'}; //Should not contain the same note two times in a row.
-char SyncEnd[]={'1','0','1','1'};
+char SyncEnd[]={'1','2','3','4'};
 char DTMFTones[]={'1','2','3','a','4','5','6','b','7','8','9','c','*','0','#','d',' '};
 
 using namespace std;
@@ -43,8 +43,9 @@ bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0)
 
 void PlaySync(DualTonePlayer &Player)
 {
-    for(int k=0;k<5;k++)
-    for (int i=0;i<4;i++) {Player.PlayDTMF(SyncSequence[i],TONELENGHT);}
+    for(int k=0;k<7;k++)
+    for (int i=0;i<4;i++) {Player.PlayDTMF(SyncSequence[i],TONELENGHT); Player.PlayDTMF(' ',SILENTLENGHT); }
+    for (int i=0;i<4;i++) { Player.PlayDTMF(SyncEnd[i%4],TONELENGHT); Player.PlayDTMF(' ',SILENTLENGHT); }
 }
 struct SyncData
 {
@@ -81,11 +82,14 @@ long long GetSync(Recorder &Rec) //Sync on the SyncSequence and output the start
         char Note=DTMFTones[freq1Index*4+freq2Index];
         if (Note==LastNote) 
         {
-            if (freq1max+freq2max>SData.MaxMagnitude) gettimeofday(&SData.tv,NULL);
-            //cout << Note << endl;
+            if (freq1max+freq2max>SData.MaxMagnitude) 
+            {
+                gettimeofday(&SData.tv,NULL);
+            }
         }
         else
         {
+            cout << (SData.tv.tv_sec*1000000+SData.tv.tv_usec)/1000 << endl;
             RecordedSequence[SequenceCounter]=Note;
             SequenceCounter=(SequenceCounter+1)%4;
             
@@ -95,16 +99,18 @@ long long GetSync(Recorder &Rec) //Sync on the SyncSequence and output the start
         LastNote=Note;
         
     }
-    long long synctime=SData.tv.tv_sec*1000000+SData.tv.tv_usec+TONELENGHT*1000;
-    /*int SamplesSinceSync=0;
+    long long synctime=SData.tv.tv_sec*1000000+SData.tv.tv_usec+TONELENGHT*1000; //This is the synctime for the last tone in the samplesequence
+    cout << "GotSync!" << endl;
+    int SamplesSinceSync=0;
     while(!ArrayComp(RecordedSequence,SyncEnd,4,SequenceCounter))
     {
         timeval tv;
         gettimeofday(&tv,NULL);
-        while(synctime+(TONELENGHT)*1000*(SamplesSinceSync+1)>=tv.tv_sec*1000000+tv.tv_usec){
-            usleep(1000);
+        while(synctime+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync+1)>=tv.tv_sec*1000000+tv.tv_usec){
+            usleep(100);
             gettimeofday(&tv,NULL);
         }
+        cout << (tv.tv_sec*1000000+tv.tv_usec-synctime)/1000. << endl;
         SamplesSinceSync++;
         auto in=Rec.GetAudioData(TONELENGHT,0);
         float max=0;
@@ -122,23 +128,14 @@ long long GetSync(Recorder &Rec) //Sync on the SyncSequence and output the start
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
         auto Note=DTMFTones[freq1Index*4+freq2Index];
-        if (Note==LastNote) 
-        {
-            continue;
-            //cout << Note << endl;
-        }
-        else
-        {
-            RecordedSequence[SequenceCounter]=Note;
-            SequenceCounter=(SequenceCounter+1)%4;
-            
-            for(int j=0;j<4;j++) cout << RecordedSequence[j];
-            cout << endl;
-        }
-        LastNote=Note;
-        
-    }*/
-    return synctime;//+(TONELENGHT)*1000*(SamplesSinceSync+1);
+        RecordedSequence[SequenceCounter]=Note;
+        SequenceCounter=(SequenceCounter+1)%4;
+           
+        for(int j=0;j<4;j++) cout << RecordedSequence[j];
+        cout << endl;
+                
+    }
+    return synctime+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync+1);//This is the expected time for next tone
 }
 
 int main(int argc, char **argv)
@@ -159,7 +156,7 @@ int main(int argc, char **argv)
     while(true)
     {   
         gettimeofday(&tv,NULL);
-        while(synctime+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync+1)>tv.tv_sec*1000000+tv.tv_usec)
+        while(synctime+(TONELENGHT+SILENTLENGHT)*1000*(SamplesSinceSync)>tv.tv_sec*1000000+tv.tv_usec)
         {
             usleep(1000);
             gettimeofday(&tv,NULL);
