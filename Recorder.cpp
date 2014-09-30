@@ -44,6 +44,8 @@ Recorder::Recorder()
     if(err != paNoError) {cout << Pa_GetErrorText( err ) << endl; err = Pa_Terminate(); }
     err=Pa_StartStream(stream);
     for(int i=0;i<RecData.recBuff.size();i++) RecData.recBuff[i]=0;
+    cout << "Initialised audio recorder!" << endl;
+    cout << "We use PortAudio version " << Pa_GetVersionText() << endl;
 }
 
 

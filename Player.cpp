@@ -15,6 +15,10 @@ DualTonePlayer::DualTonePlayer()
     SDL_OpenAudio(&aSpec, &obtainedSpec);
     //Start audio
     SDL_PauseAudio(0);
+    SDL_version compiled;
+    SDL_VERSION(&compiled);
+    cout << "Initialised audio player" << endl;
+    printf("We use SDL version %d.%d.%d ...\n", compiled.major, compiled.minor, compiled.patch);
 }
 
 
