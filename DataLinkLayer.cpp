@@ -60,7 +60,7 @@ void DataLinkLayer::GetSync()
         }
         else
         {
-            //cout << (SData.tv.tv_sec*1000000+SData.tv.tv_usec)/1000 << endl;
+            //cout << (SData.tv.tv_sec*1000+SData.tv.tv_usec/1000) << endl;
             RecordedSequence[SequenceCounter]=Note;
             SequenceCounter=(SequenceCounter+1)%4;
             
@@ -70,7 +70,7 @@ void DataLinkLayer::GetSync()
         }
     }
     //This is the synctime for the last tone in the samplesequence
-    synctime=SData.tv.tv_sec*1000000+SData.tv.tv_usec+TONELENGHT*1000;
+    synctime=SData.tv.tv_sec*1000+SData.tv.tv_usec/1000+TONELENGHT;
     cout << synctime << endl;
     //Wait for syncend signal
     samplesSinceSync=0;
@@ -78,12 +78,12 @@ void DataLinkLayer::GetSync()
     {
         timeval tv;
         gettimeofday(&tv,NULL);
-        while(synctime+(TONELENGHT+SILENTLENGHT)*1000*(samplesSinceSync+1)>=tv.tv_sec*1000000+tv.tv_usec)
+        while(synctime+(TONELENGHT+SILENTLENGHT)*(samplesSinceSync+1)>=tv.tv_sec*1000+tv.tv_usec/1000)
         {
             usleep(1000);
             gettimeofday(&tv,NULL);
             }
-        //cout << (tv.tv_sec*1000000+tv.tv_usec-synctime)/1000. << endl;
+        //cout << (tv.tv_sec*1000+tv.tv_usec/1000-synctime) << endl;
         samplesSinceSync++;
         auto in=Rec.GetAudioData(TONELENGHT,0);
         float max=0;
@@ -94,12 +94,14 @@ void DataLinkLayer::GetSync()
             float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
             if (gMag>max) {max=gMag; freq1Index=k;}
         }
+        if (max<SILENTLIMIT) continue;
         max=0;
         for(int k=0;k<4;k++)
         {
             float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
+        if (max<SILENTLIMIT) continue;
         char Note=DTMFTones[freq1Index*4+freq2Index];
         RecordedSequence[SequenceCounter]=Note;
         SequenceCounter=(SequenceCounter+1)%4;
@@ -108,7 +110,7 @@ void DataLinkLayer::GetSync()
         //cout << endl;
                 
     }
-    synctime=synctime+(TONELENGHT+SILENTLENGHT)*1000*(samplesSinceSync+1);
+    synctime=synctime+(TONELENGHT+SILENTLENGHT)*(samplesSinceSync+1);
     //This is the expected time for next tone
     
 }
@@ -122,7 +124,7 @@ string DataLinkLayer::GetPackage()
     while(!ArrayComp(RecordedSequence,EndSequence,4,SequenceCounter)) //Loop until we get endsequence in buffer
     {
         gettimeofday(&tv,NULL);
-        while(synctime+(TONELENGHT+SILENTLENGHT)*1000*(samplesSinceSync)>tv.tv_sec*1000000+tv.tv_usec)
+        while(synctime+(TONELENGHT+SILENTLENGHT)*(samplesSinceSync)>tv.tv_sec*1000+tv.tv_usec/1000)
         {
             usleep(1000);
             gettimeofday(&tv,NULL);
@@ -138,14 +140,14 @@ string DataLinkLayer::GetPackage()
             float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,RecordedData);
             if (gMag>max) {max=gMag; freq1Index=k;}
         }
-        //if (max<SILENTLIMIT) return "";
+        if (max<SILENTLIMIT) return "";
         max=0;
         for(int k=0;k<4;k++)
         {
             float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,RecordedData);
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
-        //if (max<SILENTLIMIT) return "";
+        if (max<SILENTLIMIT) return "";
         char Tone=DTMFTones[freq1Index*4+freq2Index];
         //for(int a=0;a<=freq1Index*4+freq2Index;a++) cout << Tone;
         //cout << endl;
@@ -206,6 +208,7 @@ void toneGrabber(DataLinkLayer *DaLLObj)
         DaLLObj->samplesSinceSync=0;
         string frame=DaLLObj->GetPackage();
         //cout << frame << endl;
+        if (frame=="") continue;
         DaLLObj->FBuffer.Buffer[DaLLObj->FBuffer.NextFrameToRecord++]=frame;
         DaLLObj->FBuffer.NextFrameToRecord%=DaLLObj->FBuffer.Buffer.size();
     }

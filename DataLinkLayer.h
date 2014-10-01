@@ -13,7 +13,7 @@
 #include <string>
 #define TONELENGHT 50
 #define SILENTLENGHT 10
-#define SILENTLIMIT 0.1f
+#define SILENTLIMIT 0.0000f
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
 #endif

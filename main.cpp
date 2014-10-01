@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
     DataLinkLayer DataLink;
     DataLink.PlayFrame("25264abc863");
