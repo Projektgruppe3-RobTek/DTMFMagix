@@ -60,17 +60,18 @@ void DataLinkLayer::GetSync()
         }
         else
         {
-            cout << (SData.tv.tv_sec*1000000+SData.tv.tv_usec)/1000 << endl;
+            //cout << (SData.tv.tv_sec*1000000+SData.tv.tv_usec)/1000 << endl;
             RecordedSequence[SequenceCounter]=Note;
             SequenceCounter=(SequenceCounter+1)%4;
             
-            for(int j=0;j<4;j++) cout << RecordedSequence[j];
-            cout << endl;
+            //for(int j=0;j<4;j++) cout << RecordedSequence[j];
+            //cout << endl;
             LastNote=Note;
         }
     }
     //This is the synctime for the last tone in the samplesequence
     synctime=SData.tv.tv_sec*1000000+SData.tv.tv_usec+TONELENGHT*1000;
+    cout << synctime << endl;
     //Wait for syncend signal
     samplesSinceSync=0;
     while(!ArrayComp(RecordedSequence,SyncEnd,4,SequenceCounter))
@@ -103,8 +104,8 @@ void DataLinkLayer::GetSync()
         RecordedSequence[SequenceCounter]=Note;
         SequenceCounter=(SequenceCounter+1)%4;
            
-        for(int j=0;j<4;j++) cout << RecordedSequence[j];
-        cout << endl;
+        //for(int j=0;j<4;j++) cout << RecordedSequence[j];
+        //cout << endl;
                 
     }
     synctime=synctime+(TONELENGHT+SILENTLENGHT)*1000*(samplesSinceSync+1);
@@ -112,8 +113,9 @@ void DataLinkLayer::GetSync()
     
 }
 
-bool DataLinkLayer::GetPackage()
+string DataLinkLayer::GetPackage()
 {
+    string RecData;
     timeval tv;
     char RecordedSequence[4];
     int SequenceCounter=0;
@@ -136,46 +138,55 @@ bool DataLinkLayer::GetPackage()
             float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,RecordedData);
             if (gMag>max) {max=gMag; freq1Index=k;}
         }
-        if (max<SILENTLIMIT) return false;
+        //if (max<SILENTLIMIT) return "";
         max=0;
         for(int k=0;k<4;k++)
         {
             float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,RecordedData);
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
-        if (max<SILENTLIMIT) return false;
+        //if (max<SILENTLIMIT) return "";
         char Tone=DTMFTones[freq1Index*4+freq2Index];
-        for(int a=0;a<=freq1Index*4+freq2Index;a++) cout << Tone;
-        cout << endl;
+        //for(int a=0;a<=freq1Index*4+freq2Index;a++) cout << Tone;
+        //cout << endl;
         
-        RecData.RecArray[RecData.NextElementToRecord]=Tone;
-        RecData.NextElementToRecord++;
-        RecData.NextElementToRecord%=RecData.RecArray.size();
+        RecData+=Tone;
         RecordedSequence[SequenceCounter]=Tone;
-        SequenceCounter=(SequenceCounter+1)%4;
+        SequenceCounter=(SequenceCounter+1)%4;  
     }
-    return true;
-}
-bool DataLinkLayer::DataAvaliable()
-{
-    if (RecData.LastDataElement!=RecData.NextElementToRecord) return true;
-    return false;
-}
-char DataLinkLayer::GetNextTone() //Check with DataAvaliable first! Else the behavior is undefined
-{
-    char RetChar=RecData.RecArray[RecData.LastDataElement++];
-    RecData.LastDataElement%=RecData.RecArray.size();
-    return RetChar;
+    
+
+    return RecData.substr(0,RecData.size()-4);
 }
 
-void DataLinkLayer::PlayTones(string Tones)
+
+bool DataLinkLayer::DataAvaliable()
 {
+    if (FBuffer.LastFrameElement!=FBuffer.NextFrameToRecord) return true;
+    return false;
+}
+
+
+string DataLinkLayer::GetNextFrame() //Check with DataAvaliable first! Else the behavior is undefined
+{
+    string Retstring=FBuffer.Buffer[FBuffer.LastFrameElement++];
+    FBuffer.LastFrameElement%=FBuffer.Buffer.size();
+    return Retstring;
+}
+
+
+void DataLinkLayer::PlayFrame(string Tones)
+{
+    PlaySync();
     for(char Tone : Tones)
     {
         Player.PlayDTMF(Tone,TONELENGHT);
         Player.PlayDTMF(' ',SILENTLENGHT);
     }
+    PlayEndSequence();
 }
+
+
 void DataLinkLayer::PlayEndSequence()
 {
     for(int i=0;i<4;i++)
@@ -185,16 +196,21 @@ void DataLinkLayer::PlayEndSequence()
     }
 }
 
+
 void toneGrabber(DataLinkLayer *DaLLObj)
 {
     while(1)
     {
         DaLLObj->GetSync();
+        cout << "Sync" << endl;
         DaLLObj->samplesSinceSync=0;
-        /*if ( */DaLLObj->GetPackage() /*) if (CRC()) DaLLObj->SendACK();
-        else DaLLObj->SendNACK() */ ;
+        string frame=DaLLObj->GetPackage();
+        //cout << frame << endl;
+        DaLLObj->FBuffer.Buffer[DaLLObj->FBuffer.NextFrameToRecord++]=frame;
+        DaLLObj->FBuffer.NextFrameToRecord%=DaLLObj->FBuffer.Buffer.size();
     }
 }
+
 
 template <typename Type>
 bool ArrayComp(Type *Array1, Type *Array2,int size,int index)

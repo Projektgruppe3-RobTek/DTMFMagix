@@ -5,11 +5,11 @@ using namespace std;
 It may called at interrupt level on some machines so don't do anything
 that could mess up the system like calling malloc() or free().
 */
-int Recorder::patestCallback(  const void *inputBuffer,void *outputBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *timeInfo,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData )
+int Recorder::patestCallback(   const void *inputBuffer,void *outputBuffer,
+                                unsigned long framesPerBuffer,
+                                const PaStreamCallbackTimeInfo *timeInfo,
+                                PaStreamCallbackFlags statusFlags,
+                                void *userData )
 {
     PortAudioData *data=(PortAudioData*) userData;
     //float *out =(float*) outputBuffer;
@@ -33,7 +33,7 @@ Recorder::Recorder()
     if(err != paNoError) {cout << Pa_GetErrorText( err ) << endl; err = Pa_Terminate(); }
     //Create stream 1 input channel
     err=Pa_OpenDefaultStream (&stream, 
-                                1,
+                                1, //input channels
                                 0,
                                 paFloat32,
                                 SAMPLE_RATE,
@@ -42,7 +42,7 @@ Recorder::Recorder()
                                 patestCallback,
                                 &RecData );
     if(err != paNoError) {cout << Pa_GetErrorText( err ) << endl; err = Pa_Terminate(); }
-    err=Pa_StartStream(stream);
+    err = Pa_StartStream(stream);
     for(int i=0;i<RecData.recBuff.size();i++) RecData.recBuff[i]=0;
     cout << "Initialised audio recorder!" << endl;
     cout << "We use PortAudio version " << Pa_GetVersionText() << endl;

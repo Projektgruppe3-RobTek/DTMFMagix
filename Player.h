@@ -3,7 +3,9 @@
 #include<queue>
 #include<cmath>
 #include <iostream>
-#define M_PI 3.14159265359
+#ifndef M_PI
+#define M_PI        3.14159265358979323846
+#endif
 
 const int AMPLITUDE = 28000;
 const int FREQUENCY = 44100;

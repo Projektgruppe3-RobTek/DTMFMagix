@@ -13,8 +13,10 @@
 #include <string>
 #define TONELENGHT 50
 #define SILENTLENGHT 10
-#define SILENTLIMIT 0.0
-#define M_PI 3.14159265359
+#define SILENTLIMIT 0.1f
+#ifndef M_PI
+#define M_PI        3.14159265358979323846
+#endif
 #define RECIEVEDBUFFSIZE 10000
 using namespace std;
 struct SyncData
@@ -28,10 +30,14 @@ struct RecievedData
     //We can't implement this as FIFO if we want thread safety    
     array<char,RECIEVEDBUFFSIZE> RecArray; 
     int NextElementToRecord=0;
-    int LastDataElement=0;
 
 };
-
+struct FrameBuffer
+{
+    array<string,100> Buffer;
+    int NextFrameToRecord=0;
+    int LastFrameElement=0;
+};
 class DataLinkLayer
 {
     private:
@@ -45,18 +51,18 @@ class DataLinkLayer
         Recorder Rec;
         long long synctime;
         thread grabberThread;
-        RecievedData RecData;
         
     public:
-        bool GetPackage();
+        DataLinkLayer();
+        string GetPackage();
         int samplesSinceSync;
         void PlaySync();
         void GetSync();
-        DataLinkLayer();
-        void PlayTones(string Tones);
+        void PlayFrame(string Tones);
         bool DataAvaliable();
-        char GetNextTone();
+        string GetNextFrame();
         void PlayEndSequence();
+        FrameBuffer FBuffer;
 
 
 };
