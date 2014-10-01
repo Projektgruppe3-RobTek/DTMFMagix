@@ -56,6 +56,7 @@ class DataLinkLayer
         void PlayTones(string Tones);
         bool DataAvaliable();
         char GetNextTone();
+        void PlayEndSequence();
 
 
 };

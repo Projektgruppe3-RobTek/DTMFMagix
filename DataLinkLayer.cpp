@@ -176,6 +176,14 @@ void DataLinkLayer::PlayTones(string Tones)
         Player.PlayDTMF(' ',SILENTLENGHT);
     }
 }
+void DataLinkLayer::PlayEndSequence()
+{
+    for(int i=0;i<4;i++)
+    {
+        Player.PlayDTMF(EndSequence[i],TONELENGHT);
+        Player.PlayDTMF(' ',SILENTLENGHT);
+    }
+}
 
 void toneGrabber(DataLinkLayer *DaLLObj)
 {
