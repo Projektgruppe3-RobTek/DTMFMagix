@@ -16,7 +16,7 @@ int Recorder::patestCallback(   const void *inputBuffer,void *outputBuffer,
     float *in =(float*)inputBuffer;
     if (in==NULL) cout <<"ERROR Input buffer was 0!!" << endl;
     
-    for(int i=0;i<framesPerBuffer;i++)
+    for(unsigned int i=0;i<framesPerBuffer;i++)
     {
         data->recBuff[data->NextRec++]=in[i]; //Maybe don't count NextRec up in the loop?? May cause problems
         if (data->NextRec>=SAMPLE_RATE*RECBUFLENGHT) data-> NextRec=0;
@@ -43,7 +43,7 @@ Recorder::Recorder()
                                 &RecData );
     if(err != paNoError) {cout << Pa_GetErrorText( err ) << endl; err = Pa_Terminate(); }
     err = Pa_StartStream(stream);
-    for(int i=0;i<RecData.recBuff.size();i++) RecData.recBuff[i]=0;
+    for(unsigned int i=0;i<RecData.recBuff.size();i++) RecData.recBuff[i]=0;
     cout << "Initialised audio recorder!" << endl;
     cout << "We use PortAudio version " << Pa_GetVersionText() << endl;
 }
