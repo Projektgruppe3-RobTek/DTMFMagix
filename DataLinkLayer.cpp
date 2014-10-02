@@ -8,11 +8,11 @@ DataLinkLayer::DataLinkLayer()
 
 void DataLinkLayer::PlaySync() //Play the sync sequence
 {
-    for(int i=0;i<7;i++) //Times the sequenc is played. May need to be adjusted later.
+    for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
     {
         for(int j=0;j<4;j++)
         {
-            Player.PlayDTMF(SyncSequence[i],TONELENGHT);
+            Player.PlayDTMF(SyncSequence[j],TONELENGHT);
             Player.PlayDTMF(' ',SILENTLENGHT);
         }
     }
@@ -28,7 +28,8 @@ void DataLinkLayer::GetSync()
     SyncData SData;
     char RecordedSequence[4];
     int SequenceCounter=0;
-    char LastNote='!'; 
+    char LastNote='!';
+    int nonRaiseCounter=0;
     while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter)) //Loop until we get syncsequence in buffer
     {
         vector<float> in=Rec.GetAudioData(TONELENGHT,0);
@@ -55,6 +56,14 @@ void DataLinkLayer::GetSync()
             if (freq1max+freq2max>SData.MaxMagnitude) 
             {
                 gettimeofday(&SData.tv,NULL);
+                nonRaiseCounter=0;
+                
+            }
+            else
+            {
+                nonRaiseCounter++;
+                //if (nonRaiseCounter>=5) usleep(SILENTLENGHT*1000);
+                
             }
             usleep(1000);
         }
