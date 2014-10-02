@@ -6,6 +6,9 @@
 #include <vector>
 #define SAMPLE_RATE 44100
 #define RECBUFLENGHT 10
+#ifndef M_PI
+#define M_PI        3.14159265358979323846
+#endif
 typedef struct
 {
     std::array<float,SAMPLE_RATE*RECBUFLENGHT> recBuff; //don't do this! may cause lag! don't use dynamic memory. Maybe use a ringbuffer instead. Size?    
@@ -24,6 +27,6 @@ private:
 public:
     Recorder();
     ~Recorder();
-    std::vector<float> GetAudioData(int lenght ,int OffSet=0);
+    std::vector<float> GetAudioData(int lenght ,int OffSet);
 
 };
