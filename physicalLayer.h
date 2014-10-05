@@ -38,8 +38,22 @@ struct FrameBuffer
     int NextFrameToRecord=0;
     int LastFrameElement=0;
 };
-class DataLinkLayer
+class physicalLayer
 {
+    private:
+        void applyHamming(vector<float> &in);
+        void GetSync();
+        void GetFrame();
+        void PlaySync();
+        void PlayFrame(string);
+        void PlayEndSequence();
+    public:
+        physicalLayer();
+        void QueueFrame(string frame);
+        bool isFrameAvaliable();
+        void frameGrabber();
+        void frameSender();
+        string GetNextFrame();
     private:
         int Freqarray1[4]={697,770,852,941};
         int Freqarray2[4]={1209,1336,1477,1633};
@@ -49,24 +63,15 @@ class DataLinkLayer
         char DTMFTones[16]={'1','2','3','a','4','5','6','b','7','8','9','c','*','0','#','d'};
         DualTonePlayer Player;
         Recorder Rec;
+        int samplesSinceSync=0;
         long long synctime;
-        thread grabberThread;
-        void applyHamming(vector<float> &in);
-    public:
-        DataLinkLayer();
-        string GetPackage();
-        int samplesSinceSync;
-        void PlaySync();
-        void GetSync();
-        void PlayFrame(string Tones);
-        bool DataAvaliable();
-        string GetNextFrame();
-        void PlayEndSequence();
-        FrameBuffer FBuffer;
-
-
+        thread frameGrabberThread;
+        thread frameSenderThread;
+        FrameBuffer outBuffer;
+        FrameBuffer inBuffer;
+        
 };
-
-void toneGrabber(DataLinkLayer * DaLLObj);
+void frameGrabWrapper(physicalLayer * DaLLObj);
+void frameSendWrapper(physicalLayer * DaLLObj);
 template <typename Type>
 bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0);

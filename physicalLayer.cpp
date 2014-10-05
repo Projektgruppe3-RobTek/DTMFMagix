@@ -1,13 +1,15 @@
-#include "DataLinkLayer.h"
+#include "physicalLayer.h"
+
 using namespace std;
 
-DataLinkLayer::DataLinkLayer()
+physicalLayer::physicalLayer()
 {
-    grabberThread=thread(toneGrabber,this);
+    frameGrabberThread=thread(frameGrabWrapper,this);
+    frameSenderThread=thread(frameSendWrapper,this);
 }
 
 
-void DataLinkLayer::applyHamming(vector<float> &data)
+void physicalLayer::applyHamming(vector<float> &data)
 {
     for(unsigned int i=0;i<data.size();i++)
     {
@@ -15,25 +17,7 @@ void DataLinkLayer::applyHamming(vector<float> &data)
     }
 }
 
-
-void DataLinkLayer::PlaySync() //Play the sync sequence
-{
-    for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
-    {
-        for(int j=0;j<4;j++)
-        {
-            Player.PlayDTMF(SyncSequence[j],TONELENGHT);
-            Player.PlayDTMF(' ',SILENTLENGHT);
-        }
-    }
-    for(int i=0;i<4;i++)
-    {
-        Player.PlayDTMF(SyncEnd[i],TONELENGHT);
-        Player.PlayDTMF(' ',SILENTLENGHT);
-    }
-}
-
-void DataLinkLayer::GetSync()
+void physicalLayer::GetSync()
 {
     SyncData SData;
     char RecordedSequence[4];
@@ -136,7 +120,8 @@ void DataLinkLayer::GetSync()
     
 }
 
-string DataLinkLayer::GetPackage()
+
+void physicalLayer::GetFrame()
 {
     string RecData;
     timeval tv;
@@ -162,14 +147,14 @@ string DataLinkLayer::GetPackage()
             float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,RecordedData);
             if (gMag>max) {max=gMag; freq1Index=k;}
         }
-        if (max<SILENTLIMIT) return "";
+        if (max<SILENTLIMIT) return;
         max=0;
         for(int k=0;k<4;k++)
         {
             float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,RecordedData);
             if (gMag>max) {max=gMag; freq2Index=k;}
         }
-        if (max<SILENTLIMIT) return "";
+        if (max<SILENTLIMIT) return;
         char Tone=DTMFTones[freq1Index*4+freq2Index];
         //for(int a=0;a<=freq1Index*4+freq2Index;a++) cout << Tone;
         //cout << endl;
@@ -180,26 +165,37 @@ string DataLinkLayer::GetPackage()
     }
     
 
-    return RecData.substr(0,RecData.size()-4);
+    inBuffer.Buffer[inBuffer.NextFrameToRecord++]=RecData.substr(0,RecData.size()-4);
+    inBuffer.NextFrameToRecord%=inBuffer.Buffer.size();
 }
 
-
-bool DataLinkLayer::DataAvaliable()
+void physicalLayer::PlaySync() //Play the sync sequence
 {
-    if (FBuffer.LastFrameElement!=FBuffer.NextFrameToRecord) return true;
-    return false;
+    for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
+    {
+        for(int j=0;j<4;j++)
+        {
+            Player.PlayDTMF(SyncSequence[j],TONELENGHT);
+            Player.PlayDTMF(' ',SILENTLENGHT);
+        }
+    }
+    for(int i=0;i<4;i++)
+    {
+        Player.PlayDTMF(SyncEnd[i],TONELENGHT);
+        Player.PlayDTMF(' ',SILENTLENGHT);
+    }
 }
 
-
-string DataLinkLayer::GetNextFrame() //Check with DataAvaliable first! Else the behavior is undefined
+void physicalLayer::PlayEndSequence()
 {
-    string Retstring=FBuffer.Buffer[FBuffer.LastFrameElement++];
-    FBuffer.LastFrameElement%=FBuffer.Buffer.size();
-    return Retstring;
+    for(int i=0;i<4;i++)
+    {
+        Player.PlayDTMF(EndSequence[i],TONELENGHT);
+        Player.PlayDTMF(' ',SILENTLENGHT);
+    }
 }
 
-
-void DataLinkLayer::PlayFrame(string Tones)
+void physicalLayer::PlayFrame(string Tones)
 {
     PlaySync();
     for(char Tone : Tones)
@@ -211,31 +207,61 @@ void DataLinkLayer::PlayFrame(string Tones)
 }
 
 
-void DataLinkLayer::PlayEndSequence()
+void physicalLayer::frameGrabber()
 {
-    for(int i=0;i<4;i++)
+    while(true)
     {
-        Player.PlayDTMF(EndSequence[i],TONELENGHT);
-        Player.PlayDTMF(' ',SILENTLENGHT);
-    }
-}
 
-
-void toneGrabber(DataLinkLayer *DaLLObj)
-{
-    while(1)
-    {
-        DaLLObj->GetSync();
+        GetSync();
         cout << "Sync" << endl;
-        DaLLObj->samplesSinceSync=0;
-        string frame=DaLLObj->GetPackage();
-        //cout << frame << endl;
-        if (frame=="") continue;
-        DaLLObj->FBuffer.Buffer[DaLLObj->FBuffer.NextFrameToRecord++]=frame;
-        DaLLObj->FBuffer.NextFrameToRecord%=DaLLObj->FBuffer.Buffer.size();
+        samplesSinceSync=0;
+        GetFrame();
+    }
+    
+}
+
+void physicalLayer::frameSender()
+{
+    while(true)
+    {
+        usleep(1000);
+        if(outBuffer.LastFrameElement==outBuffer.NextFrameToRecord) continue;
+        PlaySync();
+        PlayFrame(outBuffer.Buffer[outBuffer.LastFrameElement++]);
+        outBuffer.LastFrameElement%=outBuffer.Buffer.size();
+        PlayEndSequence();
     }
 }
 
+void physicalLayer::QueueFrame(string frame)
+{
+    outBuffer.Buffer[outBuffer.NextFrameToRecord++]=frame;
+    outBuffer.NextFrameToRecord%=outBuffer.Buffer.size();
+}    
+
+string physicalLayer::GetNextFrame()
+{
+    string returnframe=inBuffer.Buffer[inBuffer.LastFrameElement++];
+    inBuffer.LastFrameElement%=inBuffer.Buffer.size();
+    return returnframe;
+
+}
+
+bool physicalLayer::isFrameAvaliable()
+{
+    if (outBuffer.LastFrameElement==outBuffer.NextFrameToRecord) return false;
+    return true;
+}
+
+void frameGrabWrapper(physicalLayer * PhysLayer)
+{
+    PhysLayer->frameGrabber();
+}
+
+void frameSendWrapper(physicalLayer * PhysLayer)
+{
+    PhysLayer->frameSender();
+}
 
 template <typename Type>
 bool ArrayComp(Type *Array1, Type *Array2,int size,int index)
