@@ -1,72 +1,54 @@
-#include "Recorder.h"
-#include "Player.h"
-#include "Goertzel.h"
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <cmath>
-#include <sys/time.h>
-#include <unistd.h>
 #include <vector>
-#include <array>
-#include <thread>
-#include <string>
-#define TONELENGHT 100
-#define SILENTLENGHT 20
-#define SILENTLIMIT 0.0000f
-#ifndef M_PI
-#define M_PI        3.14159265358979323846
-#endif
-#define RECIEVEDBUFFSIZE 10000
-using namespace std;
-struct SyncData
+#include "physicalLayer.h"
+#include <sys/time.h>
+#define BUFFERSIZE 100
+struct Buffer 
 {
-    float MaxMagnitude=0;
-    timeval tv;
+    array<vector<bool>,BUFFERSIZE> Buffer;
+    int head=0;
+    int tail=0; 
+};
 
-};
-struct RecievedData
-{
-    //We can't implement this as FIFO if we want thread safety    
-    array<char,RECIEVEDBUFFSIZE> RecArray; 
-    int NextElementToRecord=0;
-
-};
-struct FrameBuffer
-{
-    array<string,100> Buffer;
-    int NextFrameToRecord=0;
-    int LastFrameElement=0;
-};
 class DataLinkLayer
 {
     private:
-        int Freqarray1[4]={697,770,852,941};
-        int Freqarray2[4]={1209,1336,1477,1633};
-        char SyncSequence[4]={'a','6','8','*'}; //Should not contain the same note two times in a row.
-        char SyncEnd[4]={'1','2','3','4'};
-        char EndSequence[4]={'*','8','6','a'};
-        char DTMFTones[16]={'1','2','3','a','4','5','6','b','7','8','9','c','*','0','#','d'};
-        DualTonePlayer Player;
-        Recorder Rec;
-        long long synctime;
-        thread grabberThread;
-        void applyHamming(vector<float> &in);
+        void bitStuff(vector<bool> &frame); //Stuff frame to avoid flags in data.
+        void revBitStuff(vector<bool> &frame); //Remove stuffing.
+        
+        void setPadding(vector<bool> &frame); //Pad to multiple of 4, and set length of padding field.
+        void removePadding(vector<bool> &frame); //Remove padding. and padding field.
+        
+        void CRCencoder(vector<bool> &dataWord); //Make dataword into codeword. (append CRC)
+        bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
+        
+        bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
+        void setID(vector<bool> &frame); //set id of frame.
+        
+        
+        int getType(vector<bool> &frame); //Get type of frame.
+        void setType(vector<bool> &frame,int type); //Set type of frame.
+        
+        void setTimer(); //Set the timer
+        void sendACK(bool ID); //send ACK.
+        void getFrame(); //Grab frames from physical layer.
+        
+    
     public:
-        DataLinkLayer();
-        string GetPackage();
-        int samplesSinceSync;
-        void PlaySync();
-        void GetSync();
-        void PlayFrame(string Tones);
-        bool DataAvaliable();
-        string GetNextFrame();
-        void PlayEndSequence();
-        FrameBuffer FBuffer;
-
+        bool dataAvaliable(); //Is there new data for AppLayer?
+        vector<bool> popData(); //return data to AppLayer.
+        bool bufferFull(); //is outBuffer full?
+        void pushData(vector<bool>); //push data from AppLayer to outBuffer
+    
+    private:
+        physicalLayer physLayer;
+        bool lastinID;
+        bool lastoutID;
+        array<bool,8> flag;
+        timeval timer;
+        Buffer inBuffer;
+        Buffer outBuffer;
 
 };
+void getFrameWrapper(DataLinkLayer *DaLLObj);
 
-void toneGrabber(DataLinkLayer * DaLLObj);
-template <typename Type>
-bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0);
+
