@@ -49,11 +49,12 @@ class physicalLayer
         void PlayEndSequence();
     public:
         physicalLayer();
-        void QueueFrame(string frame);
+        void QueueFrame(vector<bool> frame);
+        bool isBufferFull();
         bool isFrameAvaliable();
         void frameGrabber();
         void frameSender();
-        string GetNextFrame();
+        vector<bool> GetNextFrame();
     private:
         int Freqarray1[4]={697,770,852,941};
         int Freqarray2[4]={1209,1336,1477,1633};
@@ -75,3 +76,5 @@ void frameGrabWrapper(physicalLayer * DaLLObj);
 void frameSendWrapper(physicalLayer * DaLLObj);
 template <typename Type>
 bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0);
+vector<bool> stringtobool(string streng);
+string booltostring(vector<bool> boolvec);

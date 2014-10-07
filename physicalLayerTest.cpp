@@ -1,4 +1,4 @@
-#include "physicalLayer.h"
+#include "physicalLayerTest.h"
 
 using namespace std;
 
@@ -233,17 +233,23 @@ void physicalLayer::frameSender()
     }
 }
 
-void physicalLayer::QueueFrame(string frame)
+void physicalLayer::QueueFrame(vector<bool> bframe)
 {
+    string frame=booltostring(bframe);
     outBuffer.Buffer[outBuffer.NextFrameToRecord++]=frame;
     outBuffer.NextFrameToRecord%=outBuffer.Buffer.size();
+    if (outBuffer.LastFrameElement==outBuffer.NextFrameToRecord)
+    {
+        outBuffer.LastFrameElement++;
+        outBuffer.LastFrameElement%=outBuffer.Buffer.size();
+    }
 }    
 
-string physicalLayer::GetNextFrame()
+vector<bool> physicalLayer::GetNextFrame()
 {
     string returnframe=inBuffer.Buffer[inBuffer.LastFrameElement++];
     inBuffer.LastFrameElement%=inBuffer.Buffer.size();
-    return returnframe;
+    return stringtobool(returnframe);
 
 }
 
@@ -253,6 +259,14 @@ bool physicalLayer::isFrameAvaliable()
     return true;
 }
 
+bool physicalLayer::isBufferFull()
+{
+    if ((inBuffer.NextFrameToRecord-1)%inBuffer.Buffer.size()==inBuffer.LastFrameElement)
+    {
+        return true;
+    }
+    return false;
+}
 void frameGrabWrapper(physicalLayer * PhysLayer)
 {
     PhysLayer->frameGrabber();
@@ -272,4 +286,140 @@ bool ArrayComp(Type *Array1, Type *Array2,int size,int index)
         if( Array1[(i+index)%size]!=Array2[i]) return false;
     }
     return true;
+}
+
+vector<bool> stringtobool(string streng)
+{
+    vector<bool> retvec;
+    for(char tegn : streng)
+    {
+        switch(tegn)
+        {
+        case '0':
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        break;
+        case '1':
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        break;
+        case '2':
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        break;
+        case '3':
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        break;
+        case '4':
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        break;
+        case '5':
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        break;
+        case '6':
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        break;
+        case '7':
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        break;
+        case '8':
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        break;
+        case '9':
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        break;
+        case 'a':
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        break;
+        case 'b':
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        break;
+        case 'c':
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(0);
+        break;
+        case 'd':
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        retvec.push_back(1);
+        break;
+        case '*':
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(0);
+        break;
+        case '#':
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        retvec.push_back(1);
+        break;
+        
+        default:
+        cout << "FEJL!!" << endl;
+        }
+    }
+    return retvec;
+}
+
+string booltostring(vector<bool> boolvec)
+{
+    string retstreng="";
+    for(int i=0;i<boolvec.size();i+=4)
+    {
+        if (!boolvec[i] and !boolvec[i+1] and !boolvec[i+2] and !boolvec[i+3]) retstreng+='0';
+        else if (!boolvec[i] and !boolvec[i+1] and !boolvec[i+2] and boolvec[i+3]) retstreng+='1';
+        else if (!boolvec[i] and !boolvec[i+1] and boolvec[i+2] and !boolvec[i+3]) retstreng+='2';
+        else if (!boolvec[i] and !boolvec[i+1] and boolvec[i+2] and boolvec[i+3]) retstreng+='3';
+        else if (!boolvec[i] and boolvec[i+1] and !boolvec[i+2] and !boolvec[i+3]) retstreng+='4';
+        else if (!boolvec[i] and boolvec[i+1] and !boolvec[i+2] and boolvec[i+3]) retstreng+='5';
+        else if (!boolvec[i] and boolvec[i+1] and boolvec[i+2] and !boolvec[i+3]) retstreng+='6';
+        else if (!boolvec[i] and boolvec[i+1] and boolvec[i+2] and boolvec[i+3]) retstreng+='7';
+        else if (boolvec[i] and !boolvec[i+1] and !boolvec[i+2] and !boolvec[i+3]) retstreng+='8';
+        else if (boolvec[i] and !boolvec[i+1] and !boolvec[i+2] and boolvec[i+3]) retstreng+='9';
+        else if (boolvec[i] and !boolvec[i+1] and boolvec[i+2] and !boolvec[i+3]) retstreng+='a';
+        else if (boolvec[i] and !boolvec[i+1] and boolvec[i+2] and boolvec[i+3]) retstreng+='b';
+        else if (boolvec[i] and boolvec[i+1] and !boolvec[i+2] and !boolvec[i+3]) retstreng+='c';
+        else if (boolvec[i] and boolvec[i+1] and !boolvec[i+2] and boolvec[i+3]) retstreng+='d';
+        else if (boolvec[i] and boolvec[i+1] and boolvec[i+2] and !boolvec[i+3]) retstreng+='e';
+        else if (boolvec[i] and boolvec[i+1] and boolvec[i+2] and boolvec[i+3]) retstreng+='f';
+    }
+    return retstreng;
 }
