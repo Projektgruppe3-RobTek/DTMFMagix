@@ -1,17 +1,17 @@
-#include "DataLinkLayer.h"
+#include "physicalLayer.h"
 #include <iostream>
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-    DataLinkLayer DataLink;
-    DataLink.PlayFrame("25264abc863");
+    physicalLayer PhysLayer;
+    PhysLayer.QueueFrame("25264abc863");
     
     while(1)
     {
-        if(DataLink.DataAvaliable())
+        if(PhysLayer.isFrameAvaliable())
         {
-            cout << DataLink.GetNextFrame() << endl;
+            cout << PhysLayer.GetNextFrame() << endl;
         }
         usleep(100000);
     }
