@@ -35,8 +35,7 @@ class DataLinkLayer
         bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
         void setID(vector<bool> &frame); //set id of frame.
 
-
-        int getType(vector<bool> &frame); //Get type of frame.
+        int getType(vector<bool> &frame); //Get type of frame. {000 = data, 001 = ack, 010 = request, 011 = nak, 100 = terminate}
         void setType(vector<bool> &frame,int type); //Set type of frame.
 
         void setTimer(); //Set the timer

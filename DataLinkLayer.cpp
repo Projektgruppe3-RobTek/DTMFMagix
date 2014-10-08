@@ -96,11 +96,20 @@ void DataLinkLayer::setID(vector<bool> &frame)
 }
 
 
-bool flagcheck(vector<bool> &vec1, int start1,array<bool, 8> &flag, int lenght) //check if the flag matches given vec
+bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght) //check if the flag matches given vec
 {
     for(int i = 0 ; i < lenght; i++)
     {
         if (vec1[start1 + i] != flag[i]) return false;
     }
     return true;
+}
+
+void DataLinkLayer::sendACK(bool ID){
+    vector<bool> ACK;
+    ACK.insert(ACK.begin(), lastoutID);
+    for (int i = 0; i < 3; i++){
+        ACK.insert(ACK.pushback(0));
+    }
+    //Push to physicalLayer.buffer
 }
