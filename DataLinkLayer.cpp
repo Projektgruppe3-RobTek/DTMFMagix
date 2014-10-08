@@ -2,8 +2,8 @@
 
 DataLinkLayer::DataLinkLayer()
 {
-    getFramesThread=thread(getFramesWrapper,this);
-    getDatagramsThread=thread(getDatagramsWraper,this);
+    getFramesThread = thread(getFramesWrapper, this);
+    getDatagramsThread = thread(getDatagramsWraper, this);
 }
 
 
