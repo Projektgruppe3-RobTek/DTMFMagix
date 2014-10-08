@@ -111,3 +111,71 @@ void DataLinkLayer::sendACK(bool ID){
     for (int i = 0; i < 3; i++) ACK.push_back(0);
     //Push to physicalLayer.buffer
 }
+
+bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
+{
+    //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
+
+    vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
+    vector<bool> Dividend   = codeWord;
+
+    for (unsigned int i=0; i < codeWord.size(); i++)
+    {
+        if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
+        {
+            for(unsigned int j=0; j<=Divisor.size(); j++)
+            {
+                Dividend[j] = Dividend[j] ^ Divisor[j];
+            }
+        }
+        Dividend.erase(Dividend.begin()) ;                      // When XOR is done, the vector is moved one
+                                                                // place to the left.
+    }
+    for (unsigned int i = 0; i < Divisor.size(); i++)
+    {
+        if (Dividend[i])                                        // if the CRC check at the receiver went bad
+        {                                                       // then the function will return false.
+            return 0;                                           // And the frame will be discarded.
+        }
+    }
+
+    for (unsigned int i = 0; i <Divisor.size()-1; i++)
+    {
+        codeWord.erase(codeWord.end());
+    }
+
+    return 1;                                                   // if the CRC check at the receiver went well
+                                                                // then the function will return true.
+}
+
+
+void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
+{
+    //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
+    vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
+    vector<bool> Dividend   = dataWord;
+
+    for(unsigned int i=0; i<Divisor.size()-1; i++)              // Puts the appropriate amount of 0's behind the dividend.
+    {
+        Dividend.push_back(0);
+    }
+
+    for (unsigned int i=0; i < dataWord.size(); i++)
+    {
+        if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
+        {
+            for(unsigned int j=0; j<=Divisor.size(); j++)
+            {
+                Dividend[j] = Dividend[j] ^ Divisor[j];
+            }
+        }
+        Dividend.erase(Dividend.begin()) ;                      // When XOR is done, the vector is moved one
+                                                                // place to the left.
+    }
+
+    for(unsigned int i=0; i<Divisor.size()-1; i++)              // When the division is done, the remainder
+    {                                                           // is put behind the Dataword to make the Codeword
+        dataWord.push_back(Dividend[i]);
+    }
+}
+
