@@ -3,14 +3,26 @@ using namespace std;
 
 class   NewPhysicalLayer
 {
+private:
+	void			applyHamming();
+	void			applyEndFlags();
+	void			removeEndFlags();
+	vector<string>	convertToDTMF(vector<bool>);
+	vector<bool>	convertToBinary(vector<string>);
+	void			playSync();
+	void			getSync();
+	void			playFrame(vector);
+	void			getFrame();
+
 public:
 
     NewPhysicalLayer();
-    bool            IsNewFrame();
-    vector<bool>    PopFrame();
+    bool			returnReceiveFlag();
+    bool            isFrameAvailable();
+    vector<bool>    popFrame();
 
-    bool            IsBufferFull();
-    void            PushFrame(vector<bool>);
+    bool			returnSendFlag();
+    void            pushFrame(vector<bool>);
 
 
 
