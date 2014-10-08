@@ -35,14 +35,18 @@ class DataLinkLayer
         bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
         void setID(vector<bool> &frame); //set id of frame.
 
-        int getType(vector<bool> &frame); //Get type of frame. {000 = data, 001 = ack, 010 = request, 011 = nak, 100 = terminate}
-        void setType(vector<bool> &frame,int type); //Set type of frame.
+        int getType(vector<bool> &frame); //Get type of frame. {000 = data, 001 = ACK, 010 = request, 011 = accept, 100 = decline, 101 = terminate}
+        void setType(vector<bool> &frame, int type); //Set type of frame.
 
         void setTimer(); //Set the timer
         void sendACK(bool ID); //send ACK.
+        void sendRequest(bool ID); //send Request
+        void sendAccept(bool ID); //send Accept
+        void sendDecline(bool ID); //send Decline
+        void sendTerminate(bool ID); //send Terminate
 
     public:
-        DataLinkLayer();
+        DataLinkLayer();//vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
         bool dataAvaliable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
         bool bufferFull(); //is outBuffer full?
