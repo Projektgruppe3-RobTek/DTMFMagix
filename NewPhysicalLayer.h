@@ -1,4 +1,8 @@
+#include 	"Recorder.h"
+#include	"Player.h"
+#include 	"Goertzel.h"
 #include    <vector>
+#include	<string>
 using namespace std;
 
 
