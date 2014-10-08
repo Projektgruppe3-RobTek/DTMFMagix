@@ -3,6 +3,7 @@
 #include 	"Goertzel.h"
 #include    <vector>
 #include	<string>
+#include <thread>
 using namespace std;
 
 
@@ -47,7 +48,4 @@ private:
         long long synctime;
         thread frameGrabberThread;
         thread frameSenderThread;
-        FrameBuffer outBuffer;
-        FrameBuffer inBuffer;
-
 };
