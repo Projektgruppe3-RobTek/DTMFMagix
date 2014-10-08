@@ -16,6 +16,8 @@ void DataLinkLayer::getDatagrams()
 {
     while(true) usleep(10000000); //not done.
 }
+
+
 void getFramesWrapper(DataLinkLayer *DaLLObj)
 {
     DaLLObj->getFrames();
@@ -28,32 +30,33 @@ void getDatagramsWraper(DataLinkLayer *DaLLObj)
 
 void DataLinkLayer::bitStuff(vector<bool> &frame)
 {
-    for(int i=flag.size(); i<frame.size(); i++)
+    vector<int> elementsToStuff;
+    for(int i=flag.size()-1;i<frame.size();i++)
     {
-        if(flagcheck(frame,i-(int)flag.size(),flag))
-        {
-            frame.insert(frame.begin()+i-1,0);
-        }
+        if(flagcheck(frame,i-((int)flag.size()-1),flag,flag.size()-1)) elementsToStuff.push_back(i);
+    }
+    int offset=0;
+    for(int index : elementsToStuff) 
+    {
+        frame.insert(frame.begin()+offset+index,!flag.back());
+        offset++;
     }
 }
+
+
 void DataLinkLayer::revBitStuff(vector<bool> &frame)
 {
-    if (frame.size()<flag.size()) return;
-    
-    vector<bool> newframe;
-    newframe.reserve(frame.size());
-    
-    for(int i=0;i<flag.size();i++) newframe.push_back(frame[i]);
-    
-    for(int i=flag.size(); i<frame.size(); i++) 
+    vector<int> elementsToRemove;
+    for(int i=flag.size()-1;i<frame.size();i++)
     {
-        newframe.push_back(frame[i]);
-        if(flagcheck(frame,i-(int)flag.size(),flag))
-        {
-            newframe.pop_back();
-        }
+        if (flagcheck(frame,i-(int)flag.size()+1,flag,flag.size()-1)) elementsToRemove.push_back(i);
     }
-    frame=newframe;
+    int offset=0;
+    for(int index : elementsToRemove) 
+    {
+        frame.erase(frame.begin()+offset+index);
+        offset--;
+    }
 }
 
 
@@ -77,11 +80,25 @@ void DataLinkLayer::removePadding(vector<bool> &frame)
     for(int i=0;i<paddinglength;i++) frame.pop_back();
 }
 
-
-
-bool flagcheck(vector<bool> &vec1, int start1,array<bool,8> &flag) //check if the flag matches given vec
+bool DataLinkLayer::getID(vector<bool> &frame)
 {
-    for(int i=0;i<flag.size();i++)
+    int ID=frame[0];
+    frame.erase(frame.begin());
+    if (lastinID==ID) return false;
+    lastinID=ID;
+    return true;
+}
+
+void DataLinkLayer::setID(vector<bool> &frame,bool ID)
+{
+    frame.insert(frame.begin(),ID);
+    lastoutID=ID; 
+}
+
+
+bool flagcheck(vector<bool> &vec1, int start1,array<bool,8> &flag,int lenght) //check if the flag matches given vec
+{
+    for(int i=0;i<lenght;i++)
     {
         if (vec1[start1+i]!=flag[i]) return false;
         

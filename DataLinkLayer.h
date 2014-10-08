@@ -9,6 +9,7 @@
 Layout of frame:
 |--|----|-----------------|----|---|
 |ID|Type|Length of padding|Data|CRC|
+|1 | 3  |       2         |  ? |8? |   
 |--|----|-----------------|----|---|
 */
 using namespace std;
@@ -32,7 +33,7 @@ class DataLinkLayer
         bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
         
         bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
-        void setID(vector<bool> &frame); //set id of frame.
+        void setID(vector<bool> &frame,bool ID); //set id of frame.
         
         
         int getType(vector<bool> &frame); //Get type of frame.
@@ -51,7 +52,7 @@ class DataLinkLayer
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
     
     private:
-        physicalLayer physLayer;
+        //physicalLayer physLayer;
         bool lastinID;
         bool lastoutID;
         array<bool,8> flag={{1,0,1,0 ,1,1,1,0}};
@@ -65,6 +66,6 @@ class DataLinkLayer
 void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);
 
-bool flagcheck(vector<bool> &vec1, int start1,array<bool,8> &flag);
+bool flagcheck(vector<bool> &vec1, int start1,array<bool,8> &flag,int lenght);
 
 
