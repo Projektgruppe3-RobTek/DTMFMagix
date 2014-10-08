@@ -54,7 +54,7 @@ void DataLinkLayer::revBitStuff(vector<bool> &frame)
     int offset = 0;
     for(int index : elementsToRemove)
     {
-        frame.erase(frame.begin() + offset+index);
+        frame.erase(frame.begin() + offset + index);
         offset--;
     }
 }
