@@ -9,15 +9,15 @@
 Layout of frame:
 |--|----|-----------------|----|---|
 |ID|Type|Length of padding|Data|CRC|
-|1 | 3  |       2         |  ? |8? |   
+|1 | 3  |       2         |  ? |8? |
 |--|----|-----------------|----|---|
 */
 using namespace std;
-struct Buffer 
+struct Buffer
 {
-    array<vector<bool>,BUFFERSIZE> Buffer;
-    int head=0;
-    int tail=0; 
+    array<vector<bool>, BUFFERSIZE> Buffer;
+    int head = 0;
+    int tail = 0;
 };
 
 class DataLinkLayer
@@ -25,23 +25,23 @@ class DataLinkLayer
     public:
         void bitStuff(vector<bool> &frame); //Stuff frame to avoid flags in data.
         void revBitStuff(vector<bool> &frame); //Remove stuffing.
-        
+
         void setPadding(vector<bool> &frame); //Pad to multiple of 4, and set length of padding field.
         void removePadding(vector<bool> &frame); //Remove padding.. and padding field.
-        
+
         void CRCencoder(vector<bool> &dataWord); //Make dataword into codeword. (append CRC)
         bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
-        
+
         bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
-        void setID(vector<bool> &frame,bool ID); //set id of frame.
-        
-        
+        void setID(vector<bool> &frame); //set id of frame.
+
+
         int getType(vector<bool> &frame); //Get type of frame.
         void setType(vector<bool> &frame,int type); //Set type of frame.
-        
+
         void setTimer(); //Set the timer
         void sendACK(bool ID); //send ACK.
-    
+
     public:
         DataLinkLayer();
         bool dataAvaliable(); //Is there new data for AppLayer?
@@ -50,12 +50,12 @@ class DataLinkLayer
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
-    
+
     private:
         //physicalLayer physLayer;
         bool lastinID;
         bool lastoutID;
-        array<bool,8> flag={{1,0,1,0 ,1,1,1,0}};
+        array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
         timeval timer;
         Buffer inBuffer;
         Buffer outBuffer;
@@ -66,6 +66,6 @@ class DataLinkLayer
 void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);
 
-bool flagcheck(vector<bool> &vec1, int start1,array<bool,8> &flag,int lenght);
+bool flagcheck(vector<bool> &vec1, int start1,array<bool, 8> &flag, int lenght);
 
 
