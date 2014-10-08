@@ -91,7 +91,7 @@ bool DataLinkLayer::getID(vector<bool> &frame)
 
 void DataLinkLayer::setID(vector<bool> &frame)
 {
-    lastoutID = lastoutID ^ 1;
+    lastoutID = !lastoutID;
     frame.insert(frame.begin(), lastoutID);
 }
 
@@ -107,7 +107,8 @@ bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght)
 
 void DataLinkLayer::sendACK(bool ID){
     vector<bool> ACK;
-    ACK.insert(ACK.begin(), lastoutID);
+    DataLinkLayer.setID(ACK);
+    //DataLinkLayer.setType(ACK, 0);
     for (int i = 0; i < 3; i++) ACK.push_back(0);
     //Push to physicalLayer.buffer
 }
