@@ -64,10 +64,10 @@ void DataLinkLayer::setPadding(vector<bool> &frame)
 {
     int lengthOfPadding = 0;
 
-    while(frame.size() % 4)
+    while(frame.size()+2 % 4)
     {
         lengthOfPadding++;
-        frame.push_back(0);
+        frame.push_back(!flag.back());
     }
     frame.insert(frame.begin(), lengthOfPadding % 2);
     frame.insert(frame.begin(), lengthOfPadding % 4 - lengthOfPadding % 2);
@@ -113,9 +113,11 @@ void DataLinkLayer::setType(vector<bool> &frame, int Type)
 void DataLinkLayer::sendACK(bool ID)
 {
     vector<bool> ACK;
-    DataLinkLayer.setID(ACK);
-    //DataLinkLayer.setType(ACK, 0);
-    for (int i = 0; i < 3; i++) ACK.push_back(0);
+    setType(ACK, 1);
+    setID(ACK);
+    CRCencoder(ACK);
+    //bitstuffing
+    //padding
     //Push to physicalLayer.buffer
 }
 

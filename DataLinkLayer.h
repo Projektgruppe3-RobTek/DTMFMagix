@@ -7,10 +7,10 @@
 
 /*
 Layout of frame:
-|--|----|-----------------|----|---|
-|ID|Type|Length of padding|Data|CRC|
-|1 | 3  |       2         |  ? |8? |
-|--|----|-----------------|----|---|
+|-----------------|----|----|----|---|
+|Length of padding| ID |Type|Data|CRC|
+|       2         | 1  | 3  |  ? | 4 |
+|-----------------|----|----|----|---|
 Frametypes:
 000 = data
 001 = ACK
@@ -18,6 +18,21 @@ Frametypes:
 011 = accept
 100 = decline
 101 = terminate
+*/
+/* Befor sending frame, we do this in this order:
+1. Prepend Type.
+2. Prepend ID.
+3. Do CRC
+4. Do Bitstuffing
+5. Prepend paddinglenght (and pad)
+
+When recieving a frame, we do this:
+1. Remove padding lenght and padding.
+2. Remove bitstuffing.
+3. Verify CRC and remove CRC field.
+4. Read ID and remove ID field.
+5. Read Type and remove Type field.
+
 */
 using namespace std;
 struct Buffer
