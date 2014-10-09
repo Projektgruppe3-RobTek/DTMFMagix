@@ -77,7 +77,7 @@ class DataLinkLayer
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
 
     private:
-        //physicalLayer physLayer;
+        physicalLayer physLayer;
         bool lastinID;
         bool lastoutID;
         array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
