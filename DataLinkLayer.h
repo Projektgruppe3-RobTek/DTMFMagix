@@ -94,5 +94,4 @@ void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);
 void getDatagramsAndFramesThread(DataLinkLayer *DaLLObj);
 bool flagcheck(vector<bool> &vec1, int start1,array<bool, 8> &flag, int lenght);
-void wrapperFunction(DataLinkLayer *DaLLObj);
 

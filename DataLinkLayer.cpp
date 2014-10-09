@@ -2,7 +2,8 @@
 
 DataLinkLayer::DataLinkLayer()
 {
-    wrapperThread = thread(wrapperFunction, this);
+    getFramesThread=thread(getFramesWrapper,this);
+    getDatagramsThread=thread(getDatagramsWraper, this);
 }
 
 
@@ -14,11 +15,6 @@ void DataLinkLayer::getFrames()
 void DataLinkLayer::getDatagrams()
 {
     while(true) usleep(4000000000); //not done.
-}
-void wrapperFunction(DataLinkLayer *DaLLObj)
-{
-    DaLLObj->getFramesThread=thread(getFramesWrapper,DaLLObj);
-    DaLLObj->getDatagramsThread=thread(getDatagramsWraper, DaLLObj);
 }
 
 void getFramesWrapper(DataLinkLayer *DaLLObj)
@@ -135,7 +131,7 @@ bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
     {
         if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
         {
-            for(unsigned int j=0; j<=Divisor.size(); j++)
+            for(unsigned int j=0; j<Divisor.size(); j++)
             {
                 Dividend[j] = Dividend[j] ^ Divisor[j];
             }
@@ -176,7 +172,7 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
     {
         if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
         {
-            for(unsigned int j=0; j<=Divisor.size(); j++)
+            for(unsigned int j=0; j<Divisor.size(); j++)
             {
                 Dividend[j] = Dividend[j] ^ Divisor[j];
             }
