@@ -2,21 +2,24 @@
 
 DataLinkLayer::DataLinkLayer()
 {
-    //getFramesThread = thread(getFramesWrapper, this);
-    getDatagramsThread = thread(getDatagramsWraper, this);
+    wrapperThread = thread(wrapperFunction, this);
 }
 
 
 void DataLinkLayer::getFrames()
 {
-    //while(true) usleep(4000000000); //not done
+    while(true) usleep(4000000000); //not done
 }
 
 void DataLinkLayer::getDatagrams()
 {
-    //while(true) usleep(4000000000); //not done.
+    while(true) usleep(4000000000); //not done.
 }
-
+void wrapperFunction(DataLinkLayer *DaLLObj)
+{
+    DaLLObj->getFramesThread=thread(getFramesWrapper,DaLLObj);
+    DaLLObj->getDatagramsThread=thread(getDatagramsWraper, DaLLObj);
+}
 
 void getFramesWrapper(DataLinkLayer *DaLLObj)
 {
@@ -25,6 +28,7 @@ void getFramesWrapper(DataLinkLayer *DaLLObj)
 
 void getDatagramsWraper(DataLinkLayer *DaLLObj)
 {
+    thread t1=thread(getFramesWrapper, DaLLObj);
     DaLLObj->getDatagrams();
 }
 

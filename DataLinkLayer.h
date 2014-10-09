@@ -77,20 +77,22 @@ class DataLinkLayer
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
 
     private:
-        physicalLayer physLayer;
+        //physicalLayer physLayer;
         bool lastinID;
         bool lastoutID;
         array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
         timeval timer;
         Buffer inBuffer;
         Buffer outBuffer;
+    public:
         thread getFramesThread;
         thread getDatagramsThread;
+        thread wrapperThread;
 
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);
-
+void getDatagramsAndFramesThread(DataLinkLayer *DaLLObj);
 bool flagcheck(vector<bool> &vec1, int start1,array<bool, 8> &flag, int lenght);
-
+void wrapperFunction(DataLinkLayer *DaLLObj);
 

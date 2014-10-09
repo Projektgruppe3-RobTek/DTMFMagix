@@ -10,7 +10,9 @@ int main(int argc, char *argv[])
     timeval tv;
     gettimeofday(&tv,NULL);
     srand(tv.tv_usec);
-    vector<bool> boolvec={0,1,1,1,0,0,0,1,0,0,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,0,0,1,0,0,1,1,1,0,1,0,0,1,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,1,0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,0,1,1,1,0,1,1};
+    int lenght=100;
+    vector<bool> boolvec;//={0,1,1,1,0,0,0,1,0,0,1,1,1,0,0,0,1,0,1,1,1,1,0,1,1,1,0,1,0,1,1,0,1,1,1,1,1,0,0,1,0,0,0,1,0,0,1,1,1,0,1,0,0,1,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,1,0,1,0,0,1,0,1,1,1,0,0,1,0,1,1,1,1,0,0,1,1,0,0,1,1,1,0,1,1};
+    while(lenght--) boolvec.push_back(rand()%2);
     DataLinkLayer DaLLObj;
     for(auto bit : boolvec) cout << bit; cout << endl;
     DaLLObj.CRCencoder(boolvec);
