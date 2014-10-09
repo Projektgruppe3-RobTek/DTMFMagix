@@ -28,7 +28,6 @@ void getFramesWrapper(DataLinkLayer *DaLLObj)
 
 void getDatagramsWraper(DataLinkLayer *DaLLObj)
 {
-    thread t1=thread(getFramesWrapper, DaLLObj);
     DaLLObj->getDatagrams();
 }
 
