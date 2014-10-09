@@ -9,12 +9,12 @@ DataLinkLayer::DataLinkLayer()
 
 void DataLinkLayer::getFrames()
 {
-    while(true) usleep(10000000); //not done
+    while(true) usleep(4000000000); //not done
 }
 
 void DataLinkLayer::getDatagrams()
 {
-    while(true) usleep(10000000); //not done.
+    while(true) usleep(4000000000); //not done.
 }
 
 
@@ -153,8 +153,8 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
     vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
     vector<bool> Dividend   = dataWord;
 
-    for(unsigned int i=0; i<Divisor.size()-1; i++) Dividend.push_back(0); // Puts the appropriate amount of 0's behind the dividend.
-
+    for(unsigned int i=0; i<Divisor.size()-1; i++) Dividend.push_back(0); // Puts the appropriate amount
+                                                                          // of 0's behind the dividend.
     for (unsigned int i=0; i < dataWord.size(); i++)
     {
         if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
