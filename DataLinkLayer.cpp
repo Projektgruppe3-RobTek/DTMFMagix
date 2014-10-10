@@ -205,7 +205,7 @@ bool DataLinkLayer::bufferFull()
     return outBuffer.full();
 }
 
-void pushData(vector<bool> data)
+void DataLinkLayer::pushData(vector<bool> data)
 {
     outBuffer.push_back(data);
 }
