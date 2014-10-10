@@ -62,6 +62,8 @@ class DataLinkLayer
         void sendAccept(bool ID); //send Accept
         void sendDecline(bool ID); //send Decline
         void sendTerminate(bool ID); //send Terminate
+        void sendControl(int Type,bool ID);
+        void sendFrame(vector<bool> &frame);
 
     public:
         DataLinkLayer();

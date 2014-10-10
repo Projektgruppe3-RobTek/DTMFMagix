@@ -112,15 +112,44 @@ void DataLinkLayer::setType(vector<bool> &frame, int Type)
     frame.insert(frame.begin(), Type % 8 - Type % 4 - Type % 2);
 }
 
+void DataLinkLayer::sendControl(int Type,bool ID)
+{
+    vector<bool> Control;
+    setType(Control, Type);
+    setID(Control, ID);
+    CRCencoder(Control);
+    bitStuff(Control);
+    setPadding(Control);
+    sendFrame(Control);
+}
+
 void DataLinkLayer::sendACK(bool ID)
 {
-    vector<bool> ACK;
-    setType(ACK, 1);
-    setID(ACK, ID);
-    CRCencoder(ACK);
-    bitStuff(ACK);
-    setPadding(ACK);
-    //Push to physicalLayer.buffer
+    sendControl(1,ID);
+}
+
+void DataLinkLayer::sendRequest(bool ID)
+{
+    sendControl(2,ID);
+}
+
+void DataLinkLayer::sendAccept(bool ID)
+{
+    sendControl(3,ID);
+}
+
+void DataLinkLayer::sendDecline(bool ID)
+{
+    sendControl(4,ID);
+}
+
+void DataLinkLayer::sendTerminate(bool ID)
+{
+    sendControl(5,ID);
+}
+void DataLinkLayer::sendFrame(vector<bool> &frame)
+{
+    //Push to datalinklayer
 }
 
 bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
