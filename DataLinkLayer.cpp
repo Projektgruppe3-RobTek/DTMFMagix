@@ -93,7 +93,10 @@ void DataLinkLayer::setID(vector<bool> &frame)
     lastoutID = !lastoutID;
     frame.insert(frame.begin(), lastoutID);
 }
-
+void DataLinkLayer::setID(vector<bool> &frame, int ID) //This is mostly for ACK's
+{                                       //Don't change lastoutID.
+    frame.insert(frame.begin(), ID);
+}
 int DataLinkLayer::getType(vector<bool> &frame)
 {
     int Type=(frame[0] << 2) + (frame[1] << 1) + frame[2];
@@ -113,10 +116,10 @@ void DataLinkLayer::sendACK(bool ID)
 {
     vector<bool> ACK;
     setType(ACK, 1);
-    setID(ACK);
+    setID(ACK, ID);
     CRCencoder(ACK);
-    //bitstuffing
-    //padding
+    bitStuff(ACK);
+    setPadding(ACK);
     //Push to physicalLayer.buffer
 }
 

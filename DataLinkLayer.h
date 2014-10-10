@@ -3,6 +3,7 @@
 #include <thread>
 #include <array>
 #include "physicalLayerTest.h"
+#include "RingBuffer.h"
 #define BUFFERSIZE 100
 
 /*
@@ -35,12 +36,6 @@ When recieving a frame, we do this:
 
 */
 using namespace std;
-struct Buffer
-{
-    array<vector<bool>, BUFFERSIZE> Buffer;
-    int head = 0;
-    int tail = 0;
-};
 
 class DataLinkLayer
 {
@@ -56,6 +51,7 @@ class DataLinkLayer
 
         bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
         void setID(vector<bool> &frame); //set id of frame.
+        void setID(vector<bool> &frame, int ID); //set id of frame.
 
         int getType(vector<bool> &frame); //Get type of frame.
         void setType(vector<bool> &frame, int type); //Set type of frame.
@@ -82,12 +78,10 @@ class DataLinkLayer
         bool lastoutID;
         array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
         timeval timer;
-        Buffer inBuffer;
-        Buffer outBuffer;
-    public:
+        RingBuffer<vector<bool>,BUFFERSIZE> inBuffer;
+        RingBuffer<vector<bool>,BUFFERSIZE> outBuffer;
         thread getFramesThread;
         thread getDatagramsThread;
-        thread wrapperThread;
 
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);
