@@ -56,7 +56,8 @@ class DataLinkLayer
         int getType(vector<bool> &frame); //Get type of frame.
         void setType(vector<bool> &frame, int type); //Set type of frame.
 
-        void setTimer(); //Set the timer
+        void startTimer(); //Start the timer
+        int getTimer(); //Return milliseconds since setTimer was called.
         void sendACK(bool ID); //send ACK.
         void sendRequest(bool ID); //send Request
         void sendAccept(bool ID); //send Accept

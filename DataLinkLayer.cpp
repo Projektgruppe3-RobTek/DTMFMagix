@@ -152,6 +152,17 @@ void DataLinkLayer::sendFrame(vector<bool> &frame)
     //Push to datalinklayer
 }
 
+void DataLinkLayer::startTimer()
+{
+    gettimeofday(&timer,NULL);
+}
+
+int DataLinkLayer::getTimer()
+{
+    timeval tv;
+    gettimeofday(&tv,NULL);
+    return (tv.tv_sec * 1000 + tv.tv_usec / 1000 )  - (timer.tv_sec * 1000 + timer.tv_usec / 1000);
+}
 bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 {
     //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
