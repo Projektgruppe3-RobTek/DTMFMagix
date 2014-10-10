@@ -190,6 +190,25 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
     }
 }
 
+bool DataLinkLayer::dataAvaliable()
+{
+    return !inBuffer.empty();
+}
+
+vector<bool> DataLinkLayer::popData()
+{
+    return inBuffer.pop_front();
+}
+
+bool DataLinkLayer::bufferFull()
+{
+    return outBuffer.full();
+}
+
+void pushData(vector<bool> data)
+{
+    outBuffer.push_back(data);
+}
 
 bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght) //check if the flag matches given vec
 {
