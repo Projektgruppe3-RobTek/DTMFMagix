@@ -8,7 +8,7 @@ void physicalLayer::applyHamming(vector<float> &data)
     }
 }
 
-void physicalLayer::PlaySync() //Play the sync sequence
+void physicalLayer::playSync() //Play the sync sequence
 {
     for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
     {
@@ -20,7 +20,7 @@ void physicalLayer::PlaySync() //Play the sync sequence
     }
 }
 
-void physicalLayer::PlayFrame(vector Tones)
+void physicalLayer::playFrame(vector Tones)
 {
     PlaySync();
     for(char Tone : Tones)
@@ -30,3 +30,5 @@ void physicalLayer::PlayFrame(vector Tones)
     }
     PlayEndSequence();
 }
+
+void get
