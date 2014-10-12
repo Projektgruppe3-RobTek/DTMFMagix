@@ -46,6 +46,6 @@ private:
         Recorder Rec;
         int samplesSinceSync=0;
         long long synctime;
-        thread frameGrabberThread;
-        thread frameSenderThread;
+        thread incommingThread;
+        thread outgoingThread;
 };
