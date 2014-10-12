@@ -19,7 +19,7 @@ private:
 	vector<bool>	convertToBinary(vector<string>);
 	void			playSync();
 	void			getSync();
-	void			playFrame(vector);
+	void			playFrame(vector<bool>);
 	void			getFrame();
 
 public:
@@ -31,6 +31,8 @@ public:
 
     bool			returnSendFlag();
     void            pushFrame(vector<bool>);
+
+    ~NewPhysicalLayer();
 
 
 
