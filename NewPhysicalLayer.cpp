@@ -1,6 +1,6 @@
 #include    "NewPhysicalLayer.h"
 
-void physicalLayer::applyHamming(vector<float> &data)
+void newPhysicalLayer::applyHamming(vector<float> &data)
 {
     for(unsigned int i=0;i<data.size();i++)
     {
@@ -8,7 +8,7 @@ void physicalLayer::applyHamming(vector<float> &data)
     }
 }
 
-void physicalLayer::playSync() //Play the sync sequence
+void newPhysicalLayer::playSync() //Play the sync sequence
 {
     for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
     {
@@ -20,7 +20,7 @@ void physicalLayer::playSync() //Play the sync sequence
     }
 }
 
-void physicalLayer::playFrame(vector Tones)
+void newPhysicalLayer::playFrame(vector Tones)
 {
     PlaySync();
     for(char Tone : Tones)
@@ -31,4 +31,12 @@ void physicalLayer::playFrame(vector Tones)
     PlayEndSequence();
 }
 
-void get
+void newPhysicalLayer::getSync()
+{
+
+}
+
+void newPhysicalLayer::getFrame()
+{
+
+}
