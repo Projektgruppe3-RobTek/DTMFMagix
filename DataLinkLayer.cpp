@@ -1,5 +1,5 @@
 #include "DataLinkLayer.h"
-
+#include <iostream>
 DataLinkLayer::DataLinkLayer()
 {
     getFramesThread=thread(getFramesWrapper,this);
@@ -9,12 +9,88 @@ DataLinkLayer::DataLinkLayer()
 
 void DataLinkLayer::getFrames()
 {
-    while(true) usleep(4000000000); //not done
+    while(true)
+    {
+        usleep(1000);
+        if (!physLayer.isFrameAvaliable()) continue;
+        
+        vector<bool> recievedFrame=physLayer.getFrame();
+        removePadding(recievedFrame);
+        revBitStuff(recievedFrame);
+        if(!CRCdecoder(recievedFrame)) continue;
+        int frameID=getID(recievedFrame);
+        int frameType=getType(recievedFrame);
+        //cout << frameID << " " << frameType << endl;
+        if (frameType!=1)
+        { 
+            if (frameID==lastinID) //We have already recieved this frame.
+            {                      //Just send an ACK
+                sendACK(frameID);
+                continue;
+            }
+            else
+            {
+                switch(frameType)
+                {
+                    case 0:  //data
+                        sendACK(frameID);
+                        inBuffer.push_back(recievedFrame);
+                        break;
+                    case 2: //request
+                        break;
+                    case 3: //accept
+                        break;
+                    case 4: //decline
+                        break;
+                    case 5: //terminate
+                        break;
+                    default:
+                         cout << "ERROR in getFrames. This is probably a logic bug!" << endl;
+                }
+            }
+        }
+        else
+        {
+            cout << "ack" << endl;
+            cout << curWaitingACK.waiting << curWaitingACK.ID << frameID << endl;
+            if (curWaitingACK.waiting and curWaitingACK.ID==frameID)
+            {
+                cout << "acpack" << endl;
+                curWaitingACK.waiting=false;
+            }
+        }
+    } 
 }
 
-void DataLinkLayer::getDatagrams()
+void DataLinkLayer::getDatagrams() 
 {
-    while(true) usleep(4000000000); //not done.
+    while(true)
+    {
+        usleep(1000);
+        if(!outBuffer.empty())
+        {
+            vector<bool> frameToSend=outBuffer.pop_front();
+            setType(frameToSend,0);
+            bool frameID= !lastoutID;
+            lastoutID=!lastoutID;
+            setID(frameToSend,frameID);
+            CRCencoder(frameToSend);
+            bitStuff(frameToSend);
+            setPadding(frameToSend);
+            curWaitingACK.ID=!frameID;
+            curWaitingACK.waiting=true;
+            while(curWaitingACK.waiting)
+            {
+                startTimer();
+                sendFrame(frameToSend);
+                while(getTimer()<3000 and curWaitingACK.waiting)
+                {
+                    usleep(1000);
+                }
+            }
+        
+        }
+    }
 }
 
 void getFramesWrapper(DataLinkLayer *DaLLObj)
@@ -63,7 +139,7 @@ void DataLinkLayer::setPadding(vector<bool> &frame)
 {
     int lengthOfPadding = 0;
 
-    while(frame.size()+2 % 4)
+    while((frame.size()+2) % 4)
     {
         lengthOfPadding++;
         frame.push_back(!flag.back());
@@ -107,9 +183,19 @@ int DataLinkLayer::getType(vector<bool> &frame)
 void DataLinkLayer::setType(vector<bool> &frame, int Type)
 {
     Type%=8;
-    frame.insert(frame.begin(), Type % 2);
-    frame.insert(frame.begin(), Type % 4 - Type % 2);
-    frame.insert(frame.begin(), Type % 8 - Type % 4 - Type % 2);
+    bool booltype[3]={0,0,0};
+    for(int i=2;i>=0;i--)
+    {
+        if( Type - (1 << i) >=0)
+        {
+            Type-=(1 << i);
+            booltype[2-i]=true;
+        }
+    }
+    
+    frame.insert(frame.begin(),booltype[2]);
+    frame.insert(frame.begin(),booltype[1]);
+    frame.insert(frame.begin(),booltype[0]);
 }
 
 void DataLinkLayer::sendControl(int Type,bool ID)
@@ -125,6 +211,7 @@ void DataLinkLayer::sendControl(int Type,bool ID)
 
 void DataLinkLayer::sendACK(bool ID)
 {
+    cout << "sendack" << endl;
     sendControl(1,ID);
 }
 
@@ -149,7 +236,13 @@ void DataLinkLayer::sendTerminate(bool ID)
 }
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
-    //Push to datalinklayer
+    while(physLayer.isQueueFull()) usleep(1000);
+    physLayer.QueueFrame(frame);
+    auto framen=frame;
+    removePadding(framen);
+    revBitStuff(framen);
+    CRCdecoder(framen);
+    cout << getID(framen) << " " << getType(framen) << endl;
 }
 
 void DataLinkLayer::startTimer()

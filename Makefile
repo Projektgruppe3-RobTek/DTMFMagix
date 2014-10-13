@@ -14,4 +14,4 @@ $(EXECUTEABLE): $(OBJECTS)
 	$(CC)  $(CFLAGS)   $< -o $@
 
 
-clean:  ; rm *.o $(EXECUTEABLE)
+clean:  ; rm *.o $(EXECUTEABLE) newmedia.txt media.txt

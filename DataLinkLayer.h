@@ -36,6 +36,11 @@ When recieving a frame, we do this:
 
 */
 using namespace std;
+struct ACKWait
+{
+    bool waiting=0;
+    bool ID=0;
+};
 
 class DataLinkLayer
 {
@@ -77,14 +82,17 @@ class DataLinkLayer
 
     private:
         physicalLayer physLayer;
-        bool lastinID;
-        bool lastoutID;
+        bool lastinID=1;
+        bool lastoutID=1;
         array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
         timeval timer;
         RingBuffer<vector<bool>,BUFFERSIZE> inBuffer;
         RingBuffer<vector<bool>,BUFFERSIZE> outBuffer;
         thread getFramesThread;
         thread getDatagramsThread;
+        ACKWait curWaitingACK;
+        //int MasterSlaveState=0 //0=not decided yet, 1=master,2=slave
+        
 
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);
