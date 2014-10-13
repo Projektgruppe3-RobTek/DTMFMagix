@@ -1,18 +1,19 @@
 #include "physicalLayerEmu.h"
-#include <iostream>
 using namespace std;
+
 physicalLayer::physicalLayer()
 {
     startTimer();
-    timer.tv_usec-=50000;
+    timer.tv_usec -= 50000;
     ofstream f1;            //Ensure
     ofstream f2;            //The
     f1.open(mediafile);     //Files
     f2.open(newmediafile);  //is
     f1.close();             //created
     f2.close();             //correctly
-    sendert=thread(frameGrabWrapper,this);
-    recievert=thread(frameSendWrapper,this);
+    
+    sendert=thread(frameGrabWrapper, this);      //Create input and output threads
+    recievert=thread(frameSendWrapper, this);    
 }
 
 void physicalLayer::QueueFrame(vector<bool> frame) 
@@ -39,9 +40,10 @@ void physicalLayer::FrameGrabber()
     while(true)
     {
         usleep(2000);
-        if (getTimer()<50) continue;
+        if (getTimer() < 50) continue;
         if(!getNewState()) continue;
-        vector<bool> frame=getData();
+        
+        vector<bool> frame = getData();
         while(inBuffer.full()) usleep(500);
         inBuffer.push_back(frame);
         setNewState(0);
@@ -55,6 +57,7 @@ void physicalLayer::FrameSender()
         usleep(500);
         if(outBuffer.empty()) continue;
         if (getNewState()) continue;
+        
         setData(outBuffer.pop_front());
         startTimer();
         setNewState(1);
@@ -62,13 +65,13 @@ void physicalLayer::FrameSender()
 }
 void physicalLayer::startTimer()
 {
-    gettimeofday(&timer,NULL);
+    gettimeofday(&timer, NULL);
 }
 
 int physicalLayer::getTimer()
 {
     timeval tv;
-    gettimeofday(&tv,NULL);
+    gettimeofday(&tv, NULL);
     return (tv.tv_sec * 1000 + tv.tv_usec / 1000 )  - (timer.tv_sec * 1000 + timer.tv_usec / 1000);
 }
 
@@ -84,31 +87,31 @@ void frameSendWrapper(physicalLayer * physLayerObj)
 
 bool physicalLayer::getNewState()
 {
-    ifstream newstuff;
-    newstuff.open(newmediafile);
-    string nw;
-    getline(newstuff,nw);
-    newstuff.close();
-    if (nw[0]=='0') return false;
+    ifstream newStateFile;
+    newStateFile.open(newmediafile);
+    string newStateString;
+    getline(newStateFile, newStateString);
+    newStateFile.close();
+    if (newStateString[0] == '0') return false;
     else return true;
 }
 void physicalLayer::setNewState(bool state)
 {
-    ofstream newstuff;
-    newstuff.open(newmediafile,ios::trunc);
-    if (state) newstuff << '1';
-    else newstuff << '0';
+    ofstream newStateFile;
+    newStateFile.open(newmediafile, ios::trunc);
+    if (state) newStateFile << '1';
+    else newStateFile << '0';
 }
 vector<bool> physicalLayer::getData()
 {
     vector<bool> data;
     
-    ifstream stuff;
-    stuff.open(mediafile);
-    string nw;
-    getline(stuff,nw);
-    stuff.close();
-    for(char chr : nw)
+    ifstream dataFile;
+    dataFile.open(mediafile);
+    string dataString;
+    getline(dataFile, dataString);
+    dataFile.close();
+    for(char chr : dataString)
     {
         if (chr=='0') data.push_back(0);
         else data.push_back(1);
@@ -117,13 +120,15 @@ vector<bool> physicalLayer::getData()
 }
 void physicalLayer::setData(vector<bool> data)
 {
-    string datastring;
+    string dataString;
     for(auto bit : data) 
     {
-        if (bit) datastring+='1';
-        else datastring+='0';
+        if (bit) dataString += '1';
+        else dataString += '0';
     }
-    ofstream stuff;
-    stuff.open(mediafile,ios::trunc);
-    stuff << datastring << endl;
+    ofstream dataFile;
+    dataFile.open(mediafile, ios::trunc);
+    dataFile << dataString << endl;
+    dataFile.close();
+    usleep(10000);
 }
