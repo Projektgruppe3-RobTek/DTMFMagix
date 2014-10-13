@@ -40,7 +40,7 @@ void physicalLayer::FrameGrabber()
     while(true)
     {
         usleep(2000);
-        if (getTimer() < 50) continue;
+        if (getTimer() < 100) continue;
         if(!getNewState()) continue;
         
         vector<bool> frame = getData();
@@ -58,8 +58,8 @@ void physicalLayer::FrameSender()
         if(outBuffer.empty()) continue;
         if (getNewState()) continue;
         
-        setData(outBuffer.pop_front());
         startTimer();
+        setData(outBuffer.pop_front());
         setNewState(1);
     }   
 }
