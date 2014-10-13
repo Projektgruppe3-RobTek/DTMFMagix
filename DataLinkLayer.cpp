@@ -20,7 +20,7 @@ void DataLinkLayer::getFrames()
         if(!CRCdecoder(recievedFrame)) continue;
         int frameID=getID(recievedFrame);
         int frameType=getType(recievedFrame);
-        //cout << frameID << " " << frameType << endl;
+        cout << frameID << endl;
         if (frameType!=1)
         { 
             if (frameID==lastinID) //We have already recieved this frame.
@@ -35,6 +35,7 @@ void DataLinkLayer::getFrames()
                     case 0:  //data
                         sendACK(frameID);
                         inBuffer.push_back(recievedFrame);
+                        lastinID=frameID;
                         break;
                     case 2: //request
                         break;
@@ -51,11 +52,11 @@ void DataLinkLayer::getFrames()
         }
         else
         {
-            cout << "ack" << endl;
-            cout << curWaitingACK.waiting << curWaitingACK.ID << frameID << endl;
+            //cout << "ack" << endl;
+            //cout << curWaitingACK.waiting << curWaitingACK.ID << frameID << endl;
             if (curWaitingACK.waiting and curWaitingACK.ID==frameID)
             {
-                cout << "acpack" << endl;
+                //cout << "acpack" << endl;
                 curWaitingACK.waiting=false;
             }
         }
@@ -74,10 +75,13 @@ void DataLinkLayer::getDatagrams()
             bool frameID= !lastoutID;
             lastoutID=!lastoutID;
             setID(frameToSend,frameID);
+            auto newframe=frameToSend;
+            //cout << getID(newframe) << "!!" <<getType(newframe) << endl;
             CRCencoder(frameToSend);
             bitStuff(frameToSend);
             setPadding(frameToSend);
-            curWaitingACK.ID=!frameID;
+            curWaitingACK.ID=frameID;
+            //cout << frameID << endl;
             curWaitingACK.waiting=true;
             while(curWaitingACK.waiting)
             {
@@ -159,9 +163,7 @@ bool DataLinkLayer::getID(vector<bool> &frame)
 {
     int ID = frame[0];
     frame.erase(frame.begin());
-    if (lastinID == ID) return false;
-    lastinID = ID;
-    return true;
+    return ID;
 }
 
 void DataLinkLayer::setID(vector<bool> &frame)
@@ -211,7 +213,7 @@ void DataLinkLayer::sendControl(int Type,bool ID)
 
 void DataLinkLayer::sendACK(bool ID)
 {
-    cout << "sendack" << endl;
+    // cout << "sendack" << endl;
     sendControl(1,ID);
 }
 
@@ -238,11 +240,11 @@ void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
     while(physLayer.isQueueFull()) usleep(1000);
     physLayer.QueueFrame(frame);
-    auto framen=frame;
+    /*auto framen=frame;
     removePadding(framen);
     revBitStuff(framen);
     CRCdecoder(framen);
-    cout << getID(framen) << " " << getType(framen) << endl;
+    cout << getID(framen) << " " << getType(framen) << endl;*/
 }
 
 void DataLinkLayer::startTimer()

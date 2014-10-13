@@ -54,7 +54,7 @@ class DataLinkLayer
         void CRCencoder(vector<bool> &dataWord); //Make dataword into codeword. (append CRC)
         bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
 
-        bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
+        bool getID(vector<bool> &frame); //Get id of frame
         void setID(vector<bool> &frame); //set id of frame.
         void setID(vector<bool> &frame, int ID); //set id of frame.
 
