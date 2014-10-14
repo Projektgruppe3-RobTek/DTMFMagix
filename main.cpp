@@ -10,6 +10,7 @@ void reciever(DataLinkLayer *DaLLObj)
         usleep(1000);
         if(DaLLObj->dataAvaliable()) 
         {
+            cout << "Got data: ";
             for(auto bit : DaLLObj->popData())
             {
                 cout << bit;
@@ -27,6 +28,21 @@ void Sender(DataLinkLayer *DaLLObj)
         usleep(1000);
         string instring;
         cin >> instring;
+        if (instring[0]=='c') 
+        {
+            DaLLObj->connect();
+            continue;
+        }
+        if (instring[0]=='t') 
+        {
+            DaLLObj->terminate();
+            continue;
+        }
+        if(instring[0]=='s')
+        {
+            cout << DaLLObj->getMode() << endl;
+            continue;
+        }
         vector<bool> boolvec;
         for(char chr : instring)
         {

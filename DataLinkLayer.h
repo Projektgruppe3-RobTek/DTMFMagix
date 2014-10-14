@@ -51,7 +51,6 @@ struct ACKWait
     bool waiting=0;
     bool ID=0;
 };
-
 enum class masterSlaveEnum {undecided, master, slave};
 
 class DataLinkLayer
@@ -93,7 +92,7 @@ class DataLinkLayer
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
-        
+        int getMode(); //return 0 if undecided, 1 if master, 2 if slave
 
     private:
         physicalLayer physLayer;
@@ -106,8 +105,9 @@ class DataLinkLayer
         thread getFramesThread;
         thread getDatagramsThread;
         ACKWait curWaitingACK;
+        int curWaitingRequest=0; //0=not waiting. 1=wait for answer to request. 2=wait for answer to terminate
         
-        masterSlaveEnum MasterSlaveState;
+        masterSlaveEnum MasterSlaveState=masterSlaveEnum::undecided;
 
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);

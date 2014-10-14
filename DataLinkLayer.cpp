@@ -30,62 +30,81 @@ void DataLinkLayer::getFrames()
                 //We however also need to respond to terminate request, as the accept of a terminate can have been lost.
                 if (frameType==2) //request
                 {
+                    lastinID=frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID=!lastoutID;
+                    MasterSlaveState=masterSlaveEnum::slave;
+                }
+                else if(frameType==3) //accept
+                {
+                    if(curWaitingRequest==1)
+                    {
+                        lastinID=frameID;
+                        MasterSlaveState=masterSlaveEnum::master;
+                        curWaitingRequest=0;
+                    }
+                }
+                else if(frameType==5) //terminate
+                {
+                    lastinID=frameID;
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
                 }
+                else cout << "ERROR in undefined recieve" << endl;
+            break;
                 
             case masterSlaveEnum::slave: //Things to do if slave
             //when slave, we can only respond to dataframes (with an ACK) and terminate frames (with an accept)
             //However, we also need to respond to request frames, as the accept can have been lost
-            
+                if (frameType==0)
+                {
+                    if (frameID==lastinID) continue;
+                    lastinID=frameID;
+                    inBuffer.push_back(recievedFrame);
+                    sendACK(frameID);
+                }
+                else if (frameType==2)
+                {
+                    lastinID=frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID=!lastoutID;
+                }
+                else if (frameType==5)
+                {
+                    MasterSlaveState=masterSlaveEnum::undecided;
+                    lastinID=frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID=!lastoutID;
+                }
+                else cout << "ERROR in slave recieve" << endl;
+            break;
             case masterSlaveEnum::master: //Things to do if master
             //when master, we can only recieve ACK's and accepts.
-            
-            
+                if (frameType==1)
+                {
+                    if (curWaitingACK.waiting and curWaitingACK.ID==frameID) 
+                    { 
+                        curWaitingACK.waiting=false;
+                    }
+                }
+                else if (frameType==3)
+                {
+                    lastinID=frameID;
+                    if(curWaitingRequest==1) continue;
+                    else if (curWaitingRequest==2)
+                    {
+                        MasterSlaveState=masterSlaveEnum::undecided;
+                        curWaitingRequest=0;
+                    }
+                    else cout << "ERROR in accept recieve master" << endl;
+                }
+                else cout << "ERROR in master recieve" << endl;
+            break;
             default:
                 cout <<"ERROR" << endl;
         
         }
-        if (frameType!=1)
-        { 
-            if (frameID==lastinID) //We have already recieved this frame.
-            {                      //Just send an ACK
-                sendACK(frameID);
-                continue;
-            }
-            else
-            {
-                switch(frameType)
-                {
-                    case 0:  //data
-                        sendACK(frameID);
-                        inBuffer.push_back(recievedFrame);
-                        lastinID=frameID;
-                        break;
-                    case 2: //request
-                        break;
-                    case 3: //accept
-                        break;
-                    case 4: //decline
-                        break;
-                    case 5: //terminate
-                        break;
-                    default:
-                         cout << "ERROR in getFrames. This is probably a logic bug!" << endl;
-                }
-            }
-        }
-        else
-        {
-            //cout << "ack" << endl;
-            //cout << curWaitingACK.waiting << curWaitingACK.ID << frameID << endl;
-            if (curWaitingACK.waiting and curWaitingACK.ID==frameID)
-            {
-                //cout << "acpack" << endl;
-                curWaitingACK.waiting=false;
-            }
-        }
-    } 
+    }
 }
 
 void DataLinkLayer::getDatagrams() 
@@ -362,12 +381,68 @@ vector<bool> DataLinkLayer::popData()
 
 bool DataLinkLayer::dataBufferFull()
 {
-    return outBuffer.full();
+    return (outBuffer.full());
 }
 
 void DataLinkLayer::pushData(vector<bool> data)
 {
-    outBuffer.push_back(data);
+    if(MasterSlaveState==masterSlaveEnum::master) outBuffer.push_back(data);
+}
+bool DataLinkLayer::connect()
+{
+    if(MasterSlaveState==masterSlaveEnum::master) return true;
+    if(MasterSlaveState==masterSlaveEnum::slave) return false;
+    bool requestID=!lastoutID;
+    curWaitingRequest=1;
+    while(curWaitingRequest)
+    {
+        startTimer();
+        sendRequest(requestID);
+        while(getTimer()<3000 and curWaitingRequest)
+        {
+            usleep(1000);
+        }
+    }
+    lastoutID=!lastoutID;
+    if(MasterSlaveState==masterSlaveEnum::master) return true;
+    else 
+    {
+        cout <<"ERROR in connect" << endl;
+        return false;
+    }
+}
+bool DataLinkLayer::terminate()
+{
+    if(MasterSlaveState==masterSlaveEnum::slave) return false;
+    bool terminateID=!lastoutID;
+    curWaitingRequest=2;
+    while(curWaitingRequest)
+    {
+        startTimer();
+        sendTerminate(terminateID);
+        while(getTimer()<3000 and curWaitingRequest)
+        {
+            usleep(1000);
+        }
+    }
+    if(MasterSlaveState==masterSlaveEnum::undecided) return true;
+    else 
+    {
+        cout <<"ERROR in terminate" << endl;
+        return false;
+    }
+}
+int DataLinkLayer::getMode()
+{
+    switch (MasterSlaveState)
+    {
+    case masterSlaveEnum::undecided:
+    return 0;
+    case masterSlaveEnum::master:
+    return 1;
+    case masterSlaveEnum::slave:
+    return 2;
+    }
 }
 
 bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght) //check if the flag matches given vec
