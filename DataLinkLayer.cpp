@@ -12,15 +12,40 @@ void DataLinkLayer::getFrames()
     while(true)
     {
         usleep(1000);
-        if (!physLayer.isFrameAvaliable()) continue;
         
-        vector<bool> recievedFrame=physLayer.getFrame();
-        removePadding(recievedFrame);
+        if (!physLayer.isFrameAvaliable()) continue; //is there a new frame?
+        vector<bool> recievedFrame=physLayer.getFrame(); //Get the frame
+        
+        removePadding(recievedFrame); 
         revBitStuff(recievedFrame);
         if(!CRCdecoder(recievedFrame)) continue;
         int frameID=getID(recievedFrame);
         int frameType=getType(recievedFrame);
-        cout << frameID << endl;
+        
+        switch(MasterSlaveState)
+        {
+            case masterSlaveEnum::undecided: //Things to do if neither slave or master
+                //If the node is neither slave or master, it will recieve requests to establish a connection,
+                //and accepts (to establih)
+                //We however also need to respond to terminate request, as the accept of a terminate can have been lost.
+                if (frameType==2) //request
+                {
+                    sendAccept(!lastoutID);
+                    lastoutID=!lastoutID;
+                }
+                
+            case masterSlaveEnum::slave: //Things to do if slave
+            //when slave, we can only respond to dataframes (with an ACK) and terminate frames (with an accept)
+            //However, we also need to respond to request frames, as the accept can have been lost
+            
+            case masterSlaveEnum::master: //Things to do if master
+            //when master, we can only recieve ACK's and accepts.
+            
+            
+            default:
+                cout <<"ERROR" << endl;
+        
+        }
         if (frameType!=1)
         { 
             if (frameID==lastinID) //We have already recieved this frame.
@@ -335,7 +360,7 @@ vector<bool> DataLinkLayer::popData()
     return inBuffer.pop_front();
 }
 
-bool DataLinkLayer::bufferFull()
+bool DataLinkLayer::dataBufferFull()
 {
     return outBuffer.full();
 }

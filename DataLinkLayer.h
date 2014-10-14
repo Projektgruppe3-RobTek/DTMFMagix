@@ -1,10 +1,3 @@
-#include <vector>
-#include <sys/time.h>
-#include <thread>
-#include <array>
-#include "physicalLayerEmu.h"
-#include "RingBuffer.h"
-#define BUFFERSIZE 100
 
 /*
 Layout of frame:
@@ -35,12 +28,31 @@ When recieving a frame, we do this:
 5. Read Type and remove Type field.
 
 */
+/*  How to establish and connections and transfer data, and how to terminate them:
+    
+    Before any data can be transfered, the node which want to send data first have to configure itself as master.
+    This is done by sending a request frame. This frame should not be responded to by an ACK, but instead by either an
+    decline or accept frame. If an accept frame is recieved the node becomes master. If an decline is recieved it doesn't. ).
+    When a node have become master it can send data to its slave node. All the slave can do at this point is responding with ACK's.
+    When the master don't want to be master anymore, it can send a terminate frame. This frame should be responded to with an accept frame.
+*/
+
+#include <vector>
+#include <sys/time.h>
+#include <thread>
+#include <array>
+#include "physicalLayerEmu.h"
+#include "RingBuffer.h"
+#define BUFFERSIZE 100
+
 using namespace std;
 struct ACKWait
 {
     bool waiting=0;
     bool ID=0;
 };
+
+enum class masterSlaveEnum {undecided, master, slave};
 
 class DataLinkLayer
 {
@@ -75,10 +87,13 @@ class DataLinkLayer
         DataLinkLayer();
         bool dataAvaliable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
-        bool bufferFull(); //is outBuffer full?
+        bool dataBufferFull(); //is outBuffer full?
+        bool connect(); //Try to set the node as master. This is blocking.
+        bool terminate(); //Flush the data queue and terminate master status. This is blocking.
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
+        
 
     private:
         physicalLayer physLayer;
@@ -91,8 +106,8 @@ class DataLinkLayer
         thread getFramesThread;
         thread getDatagramsThread;
         ACKWait curWaitingACK;
-        //int MasterSlaveState=0 //0=not decided yet, 1=master,2=slave
         
+        masterSlaveEnum MasterSlaveState;
 
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);

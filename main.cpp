@@ -33,7 +33,7 @@ void Sender(DataLinkLayer *DaLLObj)
             if(chr=='1') boolvec.push_back(1);
             else boolvec.push_back(0);
         }
-        while(DaLLObj->bufferFull()) usleep(500);
+        while(DaLLObj->dataBufferFull()) usleep(500);
         DaLLObj->pushData(boolvec);
     }
 }
