@@ -63,7 +63,7 @@ void DataLinkLayer::setPadding(vector<bool> &frame)
 {
     int lengthOfPadding = 0;
 
-    while(frame.size()+2 % 4)
+    while((frame.size()+2) % 4)
     {
         lengthOfPadding++;
         frame.push_back(!flag.back());
@@ -83,9 +83,7 @@ bool DataLinkLayer::getID(vector<bool> &frame)
 {
     int ID = frame[0];
     frame.erase(frame.begin());
-    if (lastinID == ID) return false;
-    lastinID = ID;
-    return true;
+    return ID;
 }
 
 void DataLinkLayer::setID(vector<bool> &frame)
@@ -107,9 +105,19 @@ int DataLinkLayer::getType(vector<bool> &frame)
 void DataLinkLayer::setType(vector<bool> &frame, int Type)
 {
     Type%=8;
-    frame.insert(frame.begin(), Type % 2);
-    frame.insert(frame.begin(), Type % 4 - Type % 2);
-    frame.insert(frame.begin(), Type % 8 - Type % 4 - Type % 2);
+    bool booltype[3]={0,0,0};
+    for(int i=2;i>=0;i--)
+    {
+        if( Type - (1 << i) >=0)
+        {
+            Type-=(1 << i);
+            booltype[2-i]=true;
+        }
+    }
+    
+    frame.insert(frame.begin(),booltype[2]);
+    frame.insert(frame.begin(),booltype[1]);
+    frame.insert(frame.begin(),booltype[0]);
 }
 
 void DataLinkLayer::sendControl(int Type,bool ID)

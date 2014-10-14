@@ -92,8 +92,8 @@ bool physicalLayer::getNewState()
     string newStateString;
     getline(newStateFile, newStateString);
     newStateFile.close();
-    if (newStateString[0] == '0') return false;
-    else return true;
+    if (newStateString[0] == '1') return true;
+    else return false;
 }
 void physicalLayer::setNewState(bool state)
 {
