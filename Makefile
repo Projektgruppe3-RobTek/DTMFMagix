@@ -1,5 +1,5 @@
 CC=clang++ #Compiler
-CFLAGS= -c -std=c++11  -Wall #Compiler Flags
+CFLAGS= -c -std=c++11  -Wall  #Compiler Flags
 LDFLAGS=-lportaudio -lSDL2 #Linker options
 SOURCES=Player.cpp Recorder.cpp main.cpp Goertzel.cpp physicalLayerEmu.cpp DataLinkLayer.cpp   #cpp files
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files

@@ -92,7 +92,7 @@ void DataLinkLayer::getFrames()
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
                 }
-                else cout << "ERROR in slave recieve" << endl;
+                else cout << "ERROR in slave recieve " << frameType << " " << frameID << endl;
             break;
             case masterSlaveEnum::master: //Things to do if master
             //when master, we can only recieve ACK's and accepts.
