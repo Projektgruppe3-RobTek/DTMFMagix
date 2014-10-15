@@ -101,7 +101,7 @@ void getUserInput()
     }
 
 }
-void appendByte(vector<bool> &boolVec, char byte)
+void appendByte(vector<bool> &boolVec, unsigned char byte)
 {
     for(int i=7;i>=0;i--)
     {
@@ -114,29 +114,32 @@ void appendByte(vector<bool> &boolVec, char byte)
         else boolVec.push_back(0);
     }
 }
-char extractByte(vector<bool> &boolVec)
+unsigned char extractByte(vector<bool> &boolVec,long long pos)
 {
     char byte=0;
     for(int i=7;i>=0;i--)
     {
-        byte+=boolVec[0]<<i;
-        boolVec.erase(boolVec.begin());
+        byte+=boolVec[pos+7-i]<<i;
     }
     return byte;
 }
-bool boolvecToFile(string filepath,vector<bool> boolVec)
+bool boolvecToFile(string filepath,vector<bool> &boolVec)
 {
     if(boolVec.size()%8) return false;
     char *memblockToFile;
-    int size=boolVec.size()/8;
+    long long size=boolVec.size()/8;
     memblockToFile=new char [size];
-    for(int i=0;boolVec.size();i++)
+    cout << "allocated memory" << endl;
+    for(long long i=0;i<size;i++)
     {
-        memblockToFile[i]=extractByte(boolVec);
+        memblockToFile[i]=extractByte(boolVec,i*8);
     }
+    cout << "Transfered data to chars and put in char array" << endl;
     ofstream file(filepath,ios::out | ios::binary | ios::trunc);
     if (!file.is_open()) return false;
+    cout << "opened file" << endl;
     file.write(memblockToFile,size);
+    cout << "wrote to file" << endl;
     return file.good();
     
     
@@ -190,5 +193,4 @@ int main()
         }
     usleep(1000);
     }   
-
 }
