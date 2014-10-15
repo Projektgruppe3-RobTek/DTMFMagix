@@ -469,7 +469,7 @@ bool DataLinkLayer::terminate()
     while(!outBuffer.empty()) usleep(5000);
     
     if(MasterSlaveState==masterSlaveEnum::slave) return false;
-    if(MasterSlaveState==masterSlaveEnum::undecided) return true;
+    if(MasterSlaveState==masterSlaveEnum::undecided) return false; //we are already disconnected..?
     bool terminateID=!lastoutID;
     curWaitingRequest=2;
     while(curWaitingRequest)

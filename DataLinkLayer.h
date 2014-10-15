@@ -1,4 +1,4 @@
-
+#pragma once
 /*
 Layout of frame:
 |-----------------|----|----|----|---|
@@ -70,7 +70,7 @@ enum class masterSlaveEnum {undecided, master, slave};
 
 class DataLinkLayer
 {
-    public:
+    private:
         void bitStuff(vector<bool> &frame); //Stuff frame to avoid flags in data.
         void revBitStuff(vector<bool> &frame); //Remove stuffing.
 
