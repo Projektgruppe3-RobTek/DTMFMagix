@@ -12,6 +12,8 @@ Frametypes:
 011 = accept
 100 = decline
 101 = terminate
+110 = NotConnected . . . Send instead of ACK if the node is in undecided mode and recieves a data frame
+
 */
 /* Befor sending frame, we do this in this order:
 1. Prepend Type.
@@ -36,6 +38,18 @@ When recieving a frame, we do this:
     When a node have become master it can send data to its slave node. All the slave can do at this point is responding with ACK's.
     When the master don't want to be master anymore, it can send a terminate frame. This frame should be responded to with an accept frame.
 */
+/*  How to handle lost connections and timeouts:
+    undecided:
+        if data frame is recived, send a NotConnected frame
+    Master:
+        If the slave haven't responded with an ACK in 16 tries, we send a terminate.
+        If the terminate haven't got a accept in 16 tries, we terminate anyway.
+        If the slave responds with an NotConnected frame. The connection is dropped.
+    Slave:
+        If the slave haven' got a data frame in x time, it abbandons the connection.
+
+
+*/
 
 #include <vector>
 #include <sys/time.h>
@@ -44,6 +58,7 @@ When recieving a frame, we do this:
 #include "physicalLayerEmu.h"
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
+#define TIMEOUTTIME 60000
 
 using namespace std;
 struct ACKWait
@@ -79,6 +94,7 @@ class DataLinkLayer
         void sendAccept(bool ID); //send Accept
         void sendDecline(bool ID); //send Decline
         void sendTerminate(bool ID); //send Terminate
+        void sendNotConnected(bool ID); //send Terminate
         void sendControl(int Type,bool ID);
         void sendFrame(vector<bool> &frame);
 
