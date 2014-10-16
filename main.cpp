@@ -129,17 +129,13 @@ bool boolvecToFile(string filepath,vector<bool> &boolVec)
     char *memblockToFile;
     long long size=boolVec.size()/8;
     memblockToFile=new char [size];
-    cout << "allocated memory" << endl;
     for(long long i=0;i<size;i++)
     {
         memblockToFile[i]=extractByte(boolVec,i*8);
     }
-    cout << "Transfered data to chars and put in char array" << endl;
     ofstream file(filepath,ios::out | ios::binary | ios::trunc);
     if (!file.is_open()) return false;
-    cout << "opened file" << endl;
     file.write(memblockToFile,size);
-    cout << "wrote to file" << endl;
     return file.good();
     
     
@@ -181,15 +177,23 @@ int main()
                 else
                 {
                      cout << "sending file" << endl;
-                     sendData(filedata,&DaLLObj);
+                     if(sendData(filedata,&DaLLObj) )
+                     {
+                        cout << "file send succesfully." << endl;
+                     }
+                     else
+                     {
+                        cout << "error while sending file" << endl;
+                     }
                 }
             }
         }
         vector<bool> indata;
         if (getData(indata,&DaLLObj))
         {
-            cout << indata.size() << endl;
+            cout << "Recieved file of size " << indata.size()/8 <<" bytes" << endl;
             boolvecToFile("data",indata);
+            cout << "File saved " << endl;
         }
     usleep(1000);
     }   

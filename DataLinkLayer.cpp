@@ -65,7 +65,13 @@ void DataLinkLayer::getFrames()
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
                 }
-                else cout << "ERROR in undecided recieve" << endl;
+                else 
+                {
+                    cout << "ERROR in undecided recieve" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
             break;
                 
             case masterSlaveEnum::slave: //Things to do if slave
@@ -92,7 +98,13 @@ void DataLinkLayer::getFrames()
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
                 }
-                else cout << "ERROR in slave recieve " << frameType << " " << frameID << endl;
+                else 
+                {
+                    cout << "ERROR in slave recieve" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
             break;
             case masterSlaveEnum::master: //Things to do if master
             //when master, we can only recieve ACK's and accepts.
@@ -121,7 +133,13 @@ void DataLinkLayer::getFrames()
                     curWaitingRequest=0;
                     curWaitingACK.waiting=false;
                 }
-                else cout << "ERROR in master recieve" << endl;
+                else 
+                {
+                    cout << "ERROR in master recieve" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
             break;
             default:
                 cout <<"ERROR" << endl;
@@ -168,6 +186,7 @@ void DataLinkLayer::getDatagrams()
                             MasterSlaveState=masterSlaveEnum::undecided;
                             outBuffer.clear(); //clear the outputbuffer again if it have been filled in the meantime.
                             curWaitingRequest=0;
+                            break;
                         }
                         startTimer();
                         sendTerminate(terminateID);
@@ -176,6 +195,7 @@ void DataLinkLayer::getDatagrams()
                             usleep(1000);
                         }
                     }
+                    break;
                 }
                 startTimer();
                 sendFrame(frameToSend);
@@ -184,7 +204,6 @@ void DataLinkLayer::getDatagrams()
                     usleep(1000);
                 }
             }
-        
         }
     }
 }
