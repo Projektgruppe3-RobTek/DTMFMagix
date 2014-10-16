@@ -42,6 +42,7 @@ void DataLinkLayer::getFrames()
                 sendNotConnected(!lastoutID);
                 lastoutID=!lastoutID;
                 }
+                
                 else if (frameType==2) //request
                 {
                     lastinID=frameID;
@@ -98,6 +99,13 @@ void DataLinkLayer::getFrames()
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
                 }
+                else if(frameType==6) //NotConnected
+                {                     //Here we should terminate the connection and clear output buffer.
+                    MasterSlaveState=masterSlaveEnum::undecided;
+                    outBuffer.clear(); //clear the outputbuffer again if it have been filled in the meantime.
+                    curWaitingRequest=0;
+                    curWaitingACK.waiting=false;
+                }
                 else 
                 {
                     cout << "ERROR in slave recieve" << endl;
@@ -153,7 +161,7 @@ void DataLinkLayer::getDatagrams()
     while(true)
     {
         usleep(1000);
-        if(!outBuffer.empty() and MasterSlaveState==masterSlaveEnum::master)
+        if(outBuffer.size() and MasterSlaveState==masterSlaveEnum::master)
         {
             vector<bool> frameToSend=outBuffer.pop_front();
             setType(frameToSend,0);
@@ -443,7 +451,7 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 
 bool DataLinkLayer::dataAvaliable()
 {
-    return !inBuffer.empty();
+    return inBuffer.size();
 }
 
 vector<bool> DataLinkLayer::popData()
@@ -485,7 +493,7 @@ bool DataLinkLayer::connect()
 }
 bool DataLinkLayer::terminate()
 {
-    while(!outBuffer.empty()) usleep(5000);
+    while(outBuffer.size()) usleep(5000);
     
     if(MasterSlaveState==masterSlaveEnum::slave) return false;
     if(MasterSlaveState==masterSlaveEnum::undecided) return false; //we are already disconnected..?

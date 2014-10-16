@@ -187,6 +187,7 @@ int main()
                      }
                 }
             }
+            else if(inputstring.substr(0,4)=="quit") exit(0);
         }
         vector<bool> indata;
         if (getData(indata,&DaLLObj))

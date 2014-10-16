@@ -14,7 +14,9 @@ physicalLayer::physicalLayer()
     f2.close();             //correctly
     
     sendert=thread(frameGrabWrapper, this);      //Create input and output threads
-    recievert=thread(frameSendWrapper, this);    
+    recievert=thread(frameSendWrapper, this); 
+    srand(timer.tv_usec); 
+    framenumber=rand()%1000000000+1;
 }
 
 void physicalLayer::QueueFrame(vector<bool> frame) 
@@ -29,7 +31,7 @@ bool physicalLayer::isQueueFull()
 
 bool physicalLayer::isFrameAvaliable()
 {
-    return !inBuffer.empty();
+    return inBuffer.size();
 }
 vector<bool> physicalLayer::getFrame()
 {
@@ -40,9 +42,7 @@ void physicalLayer::FrameGrabber()
 {
     while(true)
     {
-        usleep(2000);
-        if (getTimer() < 100) continue;
-        if(!getNewState()) continue;
+        while(!getNewState()) usleep(2000);
         
         vector<bool> frame = getData();
         while(inBuffer.full()) usleep(500);
@@ -55,8 +55,7 @@ void physicalLayer::FrameSender()
 {
     while(true)
     {
-        usleep(500);
-        if(outBuffer.empty()) continue;
+        while(outBuffer.empty()) usleep(1000);
         if (getNewState()) continue;
         
         startTimer();
@@ -93,14 +92,19 @@ bool physicalLayer::getNewState()
     string newStateString;
     getline(newStateFile, newStateString);
     newStateFile.close();
-    if (newStateString[0] == '1') return true;
+    if(!newStateString.size()) return false;
+    if (stoi(newStateString.c_str()) and stoi(newStateString.c_str())!=framenumber)
+    {
+        cout << "NewData " << stoi(newStateString.c_str()) << endl;
+        return true;
+    }
     else return false;
 }
 void physicalLayer::setNewState(bool state)
 {
     ofstream newStateFile;
     newStateFile.open(newmediafile, ios::trunc);
-    if (state) newStateFile << '1';
+    if (state) newStateFile << to_string(++framenumber);
     else newStateFile << '0';
 }
 vector<bool> physicalLayer::getData()
@@ -131,5 +135,4 @@ void physicalLayer::setData(vector<bool> data)
     dataFile.open(mediafile, ios::trunc);
     dataFile << dataString << endl;
     dataFile.close();
-    usleep(10000);
 }

@@ -5,6 +5,8 @@
 #include <thread>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cstdlib>
+#include <string>
 #define mediafile "./media.txt"
 #define newmediafile "./newmedia.txt"
 class physicalLayer
@@ -16,6 +18,7 @@ class physicalLayer
         void setData(std::vector<bool> data);
         void startTimer();
         int getTimer();
+        int framenumber;
     public:
         physicalLayer();
         void QueueFrame(std::vector<bool> );
@@ -26,8 +29,8 @@ class physicalLayer
         void FrameSender();
         
     private:
-        RingBuffer<std::vector<bool>,100> inBuffer;
-        RingBuffer<std::vector<bool>,100> outBuffer;
+        RingBuffer<std::vector<bool>,1> inBuffer;
+        RingBuffer<std::vector<bool>,1> outBuffer;
         std::thread sendert;
         std::thread recievert;
         timeval timer;
