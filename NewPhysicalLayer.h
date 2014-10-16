@@ -50,4 +50,6 @@ private:
         long long synctime;
         thread incommingThread;
         thread outgoingThread;
+        vector<bool> incommingFrame
+        vector<bool> outgoingFrame
 };
