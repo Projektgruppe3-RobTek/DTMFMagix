@@ -1,6 +1,6 @@
 #include    "NewPhysicalLayer.h"
 
-void newPhysicalLayer::applyHamming(vector<float> &data)
+void NewPhysicalLayer::applyHamming(vector<float> &data)
 {
     for(unsigned int i=0;i<data.size();i++)
     {
@@ -8,9 +8,9 @@ void newPhysicalLayer::applyHamming(vector<float> &data)
     }
 }
 
-void newPhysicalLayer::playSync() //Play the sync sequence
+void NewPhysicalLayer::playSync() //Play the sync sequence
 {
-    for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
+    for(int i=0;i<3;i++)
     {
         for(int j=0;j<4;j++)
         {
@@ -20,7 +20,7 @@ void newPhysicalLayer::playSync() //Play the sync sequence
     }
 }
 
-void newPhysicalLayer::playFrame(vector Tones)
+void NewPhysicalLayer::playFrame(vector Tones)
 {
     PlaySync();
     for(char Tone : Tones)
@@ -31,12 +31,39 @@ void newPhysicalLayer::playFrame(vector Tones)
     PlayEndSequence();
 }
 
-void newPhysicalLayer::getSync()
+void NewPhysicalLayer::getSync()
 {
+    char RecordedSequence[4];
+    int SequenceCounter=0;
+    char previousNote='!'
+    while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter))
+        vector<float> in=Rec.GetAudioData(TONELENGHT,0);
+        applyHamming(in);
+        float freq1max=0;
+        int freq1Index=0;
+        float freq2max=0;
+        int freq2Index=0;
+        for(int k=0;k<4;k++)
+        {
+            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
+            if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
+        }
+        
+        for(int k=0;k<4;k++)
+        {
+            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
+            if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+        }
+        char Note=DTMFTones[freq1Index*4+freq2Index];
+        if(!(Note==previousNote))
+        {
+            RecordedSequence[SequenceCounter]=Note;
+            SequenceCounter=(SequenceCounter+1)%4;
+            previousNote=Note
+        }
+        
 
-}
-
-void newPhysicalLayer::getFrame()
+void NewPhysicalLayer::getFrame()
 {
 
 }
