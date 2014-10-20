@@ -95,7 +95,7 @@ bool physicalLayer::getNewState()
     if(!newStateString.size()) return false;
     if (stoi(newStateString.c_str()) and stoi(newStateString.c_str())!=framenumber)
     {
-        cout << "NewData " << stoi(newStateString.c_str()) << endl;
+        //cout << "NewData " << stoi(newStateString.c_str()) << endl;
         return true;
     }
     else return false;
