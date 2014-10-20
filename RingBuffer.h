@@ -58,4 +58,11 @@ class RingBuffer
             ioTotal--;
             return returnval;
         }
+        void clear()
+        {
+            HEAD=0;
+            TAIL=0;
+            ioTotal=0;
+        }
 };
+
