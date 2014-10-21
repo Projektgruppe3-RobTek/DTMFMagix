@@ -8,30 +8,17 @@ void NewPhysicalLayer::applyHamming(vector<float> &data)
     }
 }
 
-void NewPhysicalLayer::playSync() //Play the sync sequence
+void NewPhysicalLayer::playFrame()
 {
-    for(int i=0;i<3;i++)
+    for(int j=0;j<outgoingFrameDTMF.size();j++)
     {
-        for(int j=0;j<4;j++)
-        {
-            Player.PlayDTMF(SyncSequence[j],TONELENGHT);
-            Player.PlayDTMF(' ',SILENTLENGHT);
-        }
-    }
-}
-
-void NewPhysicalLayer::playFrame(vector Tones)
-{
-    PlaySync();
-    for(char Tone : Tones)
-    {
-        Player.PlayDTMF(Tone,TONELENGHT);
+        Player.PlayDTMF(outgoingFrameDTMF[j],TONELENGHT);
         Player.PlayDTMF(' ',SILENTLENGHT);
     }
     PlayEndSequence();
 }
 
-void NewPhysicalLayer::getSync()
+void NewPhysicalLayer::getFrame()
 {
     char RecordedSequence[4];
     int SequenceCounter=0;
@@ -61,9 +48,4 @@ void NewPhysicalLayer::getSync()
             SequenceCounter=(SequenceCounter+1)%4;
             previousNote=Note
         }
-        
-
-void NewPhysicalLayer::getFrame()
-{
-
-}
+ }       
