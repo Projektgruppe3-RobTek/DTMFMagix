@@ -193,8 +193,8 @@ int main()
         if (getData(indata,&DaLLObj))
         {
             cout << "Recieved file of size " << indata.size()/8 <<" bytes" << endl;
-            boolvecToFile("data",indata);
-            cout << "File saved " << endl;
+            if(!boolvecToFile("data",indata)) cout << "error while saving file" << endl;
+            else cout << "File saved " << endl;
         }
     usleep(1000);
     }   
