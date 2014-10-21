@@ -187,6 +187,7 @@ int main()
                 }
             }
             else if(inputstring.substr(0,4)=="quit") exit(0);
+            else if(inputstring.substr(0,6)=="status") cout << DaLLObj.getMode() << endl    ;
         }
         vector<bool> indata;
         if (getData(indata,&DaLLObj))

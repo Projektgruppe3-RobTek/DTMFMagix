@@ -12,7 +12,6 @@ Frametypes:
 011 = accept
 100 = decline
 101 = terminate
-110 = NotConnected . . . Send instead of ACK if the node is in undecided mode and recieves a data frame
 
 */
 /* Befor sending frame, we do this in this order:
@@ -36,19 +35,7 @@ When recieving a frame, we do this:
     This is done by sending a request frame. This frame should not be responded to by an ACK, but instead by either an
     decline or accept frame. If an accept frame is recieved the node becomes master. If an decline is recieved it doesn't. ).
     When a node have become master it can send data to its slave node. All the slave can do at this point is responding with ACK's.
-    When the master don't want to be master anymore, it can send a terminate frame. This frame should be responded to with an accept frame.
-*/
-/*  How to handle lost connections and timeouts:
-    undecided:
-        if data frame is recived, send a NotConnected frame
-    Master:
-        If the slave haven't responded with an ACK in 16 tries, we send a terminate.
-        If the terminate haven't got a accept in 16 tries, we terminate anyway.
-        If the slave responds with an NotConnected frame. The connection is dropped.
-    Slave:
-        If the slave haven' got a data frame in x time, it abbandons the connection.
-
-
+    When the master don't want to be master anymore (its outbuffer is empty), it can send a terminate frame. This frame should be responded to with an accept frame.
 */
 
 #include <vector>
@@ -94,7 +81,6 @@ class DataLinkLayer
         void sendAccept(bool ID); //send Accept
         void sendDecline(bool ID); //send Decline
         void sendTerminate(bool ID); //send Terminate
-        void sendNotConnected(bool ID); //send Terminate
         void sendControl(int Type,bool ID);
         void sendFrame(vector<bool> &frame);
         bool connect(); //Try to set the node as master. This is blocking.
