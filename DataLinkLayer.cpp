@@ -12,16 +12,8 @@ void DataLinkLayer::getFrames()
     while(true)
     {   
         usleep(1000);
-        if(MasterSlaveState==masterSlaveEnum::slave)
-        {
-            if (getTimer()>TIMEOUTTIME) 
-            {
-                cout << "connection timed out.." << endl;
-                MasterSlaveState=masterSlaveEnum::undecided;
-            }
-        }
         
-        if (!physLayer.isFrameAvaliable()) continue; //is there a new frame?
+        while (!physLayer.isFrameAvaliable()) usleep(1000);; //is there a new frame?
         vector<bool> recievedFrame=physLayer.getFrame(); //Get the frame
         
         removePadding(recievedFrame); 
@@ -32,24 +24,17 @@ void DataLinkLayer::getFrames()
         
         switch(MasterSlaveState)
         {
-            case masterSlaveEnum::undecided: //Things to do if neither slave or master
+            case masterSlaveEnum::NotConnected: //Things to do if neither slave or master
                 //If the node is neither slave or master, it will recieve requests to establish a connection,
                 //and accepts (to establih)
                 //We however also need to respond to terminate request, as the accept of a terminate can have been lost.
-                if (frameType==0) //data
-                {
-                lastinID=frameID;
-                sendNotConnected(!lastoutID);
-                lastoutID=!lastoutID;
-                }
                 
-                else if (frameType==2) //request
+                if (frameType==2) //request
                 {
                     lastinID=frameID;
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
                     MasterSlaveState=masterSlaveEnum::slave;
-                    startTimer(); //Start the timer to prevent a timeout.
                 }
                 else if(frameType==3) //accept
                 {
@@ -78,10 +63,13 @@ void DataLinkLayer::getFrames()
             case masterSlaveEnum::slave: //Things to do if slave
             //when slave, we can only respond to dataframes (with an ACK) and terminate frames (with an accept)
             //However, we also need to respond to request frames, as the accept can have been lost
-                startTimer();
                 if (frameType==0) //data
                 {
-                    if (frameID==lastinID) continue;
+                    if (frameID==lastinID)
+                    {
+                        sendACK(frameID);
+                        continue;
+                    }
                     lastinID=frameID;
                     inBuffer.push_back(recievedFrame);
                     sendACK(frameID);
@@ -94,17 +82,10 @@ void DataLinkLayer::getFrames()
                 }
                 else if (frameType==5) //Terminate
                 {
-                    MasterSlaveState=masterSlaveEnum::undecided;
+                    MasterSlaveState=masterSlaveEnum::NotConnected;
                     lastinID=frameID;
                     sendAccept(!lastoutID);
                     lastoutID=!lastoutID;
-                }
-                else if(frameType==6) //NotConnected
-                {                     //Here we should terminate the connection and clear output buffer.
-                    MasterSlaveState=masterSlaveEnum::undecided;
-                    outBuffer.clear(); //clear the outputbuffer again if it have been filled in the meantime.
-                    curWaitingRequest=0;
-                    curWaitingACK.waiting=false;
                 }
                 else 
                 {
@@ -126,20 +107,16 @@ void DataLinkLayer::getFrames()
                 else if (frameType==3) //accept
                 {
                     lastinID=frameID;
-                    if(curWaitingRequest==1) continue;
+                    if(curWaitingRequest==1)
+                    {
+                        curWaitingRequest=0;
+                    }
                     else if (curWaitingRequest==2)
                     {
-                        MasterSlaveState=masterSlaveEnum::undecided;
+                        MasterSlaveState=masterSlaveEnum::NotConnected;
                         curWaitingRequest=0;
                     }
                     else cout << "ERROR in accept recieve master" << endl;
-                }
-                else if(frameType==6) //NotConnected
-                {                     //Here we should terminate the connection and clear output buffer.
-                    MasterSlaveState=masterSlaveEnum::undecided;
-                    outBuffer.clear(); //clear the outputbuffer again if it have been filled in the meantime.
-                    curWaitingRequest=0;
-                    curWaitingACK.waiting=false;
                 }
                 else 
                 {
@@ -160,9 +137,11 @@ void DataLinkLayer::getDatagrams()
 {
     while(true)
     {
-        usleep(1000);
-        if(outBuffer.size() and MasterSlaveState==masterSlaveEnum::master)
+        while(outBuffer.empty()) usleep(1000);
+        
+        while(outBuffer.size())
         {
+            if (!connect()) continue; //if connect fails, try again
             vector<bool> frameToSend=outBuffer.pop_front();
             setType(frameToSend,0);
             bool frameID= !lastoutID;
@@ -176,35 +155,8 @@ void DataLinkLayer::getDatagrams()
             curWaitingACK.ID=frameID;
             //cout << frameID << endl;
             curWaitingACK.waiting=true;
-            int resendCounter=0;
             while(curWaitingACK.waiting)
             {
-                
-                if(++resendCounter>=16) //We have send 16 frames without recieving an ACK.
-                {                      //We Try to terminate
-                    outBuffer.clear(); //clear the output buffer (can this cause errors? Does it matter? The connection is lost anyway.)
-                    curWaitingACK.waiting=0; //don't wait for ACK anymore
-                    bool terminateID=!lastoutID;
-                    curWaitingRequest=2;
-                    resendCounter=0;
-                    while(curWaitingRequest)
-                    {
-                        if(++resendCounter>=16) //We have send 16 terminates without recieving a accept. Forceterminate.
-                        {
-                            MasterSlaveState=masterSlaveEnum::undecided;
-                            outBuffer.clear(); //clear the outputbuffer again if it have been filled in the meantime.
-                            curWaitingRequest=0;
-                            break;
-                        }
-                        startTimer();
-                        sendTerminate(terminateID);
-                        while(getTimer()<3000 and curWaitingRequest)
-                        {
-                            usleep(1000);
-                        }
-                    }
-                    break;
-                }
                 startTimer();
                 sendFrame(frameToSend);
                 while(getTimer()<3000 and curWaitingACK.waiting)
@@ -213,6 +165,7 @@ void DataLinkLayer::getDatagrams()
                 }
             }
         }
+        if(!terminate()) cout << "couldn't terminate connection" << endl;
     }
 }
 
@@ -463,16 +416,21 @@ bool DataLinkLayer::dataBufferFull()
 {
     return (outBuffer.full());
 }
+bool DataLinkLayer::dataBufferEmpty()
+{
+    return (outBuffer.empty());
+}
 
 void DataLinkLayer::pushData(vector<bool> data)
 {
-    if(MasterSlaveState==masterSlaveEnum::master) outBuffer.push_back(data);
+    while(MasterSlaveState==masterSlaveEnum::slave) usleep(1000);
+    outBuffer.push_back(data);
 }
 bool DataLinkLayer::connect()
 {
-    if(MasterSlaveState==masterSlaveEnum::master) return true;
-    if(MasterSlaveState==masterSlaveEnum::slave) return false;
+    while(MasterSlaveState==masterSlaveEnum::slave) usleep(1000);
     bool requestID=!lastoutID;
+    lastoutID=!lastoutID;
     curWaitingRequest=1;
     while(curWaitingRequest)
     {
@@ -483,7 +441,6 @@ bool DataLinkLayer::connect()
             usleep(1000);
         }
     }
-    lastoutID=!lastoutID;
     if(MasterSlaveState==masterSlaveEnum::master) return true;
     else 
     {
@@ -492,23 +449,20 @@ bool DataLinkLayer::connect()
     }
 }
 bool DataLinkLayer::terminate()
-{
-    while(outBuffer.size()) usleep(5000);
-    
-    if(MasterSlaveState==masterSlaveEnum::slave) return false;
-    if(MasterSlaveState==masterSlaveEnum::undecided) return false; //we are already disconnected..?
+{   
     bool terminateID=!lastoutID;
+    lastoutID=!lastoutID;
     curWaitingRequest=2;
     while(curWaitingRequest)
     {
         startTimer();
         sendTerminate(terminateID);
-        while(getTimer()<3000 and curWaitingRequest)
+        while(getTimer()<1000 and curWaitingRequest)
         {
             usleep(1000);
         }
     }
-    if(MasterSlaveState==masterSlaveEnum::undecided) return true;
+    if(MasterSlaveState==masterSlaveEnum::NotConnected) return true;
     else 
     {
         cout <<"ERROR in terminate" << endl;
@@ -519,7 +473,7 @@ int DataLinkLayer::getMode()
 {
     switch (MasterSlaveState)
     {
-    case masterSlaveEnum::undecided:
+    case masterSlaveEnum::NotConnected:
     return 0;
     case masterSlaveEnum::master:
     return 1;

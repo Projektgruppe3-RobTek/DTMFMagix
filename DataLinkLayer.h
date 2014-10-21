@@ -66,7 +66,7 @@ struct ACKWait
     bool waiting=0;
     bool ID=0;
 };
-enum class masterSlaveEnum {undecided, master, slave};
+enum class masterSlaveEnum {NotConnected, master, slave};
 
 class DataLinkLayer
 {
@@ -97,14 +97,15 @@ class DataLinkLayer
         void sendNotConnected(bool ID); //send Terminate
         void sendControl(int Type,bool ID);
         void sendFrame(vector<bool> &frame);
+        bool connect(); //Try to set the node as master. This is blocking.
+        bool terminate(); //Flush the data queue and terminate master status. This is blocking.
 
     public:
         DataLinkLayer();
         bool dataAvaliable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
         bool dataBufferFull(); //is outBuffer full?
-        bool connect(); //Try to set the node as master. This is blocking.
-        bool terminate(); //Flush the data queue and terminate master status. This is blocking.
+        bool dataBufferEmpty();
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
@@ -123,7 +124,7 @@ class DataLinkLayer
         ACKWait curWaitingACK;
         int curWaitingRequest=0; //0=not waiting. 1=wait for answer to request. 2=wait for answer to terminate
         
-        masterSlaveEnum MasterSlaveState=masterSlaveEnum::undecided;
+        masterSlaveEnum MasterSlaveState=masterSlaveEnum::NotConnected;
 
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);

@@ -5,6 +5,7 @@
 #include <thread>
 #include <sys/stat.h>
 #include <fstream>
+#include <sys/time.h>
 #define MAXSIZE 256 //max size of frame in bits
 using namespace std;
 /*
@@ -18,8 +19,6 @@ RingBuffer<string,100> InputQueue;
 
 bool sendData(vector<bool> Data,DataLinkLayer *DaLLObj)
 {
-    while(DaLLObj->getMode()==2) usleep(1000); //wait if slave
-    if(!DaLLObj->connect()) return false; //open connection
     vector<vector<bool>> frames;
     vector<bool> tmpframe;
     for(int i=0;i<Data.size();i++)
@@ -56,10 +55,10 @@ bool sendData(vector<bool> Data,DataLinkLayer *DaLLObj)
         {
             usleep(1000);
         }
-        if(DaLLObj->getMode()!=1) return false; //We lost connection
         DaLLObj->pushData(frame);
     }
-    return (DaLLObj->terminate());
+    while(!DaLLObj->dataBufferEmpty()) usleep(1000);
+    return true;
 }
 
 bool getData(vector<bool> &data,DataLinkLayer *DaLLObj)
