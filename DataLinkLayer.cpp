@@ -6,7 +6,6 @@ DataLinkLayer::DataLinkLayer()
     getDatagramsThread=thread(getDatagramsWraper, this);
 }
 
-
 void DataLinkLayer::getFrames()
 {
     while(true) usleep(4000000000); //not done
@@ -42,7 +41,6 @@ void DataLinkLayer::bitStuff(vector<bool> &frame)
     }
 }
 
-
 void DataLinkLayer::revBitStuff(vector<bool> &frame)
 {
     vector<int> elementsToRemove;
@@ -57,7 +55,6 @@ void DataLinkLayer::revBitStuff(vector<bool> &frame)
         offset--;
     }
 }
-
 
 void DataLinkLayer::setPadding(vector<bool> &frame)
 {
@@ -88,19 +85,15 @@ bool DataLinkLayer::getID(vector<bool> &frame)
     return true;
 }
 
-void DataLinkLayer::setID(vector<bool> &frame)
-{
-    lastoutID = !lastoutID;
-    frame.insert(frame.begin(), lastoutID);
-}
 void DataLinkLayer::setID(vector<bool> &frame, int ID) //This is mostly for ACK's
 {                                       //Don't change lastoutID.
     frame.insert(frame.begin(), ID);
 }
+
 int DataLinkLayer::getType(vector<bool> &frame)
 {
-    int Type=(frame[0] << 2) + (frame[1] << 1) + frame[2];
-    frame.erase(frame.begin(),frame.begin()+3);
+    int Type = (frame[0] << 2) + (frame[1] << 1) + frame[2];
+    frame.erase(frame.begin(), frame.begin() + 3);
     return Type;
 }
 
@@ -147,6 +140,7 @@ void DataLinkLayer::sendTerminate(bool ID)
 {
     sendControl(5,ID);
 }
+
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
     //Push to datalinklayer
@@ -154,14 +148,14 @@ void DataLinkLayer::sendFrame(vector<bool> &frame)
 
 void DataLinkLayer::startTimer()
 {
-    gettimeofday(&timer,NULL);
+    gettimeofday(&timer, NULL);
 }
 
 int DataLinkLayer::getTimer()
 {
     timeval tv;
-    gettimeofday(&tv,NULL);
-    return (tv.tv_sec * 1000 + tv.tv_usec / 1000 )  - (timer.tv_sec * 1000 + timer.tv_usec / 1000);
+    gettimeofday(&tv, NULL);
+    return (tv.tv_sec * 1000 + tv.tv_usec / 1000)  - (timer.tv_sec * 1000 + timer.tv_usec / 1000);
 }
 bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 {
@@ -190,7 +184,7 @@ bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
         }
     }
 
-    for (unsigned int i = 0; i <Divisor.size()-1; i++)
+    for (unsigned int i = 0; i <Divisor.size() - 1; i++)
     {
         codeWord.erase(codeWord.end());
     }
@@ -198,7 +192,6 @@ bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
     return 1;                                                   // if the CRC check at the receiver went well
                                                                 // then the function will return true.
 }
-
 
 void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 {

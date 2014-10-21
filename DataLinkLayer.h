@@ -15,10 +15,11 @@ Layout of frame:
 Frametypes:
 000 = data
 001 = ACK
-010 = request
-011 = accept
-100 = decline
-101 = terminate
+010 = connection request
+011 = confirm //used for both connection confirm and release connection confirm
+100 = connection refuse
+101 = release connecion (Rel)
+111 = interactivity test (IT) //used to test if the connection is still valid send by the receiver if he have not heard any in a while
 */
 /* Befor sending frame, we do this in this order:
 1. Prepend Type.
@@ -50,7 +51,6 @@ class DataLinkLayer
         bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
 
         bool getID(vector<bool> &frame); //Get id of frame, discard if same as lastID
-        void setID(vector<bool> &frame); //set id of frame.
         void setID(vector<bool> &frame, int ID); //set id of frame.
 
         int getType(vector<bool> &frame); //Get type of frame.
@@ -71,6 +71,7 @@ class DataLinkLayer
         bool dataAvaliable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
         bool bufferFull(); //is outBuffer full?
+
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
@@ -79,6 +80,7 @@ class DataLinkLayer
         //physicalLayer physLayer;
         bool lastinID;
         bool lastoutID;
+//        bool connectionEstablished = false;
         array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
         timeval timer;
         RingBuffer<vector<bool>,BUFFERSIZE> inBuffer;
