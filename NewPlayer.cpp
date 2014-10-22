@@ -1,40 +1,44 @@
-#include "Player.h"
+#include "NewPlayer.h"
 using namespace std;
 
 
-DualTonePlayer::DualTonePlayer()
+DTMFPlayer::DTMFPlayer()
 {
     SDL_AudioSpec desiredSpec;
 
-    desiredSpec.freq =FREQUENCY;//Samples per second
+    desiredSpec.freq =FREQUENCYaudio;//Samples per second
     desiredSpec.format = AUDIO_S16SYS; //Audio format Signed 16bit native
     desiredSpec.channels = 1; //Seperate audio channels
     desiredSpec.samples = 1024; //Buffer size
-    desiredSpec.callback = DualTonePlayerCallBack; //Callback function
+    desiredSpec.callback = DTMFPlayerCallBack; //Callback function
     desiredSpec.userdata = this;
     SDL_OpenAudio(&desiredSpec, &obtainedSpec);
     //Start audio
     SDL_PauseAudio(0);
+
 }
 
 
-DualTonePlayer::~DualTonePlayer()
+DTMFPlayer::~DTMFPlayer()
 {
     SDL_CloseAudio();
 }
 
 
-void DualTonePlayerCallBack(void *DualToneP, Uint8 *_stream, int _length)
+void DTMFPlayerCallBack(void *DualToneP, Uint8 *_stream, int _length)
 {
+    /*
     Sint16 *stream =(Sint16*) _stream;
     int length=_length/2;
     DualTonePlayer *Player =(DualTonePlayer *) DualToneP;
     Player->generateSamples(stream,length);
+    */
 }
 
 
-void DualTonePlayer::generateSamples(Sint16 *stream, int length)
+void DTMFPlayer::generateSamples(Sint16 *stream, int length)
 {
+    /*
     int i=0;
     while(i<length)
     {
@@ -60,12 +64,13 @@ void DualTonePlayer::generateSamples(Sint16 *stream, int length)
             v2+=bo.freq2;
         }
         if (bo.samplesLeft==0) beeps.pop();
-    }
+    } */
 }
 
 
-void DualTonePlayer::beep(float freq1,float freq2,int duration)
+void DTMFPlayer::beep(float freq1,float freq2,int duration)
 {
+    /*
     if (duration==0) return;
     BeepObject bo;
     bo.freq1=freq1;
@@ -74,11 +79,13 @@ void DualTonePlayer::beep(float freq1,float freq2,int duration)
     SDL_LockAudioDevice(1);
     beeps.push(bo);
     SDL_UnlockAudioDevice(1);
+    */
 }
 
 
-void DualTonePlayer::WaitForFinish() //Wait until current beep queue is empty
+void DTMFPlayer::WaitForFinish() //Wait until current beep queue is empty
 {
+    /*
     int size;
     do
     {
@@ -87,12 +94,13 @@ void DualTonePlayer::WaitForFinish() //Wait until current beep queue is empty
         size=beeps.size();
         SDL_UnlockAudioDevice(1);
     } while (size>0);
-
+*/
 }
 
 
-void DualTonePlayer::PlayDTMF(char tone,int duration)
+void DTMFPlayer::PlayDTMF(char tone,int duration)
 {
+    /*
     if (tone=='1') beep(697,1209,duration);
     else if (tone=='2') beep(697,1336,duration);
     else if (tone=='3') beep(697,1477,duration);
@@ -114,5 +122,6 @@ void DualTonePlayer::PlayDTMF(char tone,int duration)
     else if (tone=='d' or tone=='D') beep(941,1633,duration);
     else if (tone==' ') beep(0,0,duration);
     else cout << "Not a vaild DTMF tone!" << endl;
-
+    */
 }
+

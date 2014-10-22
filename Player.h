@@ -8,7 +8,7 @@
 #endif
 
 const int AMPLITUDE = 28000;
-const int FREQUENCY = 44100;
+const int FREQUENCY = 4000;   //Highest freq = 1633*2 = 3266 Hz min. sampling rate
 
 struct BeepObject{
     float freq1;
@@ -30,7 +30,7 @@ class DualTonePlayer{
         void generateSamples(Sint16 *stream, int lenght);
         void WaitForFinish();
         void PlayDTMF(char tone, int duration);
-        
+
 };
 
 
