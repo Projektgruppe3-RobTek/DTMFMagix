@@ -43,7 +43,7 @@ vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bFrame)
 vector<bool> NewPhysialLayer::convertToBinary(vector<char> dFrame)
 {
     vector<bool> bFrame((dFrame.size())*4);
-    bool ref[64] = {0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1}
+    bool ref[64] = {0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1};
 
     for (int j = 0; j < dFrame.size();j++)
     {
