@@ -24,24 +24,40 @@ void NewPhysicalLayer::removePreambleTrailer()
 
 }
 
-vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bframe)
+
+vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bFrame)
 {
-    vector<char> dFrame[bFrame.size/4];
-    for (int i = 0, i < bFrame/4, i++)
+    vector<char> dFrame[(bFrame.size())/4];
+    for (int i = 0; i < (bFrame.size())/4; i++)
     {
         bool a = bFrame[i*4];
         bool b = bFrame[i*4+1];
         bool c = bFrame[i*4+2];
         bool d = bFrame[i*4+3];
 
-        dFrame[i] = DTMFtones[a*8+b*4+c*2+d];
+        dFrame[i] = DTMFTones[a*8+b*4+c*2+d];
     }
     return dFrame
 }
 
-vector<bool> NewPhysialLayer::convertToBinary(vector<char> frame)
+vector<bool> NewPhysialLayer::convertToBinary(vector<char> dFrame)
 {
+    vector<bool> bFrame[(dFrame.size())*4];
+    bool ref[64] = {0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1}
 
+    for (int j = 0; j < dFrame.size();j++)
+    {
+        int i = 0;
+        while (DTMFTones[i] != dFrame[j])
+        {
+            i++;
+        }
+        for (int k = 0; int k < 4; k++)
+        {
+            bFrame[j+k] = ref[i*4+k];
+        }
+    }
+    return bFrame;
 }
 
 void NewPhysicalLayer::playFrame()
@@ -108,5 +124,5 @@ void NewPhysicalLayer::pushFrame(vector<bool> frame)
 
 vector<bool> NewPhysicalLayer::popFrame()
 {
-    
+
 }
