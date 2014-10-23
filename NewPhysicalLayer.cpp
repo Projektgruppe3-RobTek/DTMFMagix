@@ -36,9 +36,9 @@ vector<bool> NewPhysialLayer::convertToBinary(vector<char>)
 
 void NewPhysicalLayer::playFrame()
 {
-    for(int j=0;j<outgoingFrameDTMF.size();j++)
+    for(int j=0;j<outgoingFrame.size();j++)
     {
-        Player.PlayDTMF(outgoingFrameDTMF[j],TONELENGHT);
+        Player.PlayDTMF(outgoingFrame[j],TONELENGHT);
         Player.PlayDTMF(' ',SILENTLENGHT);
     }
 }
@@ -90,12 +90,13 @@ bool NewPhysicalLayer::isFrameAvailable()
 
 }
 
-void NewPhysicalLayer::pushFrame(vector<bool>)
+void NewPhysicalLayer::pushFrame(vector<bool> frame)
 {
-
+    outgoingFrame=convertToDTMF(frame);
+    sendFlag=true;
 }
 
 vector<bool> NewPhysicalLayer::popFrame()
 {
-    
+
 }
