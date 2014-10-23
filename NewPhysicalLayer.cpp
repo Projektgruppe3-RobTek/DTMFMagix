@@ -24,14 +24,25 @@ void NewPhysicalLayer::removePreambleTrailer()
 
 }
 
-vector<char> NewPhysialLayer::convertToDTMF(vector<bool>)
+vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bFrame)
 {
 
+    vector<char> dFrame[bFrame.size/4];
+    for (int i = 0, i < bFrame/4, i++)
+    {
+        bool a = bFrame[i*4];
+        bool b = bFrame[i*4+1];
+        bool c = bFrame[i*4+2];
+        bool d = bFrame[i*4+3];
+
+        dFrame[i] = DTMFtones[a*8+b*4+c*2+d];
+    }
+    return dFrame
 }
 
 vector<bool> NewPhysialLayer::convertToBinary(vector<char>)
 {
-    
+
 }
 
 void NewPhysicalLayer::playFrame()
@@ -60,7 +71,7 @@ void NewPhysicalLayer::getFrame()
             float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
             if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
         }
-        
+
         for(int k=0;k<4;k++)
         {
             float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
@@ -73,7 +84,7 @@ void NewPhysicalLayer::getFrame()
             SequenceCounter=(SequenceCounter+1)%4;
             previousNote=Note
         }
- }       
+ }
 
 bool NewPhysicalLayer::returnSendFlag()
 {
@@ -97,5 +108,5 @@ void NewPhysicalLayer::pushFrame(vector<bool>)
 
 vector<bool> NewPhysicalLayer::popFrame()
 {
-    
+
 }
