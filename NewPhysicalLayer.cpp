@@ -27,7 +27,7 @@ void NewPhysicalLayer::removePreambleTrailer()
 
 vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bFrame)
 {
-    vector<char> dFrame[(bFrame.size())/4];
+    vector<char> dFrame((bFrame.size())/4);
     for (int i = 0; i < (bFrame.size())/4; i++)
     {
         bool a = bFrame[i*4];
@@ -42,7 +42,7 @@ vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bFrame)
 
 vector<bool> NewPhysialLayer::convertToBinary(vector<char> dFrame)
 {
-    vector<bool> bFrame[(dFrame.size())*4];
+    vector<bool> bFrame((dFrame.size())*4);
     bool ref[64] = {0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1}
 
     for (int j = 0; j < dFrame.size();j++)
