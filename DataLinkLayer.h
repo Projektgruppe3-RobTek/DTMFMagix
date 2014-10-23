@@ -2,11 +2,13 @@
 #include <sys/time.h>
 #include <thread>
 #include <array>
+#include <iostream>
 #include "physicalLayerEmu.h"
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
-#define sendTime 60
+#define SENDTIME 60
 
+using namespace std;
 /*
 Layout of frame:
 |-----------------|----|----|----|---|
@@ -36,7 +38,17 @@ When recieving a frame, we do this:
 5. Read Type and remove Type field.
 
 */
-using namespace std;
+
+struct ack {
+    bool ID;
+    bool waiting=false;
+};
+
+struct Connection {
+    bool waiting=false;
+    bool type=0; //0=terminate, 1=connect request
+};
+enum class Mode {idle, server, client};
 
 class DataLinkLayer
 {
@@ -71,16 +83,15 @@ class DataLinkLayer
         DataLinkLayer();
         bool dataAvaliable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
-        int mode; //0 = idle, 1 = server, 2 = client
-        bool ack;
-        bool bufferFull(); //is outBuffer full?
+        bool dataBufferFull(); //is outBuffer full?
+        bool dataBufferSize();
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
-
+        int getMode(); //Return mode
     private:
         physicalLayer physLayer;
-        bool lastinID;
+        bool lastinID=0;
         bool lastoutID;
         bool connectionRequest();
         bool releaseConnection();
@@ -91,7 +102,10 @@ class DataLinkLayer
         RingBuffer<vector<bool>,BUFFERSIZE> outBuffer;
         thread getFramesThread;
         thread getDatagramsThread;
-
+        ack ackWait;
+        Connection conWait;
+        Mode mode=Mode::idle;
+        
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);

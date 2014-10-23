@@ -9,37 +9,169 @@ DataLinkLayer::DataLinkLayer()
 
 void DataLinkLayer::getFrames()
 {
-    while(true) usleep(4000000000); //not done
+    while(true)
+    {   
+        while (!physLayer.isFrameAvaliable()) //is there a new frame?
+        {
+            usleep(1000);
+            if(mode==Mode::client and getTimer() > 500 * SENDTIME){
+                mode = Mode::idle; //release connection if server is dead
+                cout << "timeout " << endl;
+            }
+        }
+        vector<bool> recievedFrame = physLayer.getFrame(); //Get the frame
+        removePadding(recievedFrame); 
+        revBitStuff(recievedFrame);
+        if(!CRCdecoder(recievedFrame)) continue;
+        int frameID=getID(recievedFrame);
+        int frameType=getType(recievedFrame);
+        
+        switch(mode)
+        {
+            case Mode::idle: //Things to do if we are idle
+                //If the node is neither client or server, it will recieve requests to establish a connection,
+                //and accepts (to establih)
+                //We however also need to respond to terminate request, as the accept of a terminate can have been lost.
+                
+                if (frameType == 2) //request
+                {
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                    mode = Mode::client;
+                    startTimer();
+                }
+                else if(frameType == 3) //accept
+                {
+                    if(conWait.waiting and conWait.type == 1)
+                    {
+                        lastinID = frameID;
+                        mode = Mode::server;
+                        conWait.waiting = 0;
+                    }
+                }
+                else if(frameType == 5) //terminate
+                {
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                }
+                else 
+                {
+                    cout << "ERROR in idle recieve (got a frame with wrong ID)" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
+            break;
+                
+            case Mode::client: //Things to do if client
+            //when client, we can only respond to dataframes (with an ACK) and terminate frames (with an accept)
+            //However, we also need to respond to request frames, as the accept can have been lost
+                startTimer();
+                
+                if (frameType == 0) //data
+                {
+                    if (frameID == lastinID)
+                    {
+                        sendACK(frameID);
+                        continue;
+                    }
+                    lastinID = frameID;
+                    inBuffer.push_back(recievedFrame);
+                    sendACK(frameID);
+                }
+                else if (frameType == 2) //request
+                {
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                }
+                else if (frameType == 5) //Terminate
+                {
+                    mode = Mode::idle;
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                }
+                else 
+                {
+                    cout << "ERROR in client recieve (got a frame with wrong ID)" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
+            break;
+            
+            case Mode::server: //Things to do if server
+            //when server, we can only recieve ACK's and accepts.
+                if (frameType == 1) //ACK
+                {
+                    if (ackWait.waiting and ackWait.ID == frameID)
+                    {                                //If we are waiting for this ACK, mark it as recieved.
+                        ackWait.waiting = false;
+                    }
+                }
+                else if (frameType == 3) //accept
+                {
+                    lastinID = frameID;
+                    if(conWait.waiting and conWait.type == 1) //If we are waiting for request accept (we should not be doing that at this point), mark it as recieved
+                    {
+                        cout << "ERROR in server request wait" << endl;
+                    }
+                    else if (conWait.waiting and conWait.type == 0) //If we are waiting for terminate accept,
+                    {                                                //mark as recieved and change mode to not connected.
+                        mode = Mode::idle;
+                        conWait.waiting = false;
+                    }
+                    else cout << "ERROR in accept recieve master" << endl;
+                }
+                else 
+                {
+                    cout << "ERROR in server recieve (got a frame with wrong ID)" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
+            break;
+            default:
+                cout << "ERROR" << endl;
+        
+        }
+    }
 }
+
 
 void DataLinkLayer::getDatagrams(){
     vector<bool> data_to_send;
     bool connectionLost = false;
 
     while(true){
-        while(mode == 2){
-            sleep(10);
+        while(mode == Mode::client){ 
+            usleep(10000);
         }
 
-        while(!outBuffer.empty()){
-            if(!connectionRequest()) break;
+        while(outBuffer.size()){
+            if(mode != Mode::server and !connectionRequest()) break;
+            if(!connectionLost)
+            {
+                data_to_send = outBuffer.pop_front();
 
-            if(!connectionLost) data_to_send = outBuffer.pop_front();
+                setType(data_to_send, 0);
+                setID(data_to_send);
+                CRCencoder(data_to_send);
+                bitStuff(data_to_send);
+                setPadding(data_to_send);
+            }
+            
             else connectionLost = false;
-
-            setType(data_to_send, 0);
-            setID(data_to_send);
-            CRCencoder(data_to_send);
-            bitStuff(data_to_send);
-            setPadding(data_to_send);
-
             if(!sendPacket(data_to_send)) {
                 connectionLost = true;
                 break;
             }
         }
 
-        if(outBuffer.empty() && mode){
+        if(outBuffer.empty() && mode==Mode::server){
             releaseConnection();
         }
     }
@@ -185,7 +317,8 @@ void DataLinkLayer::sendTerminate(bool ID)
 }
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
-    //Push to datalinklayer
+    while(physLayer.isQueueFull()) usleep(1000);
+    physLayer.QueueFrame(frame);
 }
 
 void DataLinkLayer::startTimer()
@@ -276,11 +409,15 @@ vector<bool> DataLinkLayer::popData()
     return inBuffer.pop_front();
 }
 
-bool DataLinkLayer::bufferFull()
+bool DataLinkLayer::dataBufferFull()
 {
     return outBuffer.full();
 }
 
+bool DataLinkLayer::dataBufferSize()
+{
+    return outBuffer.size();
+}
 void DataLinkLayer::pushData(vector<bool> data)
 {
     outBuffer.push_back(data);
@@ -297,18 +434,20 @@ bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght)
 
 bool DataLinkLayer::connectionRequest(){
     int requestsSend = 0;
-
-    while(mode != 1){
-        if (requestsSend > 5){
-            sleep(((53 + 32) * sendTime) + 100 + rand() % 1000); //ack 53 tone, data max length 32 tone, 100 is added as a guard and a random time
-            if(mode == 2) return false;
+    conWait.waiting=true;
+    conWait.type=1;
+ 
+    while(conWait.waiting){
+        if (requestsSend%5==4){
+            usleep((((56 + 32) * SENDTIME) + 100 + rand() % (2000+requestsSend*500))*1000); //ack 56 tone, data max length 32 tone, 100 is added as a guard and a random time
+            cout << "d" << endl;
+            if(mode == Mode::client) return false;
         }
 
         startTimer();
         sendRequest(!lastoutID);
-
-        while(getTimer() < ((53 + 32) * sendTime) + 100){ //ack 53 tone, data max length 32 tone, 100 is added as a guard
-            sleep(2);
+        while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+            usleep(2000);
             lastoutID = !lastoutID;
         }
 
@@ -319,52 +458,64 @@ bool DataLinkLayer::connectionRequest(){
 
 bool DataLinkLayer::releaseConnection(){
     int terminateSend = 0;
+    conWait.waiting=true;
+    conWait.type=0;
+    while(conWait.waiting){
+        if (terminateSend > 5){
+            mode = Mode::idle;
+            return false;
+        }
 
-        while(!mode){
-            if (terminateSend > 5){
-                mode = 0;
-                return false;
-            }
+        startTimer();
+        sendTerminate(!lastoutID);
 
-            startTimer();
-            sendTerminate(!lastoutID);
-
-            while(getTimer() < getTimer() < ((53 + 32) * sendTime) + 100){ //ack 53 tone, data max length 32 tone, 100 is added as a guard
-                sleep(2);
-                lastoutID = !lastoutID;
-            }
+        while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+            usleep(2000);
+            lastoutID = !lastoutID;
+        }
 
         terminateSend++;
     }
-    mode = 0;
-    return true;
+    return (mode==Mode::idle);
 }
 
 bool DataLinkLayer::sendPacket(vector<bool> &packet){
     int packetsSend = 0;
+    ackWait.ID=lastoutID;
+    ackWait.waiting=true;
+    
+    while(ackWait.waiting){
+        if (packetsSend > 5){
+            sendTerminate(!lastoutID);
+            lastoutID = !lastoutID;
+            mode = Mode::idle;
+            return false;
+        }
 
-        while(!ack){
-            if (packetsSend > 5){
-                sendTerminate(!lastoutID);
-                lastoutID = !lastoutID;
-                mode = 0;
-                return false;
-            }
 
-            while(physLayer.isQueueFull()){
-                sleep(10);
-            }
+        startTimer();
+        physLayer.QueueFrame(packet);
 
-            startTimer();
-            physLayer.QueueFrame(packet);
+        while(ackWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+            usleep(2000);
+        }
 
-            while(getTimer() < ((53 + 32) * sendTime) + 100){ //ack 53 tone, data max length 32 tone, 100 is added as a guard
-                sleep(2);
-            }
-
-        packetsSend++;
+    packetsSend++;
     }
-    ack = !ack;
-    return true;
+    return (mode == Mode::server);
 }
 
+int DataLinkLayer::getMode()
+{
+    switch(mode)
+    {
+        case Mode::idle:
+            return 0;
+        case Mode::server:
+            return 1;
+        case Mode::client:
+            return 2;
+        default:
+            return -1;
+    }
+}
