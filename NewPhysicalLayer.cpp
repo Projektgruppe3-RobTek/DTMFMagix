@@ -1,11 +1,37 @@
 #include    "NewPhysicalLayer.h"
 
+NewPhysicalLayer::NewPhysicalLayer()
+{
+
+}
+
 void NewPhysicalLayer::applyHamming(vector<float> &data)
 {
     for(unsigned int i=0;i<data.size();i++)
     {
         data[i]*=0.54-0.46*cos((2*M_PI*i)/(data.size()-1));
     }
+}
+
+void NewPhysicalLayer::applyPreambleTrailer()
+{
+
+}
+
+
+void NewPhysicalLayer::removePreambleTrailer()
+{
+
+}
+
+vector<char> NewPhysialLayer::convertToDTMF(vector<bool>)
+{
+
+}
+
+vector<bool> NewPhysialLayer::convertToBinary(vector<char>)
+{
+    
 }
 
 void NewPhysicalLayer::playFrame()
@@ -15,7 +41,6 @@ void NewPhysicalLayer::playFrame()
         Player.PlayDTMF(outgoingFrameDTMF[j],TONELENGHT);
         Player.PlayDTMF(' ',SILENTLENGHT);
     }
-    PlayEndSequence();
 }
 
 void NewPhysicalLayer::getFrame()
@@ -49,3 +74,28 @@ void NewPhysicalLayer::getFrame()
             previousNote=Note
         }
  }       
+
+bool NewPhysicalLayer::returnSendFlag()
+{
+
+}
+
+bool NewPhysicalLayer::returnReceiveFlag()
+{
+
+}
+
+bool NewPhysicalLayer::isFrameAvailable()
+{
+
+}
+
+void NewPhysicalLayer::pushFrame(vector<bool>)
+{
+
+}
+
+vector<bool> NewPhysicalLayer::popFrame()
+{
+    
+}
