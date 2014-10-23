@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <sys/time.h>
-#define MAXSIZE 256 //max size of frame in bits
+#define MAXSIZE 128 //max size of frame in bits
 using namespace std;
 /*
 We Prepend headers to the data when sending.

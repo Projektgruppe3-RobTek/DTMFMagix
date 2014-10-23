@@ -330,8 +330,9 @@ int DataLinkLayer::getTimer()
 bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 {
     //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
-
-    vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
+    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8    
+    //vector<bool> Divisor    = {1,0,0,1,1};                      // CRC 4 generator
     vector<bool> Dividend   = codeWord;
 
     for (unsigned int i=0; i < codeWord.size(); i++)
@@ -367,7 +368,9 @@ bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 {
     //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
-    vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
+    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8
+    //vector<bool> Divisor    = {1,0,0,1,1};                                        //CRC 4 generator
     vector<bool> Dividend   = dataWord;
 
     for(unsigned int i=0; i<Divisor.size()-1; i++)              // Puts the appropriate amount of 0's behind the dividend.

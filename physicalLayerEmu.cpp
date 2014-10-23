@@ -1,7 +1,7 @@
 #include "physicalLayerEmu.h"
 #include <iostream>
-//#define randomflip
-#define flipchance 1000  //(inverse chance, 1=always, 100=every 100th bit (on average) )
+#define randomflip
+#define flippercent 0.1f  
 using namespace std;
 
 physicalLayer::physicalLayer()
@@ -129,7 +129,7 @@ void physicalLayer::setData(vector<bool> data)
     #ifdef randomflip
     for(int i = 0; i<data.size(); i++)
     {
-        if (rand()%flipchance==0) data[i]=!data[i];
+        if (rand()%100000000>int(100000000.*(1.-(flippercent)/100.))) data[i]=!data[i];
     }
     #endif
     string dataString;
