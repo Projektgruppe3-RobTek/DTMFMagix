@@ -13,13 +13,24 @@ void NewPhysicalLayer::applyHamming(vector<float> &data)
     }
 }
 
-void NewPhysicalLayer::applyPreambleTrailer()
+vector<char> NewPhysicalLayer::applyPreambleTrailer(vector<char> data)
 {
-
+    vector<char> syncSequenceVec(SyncSequence, SyncSequence + 4);
+    vector<char> startFlagVec(startFlag, startFlag + 4);
+    vector<char> endFlagVec(endFlag, endFlag + 4);
+    vector<char> frame();
+    for(int i = 0; i<3; i++)
+    {
+        frame.insert(frame.end(), syncSequenceVec.begin(), syncSequenceVec.end());
+    }
+    frame.insert(frame.end(), startFlag.begin(), startFlag.end());
+    frame.insert(frame.end(), data.begin(), data.end());
+    frame.insert(frame.end(), endFlag.begin(), endFlag.end());
+    return frame;
 }
 
 
-void NewPhysicalLayer::removePreambleTrailer()
+vector<char> NewPhysicalLayer::removePreambleTrailer(vector<char>)
 {
 
 }
@@ -118,7 +129,7 @@ bool NewPhysicalLayer::isFrameAvailable()
 
 void NewPhysicalLayer::pushFrame(vector<bool> frame)
 {
-    outgoingFrame=convertToDTMF(frame);
+    outgoingFrame=applyHeaderTrailer(convertToDTMF(frame));
     sendFlag=true;
 }
 
