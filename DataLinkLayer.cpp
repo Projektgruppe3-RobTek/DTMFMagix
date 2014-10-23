@@ -25,7 +25,7 @@ void DataLinkLayer::getFrames()
         if(!CRCdecoder(recievedFrame)) continue;
         int frameID=getID(recievedFrame);
         int frameType=getType(recievedFrame);
-        
+        //cout << "ID: " << frameID << "---" << "Type: " << frameType << endl;
         switch(mode)
         {
             case Mode::idle: //Things to do if we are idle
@@ -75,6 +75,7 @@ void DataLinkLayer::getFrames()
                     if (frameID == lastinID)
                     {
                         sendACK(frameID);
+                        //cout << "Discarded frame" << endl;
                         continue;
                     }
                     lastinID = frameID;
@@ -446,9 +447,9 @@ bool DataLinkLayer::connectionRequest(){
 
         startTimer();
         sendRequest(!lastoutID);
+        lastoutID = !lastoutID;
         while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
             usleep(2000);
-            lastoutID = !lastoutID;
         }
 
         requestsSend++;
@@ -468,10 +469,9 @@ bool DataLinkLayer::releaseConnection(){
 
         startTimer();
         sendTerminate(!lastoutID);
-
+        lastoutID = !lastoutID;
         while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
             usleep(2000);
-            lastoutID = !lastoutID;
         }
 
         terminateSend++;
