@@ -1,7 +1,7 @@
-#include<portaudio.h>
-#include<iostream>
-#include<cmath>
-#include<array>
+#include <portaudio.h>
+#include <iostream>
+#include <cmath>
+#include <array>
 #include <ctime>
 #include <vector>
 #define SAMPLE_RATE 44100
