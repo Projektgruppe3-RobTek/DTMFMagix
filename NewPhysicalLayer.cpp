@@ -24,12 +24,12 @@ void NewPhysicalLayer::removePreambleTrailer()
 
 }
 
-vector<char> NewPhysialLayer::convertToDTMF(vector<bool>)
+vector<char> NewPhysialLayer::convertToDTMF(vector<bool> frame)
 {
 
 }
 
-vector<bool> NewPhysialLayer::convertToBinary(vector<char>)
+vector<bool> NewPhysialLayer::convertToBinary(vector<char> frame)
 {
     
 }
