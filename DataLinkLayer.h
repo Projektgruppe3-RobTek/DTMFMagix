@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <sys/time.h>
 #include <thread>
@@ -22,6 +23,7 @@ Frametypes:
 011 = accept
 100 = decline
 101 = terminate
+
 */
 /* Befor sending frame, we do this in this order:
 1. Prepend Type.
@@ -52,7 +54,7 @@ enum class Mode {idle, server, client};
 
 class DataLinkLayer
 {
-    public:
+    private:
         void bitStuff(vector<bool> &frame); //Stuff frame to avoid flags in data.
         void revBitStuff(vector<bool> &frame); //Remove stuffing.
 
@@ -78,6 +80,8 @@ class DataLinkLayer
         void sendTerminate(bool ID); //send Terminate
         void sendControl(int Type,bool ID);
         void sendFrame(vector<bool> &frame);
+        bool connect(); //Try to set the node as master. This is blocking.
+        bool terminate(); //Flush the data queue and terminate master status. This is blocking.
 
     public:
         DataLinkLayer();
@@ -92,7 +96,7 @@ class DataLinkLayer
     private:
         physicalLayer physLayer;
         bool lastinID=0;
-        bool lastoutID;
+        bool lastoutID=0;
         bool connectionRequest();
         bool releaseConnection();
         bool sendPacket(vector<bool> &packet);
@@ -105,7 +109,6 @@ class DataLinkLayer
         ack ackWait;
         Connection conWait;
         Mode mode=Mode::idle;
-        
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);

@@ -1,5 +1,7 @@
 #include "physicalLayerEmu.h"
 #include <iostream>
+//#define randomflip
+//#define flippercent 0.1f  
 using namespace std;
 
 physicalLayer::physicalLayer()
@@ -58,7 +60,6 @@ void physicalLayer::FrameSender()
         while(outBuffer.empty()) usleep(1000);
         if (getNewState()) continue;
         
-        startTimer();
         setData(outBuffer.pop_front());
         setNewState(1);
     }   
@@ -93,7 +94,7 @@ bool physicalLayer::getNewState()
     getline(newStateFile, newStateString);
     newStateFile.close();
     if(!newStateString.size()) return false;
-    if (stoi(newStateString.c_str()) and stoi(newStateString.c_str())!=framenumber)
+    if (stoi(newStateString.c_str())!=0 and stoi(newStateString.c_str())!=framenumber)
     {
         //cout << "NewData " << stoi(newStateString.c_str()) << endl;
         return true;
@@ -125,6 +126,12 @@ vector<bool> physicalLayer::getData()
 }
 void physicalLayer::setData(vector<bool> data)
 {
+    #ifdef randomflip
+    for(int i = 0; i<data.size(); i++)
+    {
+        if (rand()%100000000>int(100000000.*(1.-(flippercent)/100.))) data[i]=!data[i];
+    }
+    #endif
     string dataString;
     for(auto bit : data) 
     {

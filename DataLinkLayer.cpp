@@ -1,5 +1,5 @@
 #include "DataLinkLayer.h"
-
+#include <iostream>
 DataLinkLayer::DataLinkLayer()
 {
     getFramesThread = thread(getFramesWrapper, this);
@@ -69,7 +69,6 @@ void DataLinkLayer::getFrames()
             //when client, we can only respond to dataframes (with an ACK) and terminate frames (with an accept)
             //However, we also need to respond to request frames, as the accept can have been lost
                 startTimer();
-                
                 if (frameType == 0) //data
                 {
                     if (frameID == lastinID)
@@ -188,12 +187,12 @@ void getDatagramsWraper(DataLinkLayer *DaLLObj)
     DaLLObj->getDatagrams();
 }
 
-void DataLinkLayer::bitStuff(vector<bool> &frame)
-{
+void DataLinkLayer::bitStuff(vector<bool> &frame) //Bitstuff.
+{                                                 //We bitstuff with the inverse of the last bit in our flag.
     vector<int> elementsToStuff;
     for(int i = flag.size() - 1; i < frame.size(); i++)
     {
-        if(flagcheck(frame, i - ((int)flag.size() - 1), flag,flag.size() - 1)) elementsToStuff.push_back(i);
+        if(flagcheck(frame, i - ((int)flag.size() - 1), flag, flag.size() - 1)) elementsToStuff.push_back(i);
     }
     int offset = 0;
     for(int index : elementsToStuff)
@@ -204,7 +203,7 @@ void DataLinkLayer::bitStuff(vector<bool> &frame)
 }
 
 
-void DataLinkLayer::revBitStuff(vector<bool> &frame)
+void DataLinkLayer::revBitStuff(vector<bool> &frame) 
 {
     vector<int> elementsToRemove;
     for(int i = flag.size() - 1; i < frame.size(); i++)
@@ -224,7 +223,7 @@ void DataLinkLayer::setPadding(vector<bool> &frame)
 {
     int lengthOfPadding = 0;
 
-    while((frame.size()+2) % 4)
+    while( ( frame.size() + 2 ) % 4 )
     {
         lengthOfPadding++;
         frame.push_back(!flag.back());
@@ -259,29 +258,30 @@ void DataLinkLayer::setID(vector<bool> &frame, int ID) //This is mostly for ACK'
 int DataLinkLayer::getType(vector<bool> &frame)
 {
     int Type=(frame[0] << 2) + (frame[1] << 1) + frame[2];
-    frame.erase(frame.begin(),frame.begin()+3);
+    frame.erase(frame.begin(),frame.begin() + 3);
     return Type;
 }
 
 void DataLinkLayer::setType(vector<bool> &frame, int Type)
 {
     Type%=8;
-    bool booltype[3]={0,0,0};
-    for(int i=2;i>=0;i--)
+
+    bool booltype[3] = {0,0,0};
+    for(int i = 2; i >= 0; i--)
     {
         if( Type - (1 << i) >=0)
         {
             Type-=(1 << i);
-            booltype[2-i]=true;
+            booltype[2 - i]=true;
         }
     }
-
+    
     frame.insert(frame.begin(),booltype[2]);
     frame.insert(frame.begin(),booltype[1]);
     frame.insert(frame.begin(),booltype[0]);
 }
 
-void DataLinkLayer::sendControl(int Type,bool ID)
+void DataLinkLayer::sendControl(int Type, bool ID)
 {
     vector<bool> Control;
     setType(Control, Type);
@@ -294,6 +294,7 @@ void DataLinkLayer::sendControl(int Type,bool ID)
 
 void DataLinkLayer::sendACK(bool ID)
 {
+    // cout << "sendack" << endl;
     sendControl(1,ID);
 }
 
@@ -316,6 +317,7 @@ void DataLinkLayer::sendTerminate(bool ID)
 {
     sendControl(5,ID);
 }
+
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
     while(physLayer.isQueueFull()) usleep(1000);
@@ -336,8 +338,9 @@ int DataLinkLayer::getTimer()
 bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 {
     //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
-
-    vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
+    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8    
+    //vector<bool> Divisor    = {1,0,0,1,1};                      // CRC 4 generator
     vector<bool> Dividend   = codeWord;
 
     for (unsigned int i=0; i < codeWord.size(); i++)
@@ -373,7 +376,9 @@ bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 {
     //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
-    vector<bool> Divisor    = {1,0,0,1,1};                      // CRC generator
+    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8
+    //vector<bool> Divisor    = {1,0,0,1,1};                                        //CRC 4 generator
     vector<bool> Dividend   = dataWord;
 
     for(unsigned int i=0; i<Divisor.size()-1; i++)              // Puts the appropriate amount of 0's behind the dividend.
@@ -402,7 +407,7 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 
 bool DataLinkLayer::dataAvaliable()
 {
-    return !inBuffer.empty();
+    return inBuffer.size();
 }
 
 vector<bool> DataLinkLayer::popData()
@@ -412,7 +417,7 @@ vector<bool> DataLinkLayer::popData()
 
 bool DataLinkLayer::dataBufferFull()
 {
-    return outBuffer.full();
+    return (outBuffer.full());
 }
 
 bool DataLinkLayer::dataBufferSize()
@@ -421,8 +426,11 @@ bool DataLinkLayer::dataBufferSize()
 }
 void DataLinkLayer::pushData(vector<bool> data)
 {
+    while(mode == Mode::client) usleep(1000); //Block if we are client
     outBuffer.push_back(data);
 }
+
+
 
 bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght) //check if the flag matches given vec
 {
