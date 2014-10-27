@@ -1,7 +1,8 @@
 #include "physicalLayerEmu.h"
 #include <iostream>
 //#define randomflip
-//#define flippercent 0.1f  
+//#define flippercent 0.1f
+#define debug
 using namespace std;
 
 physicalLayer::physicalLayer()
@@ -23,6 +24,9 @@ physicalLayer::physicalLayer()
 
 void physicalLayer::QueueFrame(vector<bool> frame) 
 {
+    #ifdef debug
+    cout << "Framesize=" << frame.size() << endl;
+    #endif
     outBuffer.push_back(frame);
 }
 

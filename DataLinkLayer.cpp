@@ -147,10 +147,10 @@ void DataLinkLayer::getDatagrams(){
     bool connectionLost = false;
 
     while(true){
-        while(mode == Mode::client){ 
+        while(mode == Mode::client or outBuffer.empty()){ 
             usleep(10000);
         }
-
+        
         while(outBuffer.size()){
             if(mode != Mode::server and !connectionRequest()) break;
             if(!connectionLost)
