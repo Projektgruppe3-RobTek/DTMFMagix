@@ -1,3 +1,4 @@
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 #include "DataLinkLayer.h"
 #include<iostream> 
 #include <string>
@@ -6,6 +7,8 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <sys/time.h>
+#include <cryptopp/md5.h>
+#include <cryptopp/hex.h>
 #define MAXSIZE 128 //max size of frame in bits
 using namespace std;
 /*
@@ -132,6 +135,20 @@ bool boolvecToFile(string filepath,vector<bool> &boolVec)
     {
         memblockToFile[i]=extractByte(boolVec,i*8);
     }
+    //Calculate md5sum and output it
+    CryptoPP::Weak1::MD5 hash;
+    byte digest[ CryptoPP::Weak1::MD5::DIGESTSIZE ];
+    
+    hash.CalculateDigest( digest, (byte*) memblockToFile, size );
+    
+    CryptoPP::HexEncoder encoder;
+    std::string md5sumhex;
+    encoder.Attach( new CryptoPP::StringSink( md5sumhex ) );
+    encoder.Put( digest, sizeof(digest) );
+    encoder.MessageEnd();
+
+    std::cout <<"File has md5sum: " << md5sumhex << std::endl;
+    //Done outputting md5sum
     ofstream file(filepath,ios::out | ios::binary | ios::trunc);
     if (!file.is_open()) return false;
     file.write(memblockToFile,size);
@@ -149,6 +166,20 @@ bool fileToBoolVector(string filepath,vector<bool> &boolVec)
     file.seekg(0,ios::beg);
     file.read(memblockToFile,size);
     file.close();
+    //Calculate md5sum and output it
+    CryptoPP::Weak1::MD5 hash;
+    byte digest[ CryptoPP::Weak1::MD5::DIGESTSIZE ];
+    
+    hash.CalculateDigest( digest, (byte*) memblockToFile, size );
+    
+    CryptoPP::HexEncoder encoder;
+    std::string md5sumhex;
+    encoder.Attach( new CryptoPP::StringSink( md5sumhex ) );
+    encoder.Put( digest, sizeof(digest) );
+    encoder.MessageEnd();
+
+    std::cout <<"File has md5sum: " << md5sumhex << std::endl;
+    //Done outputting md5sum
     for(int i=0;i<size;i++)
     {
         appendByte(boolVec, memblockToFile[i]);
