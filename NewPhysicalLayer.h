@@ -3,17 +3,18 @@
 #include 	"Goertzel.h"
 #include    <vector>
 #include 	<thread>
+#define TONELENGHT 100
+#define SILENTLENGHT 20
+#ifndef M_PI
+#define M_PI        3.14159265358979323846
+#endif
 using namespace std;
-
-
-
 
 class   NewPhysicalLayer
 {
 private:
 	void			applyHamming(vector<float>);
-	void			applyPreambleTrailer();
-	void			removePreambleTrailer();
+	vector<char>	applyPreambleTrailer(vector<char>);
 	vector<char>	convertToDTMF(vector<bool>);
 	vector<bool>	convertToBinary(vector<char>);
 	void			playFrame(vector<bool>);
