@@ -30,12 +30,6 @@ vector<char> NewPhysicalLayer::applyPreambleTrailer(vector<char> data)
 }
 
 
-vector<char> NewPhysicalLayer::removePreambleTrailer(vector<char>)
-{
-
-}
-
-
 vector<char> NewPhysialLayer::convertToDTMF(vector<bool> bFrame)
 {
     vector<char> dFrame((bFrame.size())/4);
@@ -73,11 +67,7 @@ vector<bool> NewPhysialLayer::convertToBinary(vector<char> dFrame)
 
 void NewPhysicalLayer::playFrame()
 {
-    for(int j=0;j<outgoingFrame.size();j++)
-    {
-        Player.PlayDTMF(outgoingFrame[j],TONELENGHT);
-        Player.PlayDTMF(' ',SILENTLENGHT);
-    }
+    Player.PlayDTMF(outgoingFrame,TONELENGHT,SILENTLENGTH);
 }
 
 void NewPhysicalLayer::getFrame()
@@ -108,23 +98,18 @@ void NewPhysicalLayer::getFrame()
         {
             RecordedSequence[SequenceCounter]=Note;
             SequenceCounter=(SequenceCounter+1)%4;
-            previousNote=Note
+            previousNote=Note;
         }
  }
 
 bool NewPhysicalLayer::returnSendFlag()
 {
-
+    return sendFlag;
 }
 
 bool NewPhysicalLayer::returnReceiveFlag()
 {
-
-}
-
-bool NewPhysicalLayer::isFrameAvailable()
-{
-
+    return receiveFlag;
 }
 
 void NewPhysicalLayer::pushFrame(vector<bool> frame)
@@ -135,5 +120,6 @@ void NewPhysicalLayer::pushFrame(vector<bool> frame)
 
 vector<bool> NewPhysicalLayer::popFrame()
 {
-
+    return convertToBinary(incommingFrame);
+    receiveFlag=false;
 }
