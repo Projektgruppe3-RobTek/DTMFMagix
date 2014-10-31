@@ -1,33 +1,40 @@
-#include 	"Recorder.h"
-#include	"Player.h"
-#include 	"Goertzel.h"
-#include    <vector>
-#include 	<thread>
-#define TONELENGHT 100
-#define SILENTLENGHT 20
+
+
+
+#include "Recorder.h"
+#include "NewPlayer.h"
+#include "Goertzel.h"
+#include <vector>
+#include <thread>
+#include <sys/time.h>
+#include <unistd.h>
+#define TONELENGTH 100
+#define SILENTLENGTH 20
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
 #endif
+#pragma once
 using namespace std;
 
 class   NewPhysicalLayer
 {
 private:
-	void			applyHamming(vector<float>);
+	void			applyHamming(vector<float> &in);
 	vector<char>	applyPreambleTrailer(vector<char>);
 	vector<char>	convertToDTMF(vector<bool>);
 	vector<bool>	convertToBinary(vector<char>);
-	void			playFrame(vector<bool>);
-	void			getFrame();
+	void			playFrame();
+
 
 public:
-
     NewPhysicalLayer();
     bool			returnReceiveFlag();
     bool            returnSendFlag();
     bool            isFrameAvailable();
     vector<bool>    popFrame();
     void            pushFrame(vector<bool>);
+    void            getFrame();
+    ~NewPhysicalLayer();
 
 private:
 
@@ -37,7 +44,7 @@ private:
     char            startFlag[4]={'1','2','3','4'};
     char            endFlag[4]={'*','8','6','a'};
     char            DTMFTones[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','*','#'};
-    DualTonePlayer  Player;
+    DTMFPlayer      Player;
     Recorder        Rec;
     int             samplesSinceSync=0;
     long long       synctime;
@@ -47,4 +54,8 @@ private:
     thread          outgoingThread;
     vector<char>    incommingFrame;
     vector<char>    outgoingFrame;
+    timeval         tv;
+    bool            bugfix=true;
 };
+template <typename Type>
+bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0);
