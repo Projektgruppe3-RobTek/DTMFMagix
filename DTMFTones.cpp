@@ -1,4 +1,4 @@
-#include "DTMFMagix/DTMFTones.h"
+#include "DTMFTones.h"
 using namespace std;
 
 DTMFTones::DTMFTones()
