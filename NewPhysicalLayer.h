@@ -1,6 +1,4 @@
-
-
-
+#pragma once
 #include "Recorder.h"
 #include "NewPlayer.h"
 #include "Goertzel.h"

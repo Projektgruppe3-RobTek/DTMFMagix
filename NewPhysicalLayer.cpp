@@ -1,8 +1,4 @@
 #include    "NewPhysicalLayer.h"
-#include "NewPlayer.h"
-#pragma once;
-
-
 
 NewPhysicalLayer::NewPhysicalLayer()
 {
