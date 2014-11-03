@@ -2,7 +2,8 @@
 
 NewPhysicalLayer::NewPhysicalLayer()
 {
-
+    incommingThread=thread(getFrameWrapper,this);
+    outgoingThread=thread(playFrameWrapper,this);
 }
 
 void NewPhysicalLayer::applyHamming(vector<float> &data)
@@ -67,120 +68,138 @@ vector<bool> NewPhysicalLayer::convertToBinary(vector<char> dFrame)
 
 void NewPhysicalLayer::playFrame()
 {
-    Player.PlayDTMF(outgoingFrame,TONELENGTH,SILENTLENGTH);
+    while(true)
+    {
+        usleep(2000);
+        if(sendFlag)
+        {
+            Player.PlayDTMF(outgoingFrame,TONELENGTH,SILENTLENGTH);
+            sendFlag=false;
+        }
+
+    }
+            
 }
 
 void NewPhysicalLayer::getFrame()
 {
-    char RecordedSequence[4];
-    int SequenceCounter=0;
-    char previousNote='!';
-    if(bugfix) cout << "entering sync" << endl;
-    while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter))
+    while(true)
     {
-        usleep(SILENTLENGTH*1000);
-        vector<float> in1=Rec.GetAudioData(TONELENGTH,0);
-        applyHamming(in1);
-        float freq1max=0;
-        int freq1Index=0;
-        float freq2max=0;
-        int freq2Index=0;
-        for(int k=0;k<4;k++)
+        char RecordedSequence[4];
+        int SequenceCounter=0;
+        char previousNote='!';
+        if(bugfix) cout << "entering sync" << endl;
+        while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter))
         {
-            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in1);
-            if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
-        }
+            usleep(SILENTLENGTH*1000+TONELENGTH*1000);
+            vector<float> in1=Rec.GetAudioData(TONELENGTH,0);
+            applyHamming(in1);
+            float freq1max=0;
+            int freq1Index=0;
+            float freq2max=0;
+            int freq2Index=0;
+            for(int k=0;k<4;k++)
+            {
+                float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in1);
+                if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
+            }
 
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in1);
-            if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+            for(int k=0;k<4;k++)
+            {
+                float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in1);
+                if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+            }
+            char Note=DTMFTones[freq1Index*4+freq2Index];
+            if(bugfix) cout << Note << endl;
+            if(Note!=previousNote)
+            {
+                RecordedSequence[SequenceCounter]=Note;
+                SequenceCounter=(SequenceCounter+1)%4;
+                previousNote=Note;
+            }
+            else
+            {
+                usleep(2000);
+            }
+
         }
-        char Note=DTMFTones[freq1Index*4+freq2Index];
-        if(bugfix) cout << Note << endl;
-        if(!(Note==previousNote))
+        gettimeofday(&tv,NULL);
+        synctime=tv.tv_sec*1000+tv.tv_usec/1000;
+        SequenceCounter=0;
+        if(bugfix) cout << "entering start" << endl;
+        while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))
         {
+            do
+            {
+                usleep(1000);
+                gettimeofday(&tv,NULL);
+            } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4);
+            usleep(TONELENGTH*1000);
+            vector<float> in2=Rec.GetAudioData(TONELENGTH,0);
+            applyHamming(in2);
+            float freq1max=0;
+            int freq1Index=0;
+            float freq2max=0;
+            int freq2Index=0;
+            for(int k=0;k<4;k++)
+            {
+                float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in2);
+                if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
+            }
+
+            for(int k=0;k<4;k++)
+            {
+                float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in2);
+                if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+            }
+            char Note=DTMFTones[freq1Index*4+freq2Index];
+            if(bugfix) cout << Note << endl;
             RecordedSequence[SequenceCounter]=Note;
             SequenceCounter=(SequenceCounter+1)%4;
-            previousNote=Note;
         }
-        else
+        vector<char> data;
+        SequenceCounter=0;
+        if(bugfix) cout << "entering end" << endl;
+        while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))
         {
-            usleep(2000);
-        }
-    }
-    gettimeofday(&tv,NULL);
-    synctime=tv.tv_sec*1000+tv.tv_usec/1000;
-    SequenceCounter=0;
-    if(bugfix) cout << "entering start" << endl;
-    while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))
-    {
-        do
-        {
-            usleep(1000);
-            gettimeofday(&tv,NULL);
-        } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4);
-        vector<float> in2=Rec.GetAudioData(TONELENGTH,0);
-        applyHamming(in2);
-        float freq1max=0;
-        int freq1Index=0;
-        float freq2max=0;
-        int freq2Index=0;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in2);
-            if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
-        }
+            do
+            {
+                usleep(1000);
+                gettimeofday(&tv,NULL);
+            } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4);
+            usleep(TONELENGTH*1000);
+            vector<float> in=Rec.GetAudioData(TONELENGTH,0);
+            applyHamming(in);
+            float freq1max=0;
+            int freq1Index=0;
+            float freq2max=0;
+            int freq2Index=0;
+            for(int k=0;k<4;k++)
+            {
+                float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
+                if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
+            }
 
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in2);
-            if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+            for(int k=0;k<4;k++)
+            {
+                float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
+                if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+            }
+            char Note=DTMFTones[freq1Index*4+freq2Index];
+            if(bugfix) cout << Note << endl;
+            RecordedSequence[SequenceCounter]=Note;
+            SequenceCounter=(SequenceCounter+1)%4;
+            if(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))
+            {
+                data.push_back(Note);
+            }
         }
-        char Note=DTMFTones[freq1Index*4+freq2Index];
-        if(bugfix) cout << Note << endl;
-        RecordedSequence[SequenceCounter]=Note;
-        SequenceCounter=(SequenceCounter+1)%4;
+        if(bugfix) cout << "frame successfull" << endl;
+        data.erase(data.end()-2,data.end());
+        incommingFrame=data;
+        receiveFlag=true;
+        usleep(2000);
     }
-    vector<char> data;
-    SequenceCounter=0;
-    if(bugfix) cout << "entering end" << endl;
-    while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))
-    {
-        do
-        {
-            usleep(1000);
-            gettimeofday(&tv,NULL);
-        } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4);
-        vector<float> in=Rec.GetAudioData(TONELENGTH,0);
-        applyHamming(in);
-        float freq1max=0;
-        int freq1Index=0;
-        float freq2max=0;
-        int freq2Index=0;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
-            if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
-        }
-
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
-            if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
-        }
-        char Note=DTMFTones[freq1Index*4+freq2Index];
-        if(bugfix) cout << Note << endl;
-        RecordedSequence[SequenceCounter]=Note;
-        SequenceCounter=(SequenceCounter+1)%4;
-        if(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))
-        {
-            data.push_back(Note);
-        }
-    }
-    data.erase(data.end()-2,data.end());
-    incommingFrame=data;
-    receiveFlag=true;
  }
 
 bool NewPhysicalLayer::returnSendFlag()
@@ -204,6 +223,17 @@ vector<bool> NewPhysicalLayer::popFrame()
     return convertToBinary(incommingFrame);
     receiveFlag=false;
 }
+
+void playFrameWrapper(NewPhysicalLayer * PhysLayer)
+{
+    PhysLayer->playFrame();
+}
+
+void getFrameWrapper(NewPhysicalLayer * PhysLayer)
+{
+    PhysLayer->getFrame();
+}
+
 
 NewPhysicalLayer::~NewPhysicalLayer()
 {

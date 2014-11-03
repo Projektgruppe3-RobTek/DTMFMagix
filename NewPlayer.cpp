@@ -15,11 +15,11 @@ DTMFPlayer::DTMFPlayer()
     desiredSpec.userdata = this;
     if(SDL_OpenAudio(&desiredSpec, &obtainedSpec)==0)
     {
-        cout << "Desired specs obtained" << endl;
+        //cout << "Desired specs obtained" << endl;
     }
     else
     {
-        cout << "Could not obtain desired specs" << endl;
+        //cout << "Could not obtain desired specs" << endl;
     }
 
     //SDL_PauseAudio(0);
@@ -50,14 +50,14 @@ DTMFPlayer::~DTMFPlayer()
 
 void DTMFPlayer::generateSamples(Sint16 *stream, int length)
 {
-    cout << "Genelate samples" << endl;
+    //cout << "Genelate samples" << endl;
     streamPlace=0;
     sampleTurn = 0;
     while(streamPlace < length)
     {
         if (toneNumber >= (totalTones))
         {
-            cout << "fill with 0" << endl;
+            //cout << "fill with 0" << endl;
             while(streamPlace<length)
             {
                 stream[streamPlace] = 0;
@@ -72,7 +72,7 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
             {
 
 
-                cout << "new tone" << endl;
+                //cout << "new tone" << endl;
                 freq1 = Tones.getFreqL(toneIndput[toneNumber]);
                 freq2 = Tones.getFreqH(toneIndput[toneNumber]);
                 samplesLeft = toneLength;
@@ -81,7 +81,7 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
             }
             else
             {
-                cout << "delay" << endl;
+                //cout << "delay" << endl;
                 toneNumber++;
                 freq1 = 0;
                 freq2 = 0;
@@ -92,7 +92,7 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
         }
         else
         {
-            cout << "Fill buffer" << endl;
+            //cout << "Fill buffer" << endl;
             if (samplesLeft< length-sampleTurn)
             {
                 sampleRun = samplesLeft;
@@ -122,8 +122,8 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
                 delayFlag = false;
             }
         }
-        cout << "sampleTurn" << sampleTurn << endl;
-        cout << "samplesLeft" << samplesLeft << endl;
+        //cout << "sampleTurn" << sampleTurn << endl;
+        //cout << "samplesLeft" << samplesLeft << endl;
 
 
     }
@@ -139,7 +139,7 @@ void DTMFPlayer::beep(float freq1,float freq2,int duration)
 
 void DTMFPlayer::WaitForFinish() //Wait until current beep queue is empty
 {
-    cout << "WaitForFinish" << endl;
+    //cout << "WaitForFinish" << endl;
     int size;
     do
     {
@@ -148,13 +148,13 @@ void DTMFPlayer::WaitForFinish() //Wait until current beep queue is empty
         size=totalTones-(toneNumber);
         SDL_UnlockAudioDevice(1);
     } while (size>0);
-    cout << "Finished" << endl;
+    //cout << "Finished" << endl;
 }
 
 
 void DTMFPlayer::PlayDTMF(vector<char> tones,int duration,int delay)
 {
-    cout << "PlayDTMF" << endl;
+    //cout << "PlayDTMF" << endl;
 
     toneIndput = tones;
     toneNumber = 0;
@@ -170,7 +170,7 @@ void DTMFPlayer::PlayDTMF(vector<char> tones,int duration,int delay)
     SDL_PauseAudio(0);
     DTMFPlayer::WaitForFinish();
     SDL_PauseAudio(1);
-    cout <<"End PlayDTMF" <<endl;
+    //cout <<"End PlayDTMF" <<endl;
 
 }
 
