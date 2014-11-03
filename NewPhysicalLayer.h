@@ -54,7 +54,7 @@ private:
     vector<char>    incommingFrame;
     vector<char>    outgoingFrame;
     timeval         tv;
-    bool            bugfix=true;
+    bool            bugfix=false;
 };
 void getFrameWrapper(NewPhysicalLayer * DaLLObj);
 void playFrameWrapper(NewPhysicalLayer * DaLLObj);
