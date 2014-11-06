@@ -420,7 +420,7 @@ bool DataLinkLayer::dataBufferFull()
     return (outBuffer.full());
 }
 
-bool DataLinkLayer::dataBufferSize()
+int DataLinkLayer::dataBufferSize()
 {
     return outBuffer.size();
 }

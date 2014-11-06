@@ -85,10 +85,10 @@ class DataLinkLayer
 
     public:
         DataLinkLayer();
-        bool dataAvaliable(); //Is there new data for AppLayer?
+        bool dataAvailable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
         bool dataBufferFull(); //is outBuffer full?
-        bool dataBufferSize();
+        int dataBufferSize();
         void pushData(vector<bool>); //push data from AppLayer to outBuffer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
