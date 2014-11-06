@@ -1,249 +1,529 @@
 #include "DataLinkLayer.h"
-using namespace std;
-
+#include <iostream>
 DataLinkLayer::DataLinkLayer()
 {
-    grabberThread=thread(toneGrabber,this);
+    getFramesThread = thread(getFramesWrapper, this);
+    getDatagramsThread = thread(getDatagramsWraper, this);
 }
 
 
-void DataLinkLayer::applyHamming(vector<float> &data)
+void DataLinkLayer::getFrames()
 {
-    for(unsigned int i=0;i<data.size();i++)
-    {
-        data[i]*=0.54-0.46*cos((2*M_PI*i)/(data.size()-1));
-    }
-}
-
-
-void DataLinkLayer::PlaySync() //Play the sync sequence
-{
-    for(int i=0;i<3;i++) //Times the sequenc is played. May need to be adjusted later.
-    {
-        for(int j=0;j<4;j++)
+    while(true)
+    {   
+        while (!physLayer.isFrameAvaliable()) //is there a new frame?
         {
-            Player.PlayDTMF(SyncSequence[j],TONELENGHT);
-            Player.PlayDTMF(' ',SILENTLENGHT);
-        }
-    }
-    for(int i=0;i<4;i++)
-    {
-        Player.PlayDTMF(SyncEnd[i],TONELENGHT);
-        Player.PlayDTMF(' ',SILENTLENGHT);
-    }
-}
-
-void DataLinkLayer::GetSync()
-{
-    SyncData SData;
-    char RecordedSequence[4];
-    int SequenceCounter=0;
-    char LastNote='!';
-    int nonRaiseCounter=0;
-    while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter)) //Loop until we get syncsequence in buffer
-    {
-        vector<float> in=Rec.GetAudioData(TONELENGHT,0);
-        applyHamming(in);
-        float freq1max=0;
-        int freq1Index=0;
-        float freq2max=0;
-        int freq2Index=0;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
-            if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
-        }
-        
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
-            if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
-        }
-        
-        char Note=DTMFTones[freq1Index*4+freq2Index];
-        //cout << Note << endl;
-        if (Note==LastNote) 
-        {
-            if (freq1max+freq2max>SData.MaxMagnitude) 
-            {
-                gettimeofday(&SData.tv,NULL);
-                nonRaiseCounter=0;
-                
-            }
-            else
-            {
-                nonRaiseCounter++;
-                //if (nonRaiseCounter>=5) usleep(SILENTLENGHT*1000);
-                
-            }
             usleep(1000);
+            if(mode==Mode::client and getTimer() > 500 * SENDTIME){
+                mode = Mode::idle; //release connection if server is dead
+                cout << "timeout " << endl;
+            }
         }
-        else
+        vector<bool> recievedFrame = physLayer.getFrame(); //Get the frame
+        removePadding(recievedFrame); 
+        revBitStuff(recievedFrame);
+        if(!CRCdecoder(recievedFrame)) continue;
+        int frameID=getID(recievedFrame);
+        int frameType=getType(recievedFrame);
+        //cout << "ID: " << frameID << "---" << "Type: " << frameType << endl;
+        switch(mode)
         {
-            //cout << (SData.tv.tv_sec*1000+SData.tv.tv_usec/1000) << endl;
-            RecordedSequence[SequenceCounter]=Note;
-            SequenceCounter=(SequenceCounter+1)%4;
+            case Mode::idle: //Things to do if we are idle
+                //If the node is neither client or server, it will recieve requests to establish a connection,
+                //and accepts (to establih)
+                //We however also need to respond to terminate request, as the accept of a terminate can have been lost.
+                
+                if (frameType == 2) //request
+                {
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                    mode = Mode::client;
+                    startTimer();
+                }
+                else if(frameType == 3) //accept
+                {
+                    if(conWait.waiting and conWait.type == 1)
+                    {
+                        lastinID = frameID;
+                        mode = Mode::server;
+                        conWait.waiting = 0;
+                    }
+                }
+                else if(frameType == 5) //terminate
+                {
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                }
+                else 
+                {
+                    cout << "ERROR in idle recieve (got a frame with wrong ID)" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
+            break;
+                
+            case Mode::client: //Things to do if client
+            //when client, we can only respond to dataframes (with an ACK) and terminate frames (with an accept)
+            //However, we also need to respond to request frames, as the accept can have been lost
+                startTimer();
+                if (frameType == 0) //data
+                {
+                    if (frameID == lastinID)
+                    {
+                        sendACK(frameID);
+                        //cout << "Discarded frame" << endl;
+                        continue;
+                    }
+                    lastinID = frameID;
+                    inBuffer.push_back(recievedFrame);
+                    sendACK(frameID);
+                }
+                else if (frameType == 2) //request
+                {
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                }
+                else if (frameType == 5) //Terminate
+                {
+                    mode = Mode::idle;
+                    lastinID = frameID;
+                    sendAccept(!lastoutID);
+                    lastoutID =! lastoutID;
+                }
+                else 
+                {
+                    cout << "ERROR in client recieve (got a frame with wrong ID)" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
+            break;
             
-            //for(int j=0;j<4;j++) cout << RecordedSequence[j];
-            //cout << endl;
-            LastNote=Note;
-        }
-    }
-    //This is the synctime for the last tone in the samplesequence
-    synctime=SData.tv.tv_sec*1000+SData.tv.tv_usec/1000+TONELENGHT;
-    cout << synctime << endl;
-    //Wait for syncend signal
-    samplesSinceSync=0;
-    while(!ArrayComp(RecordedSequence,SyncEnd,4,SequenceCounter))
-    {
-        timeval tv;
-        gettimeofday(&tv,NULL);
-        while(synctime+(TONELENGHT+SILENTLENGHT)*(samplesSinceSync+1)>=tv.tv_sec*1000+tv.tv_usec/1000)
-        {
-            usleep(1000);
-            gettimeofday(&tv,NULL);
-            }
-        //cout << (tv.tv_sec*1000+tv.tv_usec/1000-synctime) << endl;
-        samplesSinceSync++;
-        auto in=Rec.GetAudioData(TONELENGHT,0);
-        applyHamming(in);
-        float max=0;
-        int freq1Index;
-        int freq2Index;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);
-            if (gMag>max) {max=gMag; freq1Index=k;}
-        }
-        if (max<SILENTLIMIT) continue;
-        max=0;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);
-            if (gMag>max) {max=gMag; freq2Index=k;}
-        }
-        if (max<SILENTLIMIT) continue;
-        char Note=DTMFTones[freq1Index*4+freq2Index];
-        RecordedSequence[SequenceCounter]=Note;
-        SequenceCounter=(SequenceCounter+1)%4;
-           
-        //for(int j=0;j<4;j++) cout << RecordedSequence[j];
-        //cout << endl;
-                
-    }
-    synctime=synctime+(TONELENGHT+SILENTLENGHT)*(samplesSinceSync+1);
-    //This is the expected time for next tone
-    
-}
-
-string DataLinkLayer::GetPackage()
-{
-    string RecData;
-    timeval tv;
-    char RecordedSequence[4];
-    int SequenceCounter=0;
-    while(!ArrayComp(RecordedSequence,EndSequence,4,SequenceCounter)) //Loop until we get endsequence in buffer
-    {
-        gettimeofday(&tv,NULL);
-        while(synctime+(TONELENGHT+SILENTLENGHT)*(samplesSinceSync)>tv.tv_sec*1000+tv.tv_usec/1000)
-        {
-            usleep(1000);
-            gettimeofday(&tv,NULL);
-        }
-        samplesSinceSync++;
-          
-        vector<float> RecordedData=Rec.GetAudioData(TONELENGHT,0);
-        applyHamming(RecordedData);
-        float max=0;
-        int freq1Index;
-        int freq2Index;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,RecordedData);
-            if (gMag>max) {max=gMag; freq1Index=k;}
-        }
-        if (max<SILENTLIMIT) return "";
-        max=0;
-        for(int k=0;k<4;k++)
-        {
-            float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,RecordedData);
-            if (gMag>max) {max=gMag; freq2Index=k;}
-        }
-        if (max<SILENTLIMIT) return "";
-        char Tone=DTMFTones[freq1Index*4+freq2Index];
-        //for(int a=0;a<=freq1Index*4+freq2Index;a++) cout << Tone;
-        //cout << endl;
+            case Mode::server: //Things to do if server
+            //when server, we can only recieve ACK's and accepts.
+                if (frameType == 1) //ACK
+                {
+                    if (ackWait.waiting and ackWait.ID == frameID)
+                    {                                //If we are waiting for this ACK, mark it as recieved.
+                        ackWait.waiting = false;
+                    }
+                }
+                else if (frameType == 3) //accept
+                {
+                    lastinID = frameID;
+                    if(conWait.waiting and conWait.type == 1) //If we are waiting for request accept (we should not be doing that at this point), mark it as recieved
+                    {
+                        cout << "ERROR in server request wait" << endl;
+                    }
+                    else if (conWait.waiting and conWait.type == 0) //If we are waiting for terminate accept,
+                    {                                                //mark as recieved and change mode to not connected.
+                        mode = Mode::idle;
+                        conWait.waiting = false;
+                    }
+                    else cout << "ERROR in accept recieve master" << endl;
+                }
+                else 
+                {
+                    cout << "ERROR in server recieve (got a frame with wrong ID)" << endl;
+                    cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
+                    cout << "This is the frame: " << endl;
+                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                }
+            break;
+            default:
+                cout << "ERROR" << endl;
         
-        RecData+=Tone;
-        RecordedSequence[SequenceCounter]=Tone;
-        SequenceCounter=(SequenceCounter+1)%4;  
+        }
+    }
+}
+
+
+void DataLinkLayer::getDatagrams(){
+    vector<bool> data_to_send;
+    bool connectionLost = false;
+
+    while(true){
+        while(mode == Mode::client or outBuffer.empty()){ 
+            usleep(10000);
+        }
+        
+        while(outBuffer.size()){
+            if(mode != Mode::server and !connectionRequest()) break;
+            if(!connectionLost)
+            {
+                data_to_send = outBuffer.pop_front();
+
+                setType(data_to_send, 0);
+                setID(data_to_send);
+                CRCencoder(data_to_send);
+                bitStuff(data_to_send);
+                setPadding(data_to_send);
+            }
+            
+            else connectionLost = false;
+            if(!sendPacket(data_to_send)) {
+                connectionLost = true;
+                break;
+            }
+        }
+
+        if(outBuffer.empty() && mode==Mode::server){
+            releaseConnection();
+        }
+    }
+}
+
+void getFramesWrapper(DataLinkLayer *DaLLObj)
+{
+    DaLLObj->getFrames();
+}
+
+void getDatagramsWraper(DataLinkLayer *DaLLObj)
+{
+    DaLLObj->getDatagrams();
+}
+
+void DataLinkLayer::bitStuff(vector<bool> &frame) //Bitstuff.
+{                                                 //We bitstuff with the inverse of the last bit in our flag.
+    vector<int> elementsToStuff;
+    for(int i = flag.size() - 1; i < frame.size(); i++)
+    {
+        if(flagcheck(frame, i - ((int)flag.size() - 1), flag, flag.size() - 1)) elementsToStuff.push_back(i);
+    }
+    int offset = 0;
+    for(int index : elementsToStuff)
+    {
+        frame.insert(frame.begin() + offset + index, !flag.back());
+        offset++;
+    }
+}
+
+
+void DataLinkLayer::revBitStuff(vector<bool> &frame) 
+{
+    vector<int> elementsToRemove;
+    for(int i = flag.size() - 1; i < frame.size(); i++)
+    {
+        if (flagcheck(frame, i - (int)flag.size() + 1, flag, flag.size() - 1)) elementsToRemove.push_back(i);
+    }
+    int offset = 0;
+    for(int index : elementsToRemove)
+    {
+        frame.erase(frame.begin() + offset + index);
+        offset--;
+    }
+}
+
+
+void DataLinkLayer::setPadding(vector<bool> &frame)
+{
+    int lengthOfPadding = 0;
+
+    while( ( frame.size() + 2 ) % 4 )
+    {
+        lengthOfPadding++;
+        frame.push_back(!flag.back());
+    }
+    frame.insert(frame.begin(), lengthOfPadding % 2);
+    frame.insert(frame.begin(), lengthOfPadding % 4 - lengthOfPadding % 2);
+}
+
+void DataLinkLayer::removePadding(vector<bool> &frame)
+{
+    int paddinglength = (frame[0]<<1) + frame[1];
+    frame.erase(frame.begin(), frame.begin() + 2);
+    for(int i = 0; i < paddinglength; i++) frame.pop_back();
+}
+
+bool DataLinkLayer::getID(vector<bool> &frame)
+{
+    int ID = frame[0];
+    frame.erase(frame.begin());
+    return ID;
+}
+
+void DataLinkLayer::setID(vector<bool> &frame)
+{
+    lastoutID = !lastoutID;
+    frame.insert(frame.begin(), lastoutID);
+}
+void DataLinkLayer::setID(vector<bool> &frame, int ID) //This is mostly for ACK's
+{                                       //Don't change lastoutID.
+    frame.insert(frame.begin(), ID);
+}
+int DataLinkLayer::getType(vector<bool> &frame)
+{
+    int Type=(frame[0] << 2) + (frame[1] << 1) + frame[2];
+    frame.erase(frame.begin(),frame.begin() + 3);
+    return Type;
+}
+
+void DataLinkLayer::setType(vector<bool> &frame, int Type)
+{
+    Type%=8;
+
+    bool booltype[3] = {0,0,0};
+    for(int i = 2; i >= 0; i--)
+    {
+        if( Type - (1 << i) >=0)
+        {
+            Type-=(1 << i);
+            booltype[2 - i]=true;
+        }
     }
     
-
-    return RecData.substr(0,RecData.size()-4);
+    frame.insert(frame.begin(),booltype[2]);
+    frame.insert(frame.begin(),booltype[1]);
+    frame.insert(frame.begin(),booltype[0]);
 }
 
-
-bool DataLinkLayer::DataAvaliable()
+void DataLinkLayer::sendControl(int Type, bool ID)
 {
-    if (FBuffer.LastFrameElement!=FBuffer.NextFrameToRecord) return true;
-    return false;
+    vector<bool> Control;
+    setType(Control, Type);
+    setID(Control, ID);
+    CRCencoder(Control);
+    bitStuff(Control);
+    setPadding(Control);
+    sendFrame(Control);
 }
 
-
-string DataLinkLayer::GetNextFrame() //Check with DataAvaliable first! Else the behavior is undefined
+void DataLinkLayer::sendACK(bool ID)
 {
-    string Retstring=FBuffer.Buffer[FBuffer.LastFrameElement++];
-    FBuffer.LastFrameElement%=FBuffer.Buffer.size();
-    return Retstring;
+    // cout << "sendack" << endl;
+    sendControl(1,ID);
 }
 
-
-void DataLinkLayer::PlayFrame(string Tones)
+void DataLinkLayer::sendRequest(bool ID)
 {
-    PlaySync();
-    for(char Tone : Tones)
+    sendControl(2,ID);
+}
+
+void DataLinkLayer::sendAccept(bool ID)
+{
+    sendControl(3,ID);
+}
+
+void DataLinkLayer::sendDecline(bool ID)
+{
+    sendControl(4,ID);
+}
+
+void DataLinkLayer::sendTerminate(bool ID)
+{
+    sendControl(5,ID);
+}
+
+void DataLinkLayer::sendFrame(vector<bool> &frame)
+{
+    while(physLayer.isQueueFull()) usleep(1000);
+    physLayer.QueueFrame(frame);
+}
+
+void DataLinkLayer::startTimer()
+{
+    gettimeofday(&timer,NULL);
+}
+
+int DataLinkLayer::getTimer()
+{
+    timeval tv;
+    gettimeofday(&tv,NULL);
+    return (tv.tv_sec * 1000 + tv.tv_usec / 1000 )  - (timer.tv_sec * 1000 + timer.tv_usec / 1000);
+}
+bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
+{
+    //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
+    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8    
+    //vector<bool> Divisor    = {1,0,0,1,1};                      // CRC 4 generator
+    vector<bool> Dividend   = codeWord;
+
+    for (unsigned int i=0; i < codeWord.size(); i++)
     {
-        Player.PlayDTMF(Tone,TONELENGHT);
-        Player.PlayDTMF(' ',SILENTLENGHT);
+        if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
+        {
+            for(unsigned int j=0; j<Divisor.size(); j++)
+            {
+                Dividend[j] = Dividend[j] ^ Divisor[j];
+            }
+        }
+        Dividend.erase(Dividend.begin()) ;                      // When XOR is done, the vector is moved one
+                                                                // place to the left.
     }
-    PlayEndSequence();
+    for (unsigned int i = 0; i < Divisor.size(); i++)
+    {
+        if (Dividend[i])                                        // if the CRC check at the receiver went bad
+        {                                                       // then the function will return false.
+            return 0;                                           // And the frame will be discarded.
+        }
+    }
+
+    for (unsigned int i = 0; i <Divisor.size()-1; i++)
+    {
+        codeWord.erase(codeWord.end());
+    }
+
+    return 1;                                                   // if the CRC check at the receiver went well
+                                                                // then the function will return true.
 }
 
 
-void DataLinkLayer::PlayEndSequence()
+void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 {
-    for(int i=0;i<4;i++)
+    //vector<bool> Divisor    = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
+    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8
+    //vector<bool> Divisor    = {1,0,0,1,1};                                        //CRC 4 generator
+    vector<bool> Dividend   = dataWord;
+
+    for(unsigned int i=0; i<Divisor.size()-1; i++)              // Puts the appropriate amount of 0's behind the dividend.
     {
-        Player.PlayDTMF(EndSequence[i],TONELENGHT);
-        Player.PlayDTMF(' ',SILENTLENGHT);
+        Dividend.push_back(0);
+    }
+
+    for (unsigned int i=0; i < dataWord.size(); i++)
+    {
+        if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
+        {
+            for(unsigned int j=0; j<Divisor.size(); j++)
+            {
+                Dividend[j] = Dividend[j] ^ Divisor[j];
+            }
+        }
+        Dividend.erase(Dividend.begin()) ;                      // When XOR is done, the vector is moved one
+                                                                // place to the left.
+    }
+
+    for(unsigned int i=0; i<Divisor.size()-1; i++)              // When the division is done, the remainder
+    {                                                           // is put behind the Dataword to make the Codeword
+        dataWord.push_back(Dividend[i]);
     }
 }
 
-
-void toneGrabber(DataLinkLayer *DaLLObj)
+bool DataLinkLayer::dataAvaliable()
 {
-    while(1)
-    {
-        DaLLObj->GetSync();
-        cout << "Sync" << endl;
-        DaLLObj->samplesSinceSync=0;
-        string frame=DaLLObj->GetPackage();
-        //cout << frame << endl;
-        if (frame=="") continue;
-        DaLLObj->FBuffer.Buffer[DaLLObj->FBuffer.NextFrameToRecord++]=frame;
-        DaLLObj->FBuffer.NextFrameToRecord%=DaLLObj->FBuffer.Buffer.size();
-    }
+    return inBuffer.size();
+}
+
+vector<bool> DataLinkLayer::popData()
+{
+    return inBuffer.pop_front();
+}
+
+bool DataLinkLayer::dataBufferFull()
+{
+    return (outBuffer.full());
+}
+
+bool DataLinkLayer::dataBufferSize()
+{
+    return outBuffer.size();
+}
+void DataLinkLayer::pushData(vector<bool> data)
+{
+    while(mode == Mode::client) usleep(1000); //Block if we are client
+    outBuffer.push_back(data);
 }
 
 
-template <typename Type>
-bool ArrayComp(Type *Array1, Type *Array2,int size,int index)
-{   //Compare two arrays. return true on match, else false.
-    //If index is given, Array1 will be right-rotated by that amount.
-    for(int i=0;i<size;i++)
+
+bool flagcheck(vector<bool> &vec1, int start1, array<bool, 8> &flag, int lenght) //check if the flag matches given vec
+{
+    for(int i = 0 ; i < lenght; i++)
     {
-        if( Array1[(i+index)%size]!=Array2[i]) return false;
+        if (vec1[start1 + i] != flag[i]) return false;
     }
     return true;
+}
+
+bool DataLinkLayer::connectionRequest(){
+    int requestsSend = 0;
+    conWait.waiting=true;
+    conWait.type=1;
+ 
+    while(conWait.waiting){
+        if (requestsSend%5==4){
+            usleep((((56 + 32) * SENDTIME) + 100 + rand() % (2000+requestsSend*500))*1000); //ack 56 tone, data max length 32 tone, 100 is added as a guard and a random time
+            cout << "d" << endl;
+            if(mode == Mode::client) return false;
+        }
+
+        startTimer();
+        sendRequest(!lastoutID);
+        lastoutID = !lastoutID;
+        while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+            usleep(2000);
+        }
+
+        requestsSend++;
+    }
+    return true;
+}
+
+bool DataLinkLayer::releaseConnection(){
+    int terminateSend = 0;
+    conWait.waiting=true;
+    conWait.type=0;
+    while(conWait.waiting){
+        if (terminateSend > 5){
+            mode = Mode::idle;
+            return false;
+        }
+
+        startTimer();
+        sendTerminate(!lastoutID);
+        lastoutID = !lastoutID;
+        while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+            usleep(2000);
+        }
+
+        terminateSend++;
+    }
+    return (mode==Mode::idle);
+}
+
+bool DataLinkLayer::sendPacket(vector<bool> &packet){
+    int packetsSend = 0;
+    ackWait.ID=lastoutID;
+    ackWait.waiting=true;
+    
+    while(ackWait.waiting){
+        if (packetsSend > 5){
+            sendTerminate(!lastoutID);
+            lastoutID = !lastoutID;
+            mode = Mode::idle;
+            return false;
+        }
+
+
+        startTimer();
+        physLayer.QueueFrame(packet);
+
+        while(ackWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+            usleep(2000);
+        }
+
+    packetsSend++;
+    }
+    return (mode == Mode::server);
+}
+
+int DataLinkLayer::getMode()
+{
+    switch(mode)
+    {
+        case Mode::idle:
+            return 0;
+        case Mode::server:
+            return 1;
+        case Mode::client:
+            return 2;
+        default:
+            return -1;
+    }
 }

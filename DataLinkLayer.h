@@ -1,72 +1,117 @@
-#include "Recorder.h"
-#include "Player.h"
-#include "Goertzel.h"
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <cmath>
-#include <sys/time.h>
-#include <unistd.h>
+#pragma once
 #include <vector>
-#include <array>
+#include <sys/time.h>
 #include <thread>
-#include <string>
-#define TONELENGHT 100
-#define SILENTLENGHT 20
-#define SILENTLIMIT 0.0000f
-#ifndef M_PI
-#define M_PI        3.14159265358979323846
-#endif
-#define RECIEVEDBUFFSIZE 10000
+#include <array>
+#include <iostream>
+#include "physicalLayerEmu.h"
+#include "RingBuffer.h"
+#define BUFFERSIZE 100
+#define SENDTIME 60
+
 using namespace std;
-struct SyncData
-{
-    float MaxMagnitude=0;
-    timeval tv;
+/*
+Layout of frame:
+|-----------------|----|----|----|---|
+|Length of padding| ID |Type|Data|CRC|
+|       2         | 1  | 3  |  ? | 4 |
+|-----------------|----|----|----|---|
+Frametypes:
+000 = data
+001 = ACK
+010 = request
+011 = accept
+100 = decline
+101 = terminate
 
-};
-struct RecievedData
-{
-    //We can't implement this as FIFO if we want thread safety    
-    array<char,RECIEVEDBUFFSIZE> RecArray; 
-    int NextElementToRecord=0;
+*/
+/* Befor sending frame, we do this in this order:
+1. Prepend Type.
+2. Prepend ID.
+3. Do CRC
+4. Do Bitstuffing
+5. Prepend paddinglenght (and pad)
 
+When recieving a frame, we do this:
+1. Remove padding lenght and padding.
+2. Remove bitstuffing.
+3. Verify CRC and remove CRC field.
+4. Read ID and remove ID field.
+5. Read Type and remove Type field.
+
+*/
+
+struct ack {
+    bool ID;
+    bool waiting=false;
 };
-struct FrameBuffer
-{
-    array<string,100> Buffer;
-    int NextFrameToRecord=0;
-    int LastFrameElement=0;
+
+struct Connection {
+    bool waiting=false;
+    bool type=0; //0=terminate, 1=connect request
 };
+enum class Mode {idle, server, client};
+
 class DataLinkLayer
 {
     private:
-        int Freqarray1[4]={697,770,852,941};
-        int Freqarray2[4]={1209,1336,1477,1633};
-        char SyncSequence[4]={'a','6','8','*'}; //Should not contain the same note two times in a row.
-        char SyncEnd[4]={'1','2','3','4'};
-        char EndSequence[4]={'*','8','6','a'};
-        char DTMFTones[16]={'1','2','3','a','4','5','6','b','7','8','9','c','*','0','#','d'};
-        DualTonePlayer Player;
-        Recorder Rec;
-        long long synctime;
-        thread grabberThread;
-        void applyHamming(vector<float> &in);
+        void bitStuff(vector<bool> &frame); //Stuff frame to avoid flags in data.
+        void revBitStuff(vector<bool> &frame); //Remove stuffing.
+
+        void setPadding(vector<bool> &frame); //Pad to multiple of 4, and set length of padding field.
+        void removePadding(vector<bool> &frame); //Remove padding.. and padding field.
+
+        void CRCencoder(vector<bool> &dataWord); //Make dataword into codeword. (append CRC)
+        bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
+
+        bool getID(vector<bool> &frame); //Get id of frame
+        void setID(vector<bool> &frame); //set id of frame.
+        void setID(vector<bool> &frame, int ID); //set id of frame.
+
+        int getType(vector<bool> &frame); //Get type of frame.
+        void setType(vector<bool> &frame, int type); //Set type of frame.
+
+        void startTimer(); //Start the timer
+        int getTimer(); //Return milliseconds since setTimer was called.
+        void sendACK(bool ID); //send ACK.
+        void sendRequest(bool ID); //send Request
+        void sendAccept(bool ID); //send Accept
+        void sendDecline(bool ID); //send Decline
+        void sendTerminate(bool ID); //send Terminate
+        void sendControl(int Type,bool ID);
+        void sendFrame(vector<bool> &frame);
+        bool connect(); //Try to set the node as master. This is blocking.
+        bool terminate(); //Flush the data queue and terminate master status. This is blocking.
+
     public:
         DataLinkLayer();
-        string GetPackage();
-        int samplesSinceSync;
-        void PlaySync();
-        void GetSync();
-        void PlayFrame(string Tones);
-        bool DataAvaliable();
-        string GetNextFrame();
-        void PlayEndSequence();
-        FrameBuffer FBuffer;
-
-
+        bool dataAvaliable(); //Is there new data for AppLayer?
+        vector<bool> popData(); //return data to AppLayer.
+        bool dataBufferFull(); //is outBuffer full?
+        bool dataBufferSize();
+        void pushData(vector<bool>); //push data from AppLayer to outBuffer
+        void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
+        void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
+        int getMode(); //Return mode
+    private:
+        physicalLayer physLayer;
+        bool lastinID=0;
+        bool lastoutID=0;
+        bool connectionRequest();
+        bool releaseConnection();
+        bool sendPacket(vector<bool> &packet);
+        array<bool, 8> flag={{1, 0, 1, 0, 1, 1, 1, 0}};
+        timeval timer;
+        RingBuffer<vector<bool>,BUFFERSIZE> inBuffer;
+        RingBuffer<vector<bool>,BUFFERSIZE> outBuffer;
+        thread getFramesThread;
+        thread getDatagramsThread;
+        ack ackWait;
+        Connection conWait;
+        Mode mode=Mode::idle;
 };
+void getFramesWrapper(DataLinkLayer *DaLLObj);
+void getDatagramsWraper(DataLinkLayer *DaLLObj);
+void getDatagramsAndFramesThread(DataLinkLayer *DaLLObj);
+bool flagcheck(vector<bool> &vec1, int start1,array<bool, 8> &flag, int lenght);
 
-void toneGrabber(DataLinkLayer * DaLLObj);
-template <typename Type>
-bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0);

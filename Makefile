@@ -1,7 +1,7 @@
 CC=clang++ #Compiler
-CFLAGS= -c -std=c++11  -Wall -g#Compiler Flags
+CFLAGS= -c -std=c++11  -Wall  #Compiler Flags
 LDFLAGS=-lportaudio -lSDL2 #Linker options
-SOURCES=NewPlayer.cpp Recorder.cpp main.cpp Goertzel.cpp NewPhysicalLayer.cpp DTMFTones.cpp    #cpp files
+SOURCES=Player.cpp Recorder.cpp main.cpp Goertzel.cpp physicalLayerEmu.cpp DataLinkLayer.cpp   #cpp files
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files
 EXECUTEABLE=DTMFMagix #Output name
 
@@ -14,4 +14,4 @@ $(EXECUTEABLE): $(OBJECTS)
 	$(CC)  $(CFLAGS)   $< -o $@
 
 
-clean:  ; rm *.o $(EXECUTEABLE)
+clean:  ; rm *.o $(EXECUTEABLE) newmedia.txt media.txt
