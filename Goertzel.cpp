@@ -16,7 +16,6 @@ float doGoertzel(int sampleRate/*Rate the signal is sampled at*/, float targetFr
     float k = (int) (0.5 + ((float(samples.size()) * targetFreq) / sampleRate));
     float w = ((2. * M_PI)  / (int)samples.size())*k ;
     float cosine=cos(w);
-    float sine=sin(w);
     float coeff=2.*cosine;
     
     //declare sample variables

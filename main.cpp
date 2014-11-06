@@ -63,12 +63,12 @@ bool sendData(vector<bool> Data,DataLinkLayer *DaLLObj)
 
 bool getData(vector<bool> &data,DataLinkLayer *DaLLObj)
 {
-    if (!DaLLObj->dataAvaliable()) return false;
+    if (!DaLLObj->dataAvailable()) return false;
     vector<vector<bool>> frames;
     int frameheader=-1;
     while(frameheader!=2)
     {
-        while(!DaLLObj->dataAvaliable()) usleep(1000);
+        while(!DaLLObj->dataAvailable()) usleep(1000);
         frameheader=0;
         auto frame=DaLLObj->popData();
         //for( auto bit : frame) cout << bit; cout << endl; 
