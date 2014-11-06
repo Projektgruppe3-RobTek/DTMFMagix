@@ -21,10 +21,10 @@ class physicalLayer
         int framenumber;
     public:
         physicalLayer();
-        void QueueFrame(std::vector<bool> );
-        bool isQueueFull();
-        bool isFrameAvaliable();
-        std::vector<bool> getFrame(); 
+        void pushFrame(std::vector<bool> );
+        bool returnSendFlag();
+        bool returnReceiveFlag();
+        std::vector<bool> popFrame(); 
         void FrameGrabber();
         void FrameSender();
         

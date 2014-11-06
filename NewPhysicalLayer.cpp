@@ -102,13 +102,13 @@ void NewPhysicalLayer::getFrame()
             int freq2Index=0;
             for(int k=0;k<4;k++)                                            // Calculate Goertzel on all vertical frequencies
             {                                                               // Save index for frequency with largest Goertzel value
-                float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in1);
+                float gMag=doGoertzel(SAMPLE_RATE,Freqarray1[k],in1);
                 if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
             }
 
             for(int k=0;k<4;k++)                                            // Calculate Goertzel on all horizontal frequencies
             {                                                               // Save index for frequency with largest Goertzel value
-                float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in1);
+                float gMag=doGoertzel(SAMPLE_RATE,Freqarray2[k],in1);
                 if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
             }
             char Note=DTMFTones[freq1Index*4+freq2Index];                   // Determine DTMF by frequency index
@@ -145,13 +145,13 @@ void NewPhysicalLayer::getFrame()
             int freq2Index=0;
             for(int k=0;k<4;k++)
             {
-                float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in2);                     // Calculate Goertzel on all vertical frequencies
+                float gMag=doGoertzel(SAMPLE_RATE,Freqarray1[k],in2);                     // Calculate Goertzel on all vertical frequencies
                 if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}                           // Save index for frequency with largest Goertzel value
             }
 
             for(int k=0;k<4;k++)
             {
-                float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in2);                     // Calculate Goertzel on all horizontal frequencies
+                float gMag=doGoertzel(SAMPLE_RATE,Freqarray2[k],in2);                     // Calculate Goertzel on all horizontal frequencies
                 if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}                           // Save index for frequency with largest Goertzel value
             }
             char Note=DTMFTones[freq1Index*4+freq2Index];                                   // Determine DTMF by frequency index
@@ -178,13 +178,13 @@ void NewPhysicalLayer::getFrame()
             int freq2Index=0;
             for(int k=0;k<4;k++)
             {
-                float gMag=goertzel_mag(Freqarray1[k],SAMPLE_RATE,in);                      // Calculate Goertzel on all vertical frequencies
+                float gMag=doGoertzel(SAMPLE_RATE,Freqarray1[k],in);                      // Calculate Goertzel on all vertical frequencies
                 if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}                           // Save index for frequency with largest Goertzel value
             }
 
             for(int k=0;k<4;k++)
             {
-                float gMag=goertzel_mag(Freqarray2[k],SAMPLE_RATE,in);                      // Calculate Goertzel on all horizontal frequencies
+                float gMag=doGoertzel(SAMPLE_RATE,Freqarray2[k],in);                      // Calculate Goertzel on all horizontal frequencies
                 if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}                           // Save index for frequency with largest Goertzel value
             }
             char Note=DTMFTones[freq1Index*4+freq2Index];                                   // Determine DTMF by frequency index

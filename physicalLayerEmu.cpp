@@ -22,7 +22,7 @@ physicalLayer::physicalLayer()
     framenumber=rand()%1000000000+1;
 }
 
-void physicalLayer::QueueFrame(vector<bool> frame) 
+void physicalLayer::pushFrame(vector<bool> frame) 
 {
     #ifdef debug
     cout << "Framesize=" << frame.size() << endl;
@@ -30,16 +30,16 @@ void physicalLayer::QueueFrame(vector<bool> frame)
     outBuffer.push_back(frame);
 }
 
-bool physicalLayer::isQueueFull()
+bool physicalLayer::returnSendFlag()
 {
     return outBuffer.full();
 }
 
-bool physicalLayer::isFrameAvaliable()
+bool physicalLayer::returnReceiveFlag()
 {
     return inBuffer.size();
 }
-vector<bool> physicalLayer::getFrame()
+vector<bool> physicalLayer::popFrame()
 {
     return inBuffer.pop_front();
 }

@@ -405,7 +405,7 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
     }
 }
 
-bool DataLinkLayer::dataAvaliable()
+bool DataLinkLayer::dataAvailable()
 {
     return inBuffer.size();
 }
