@@ -28,7 +28,6 @@ public:
     NewPhysicalLayer();
     bool			returnReceiveFlag();
     bool            returnSendFlag();
-    bool            isFrameAvailable();
     vector<bool>    popFrame();
     void            pushFrame(vector<bool>);
     void            getFrame();

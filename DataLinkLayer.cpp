@@ -11,7 +11,7 @@ void DataLinkLayer::getFrames()
 {
     while(true)
     {   
-        while (!physLayer.isFrameAvaliable()) //is there a new frame?
+        while (!physLayer.returnReceiveFlag()) //is there a new frame?
         {
             usleep(1000);
             if(mode==Mode::client and getTimer() > 500 * SENDTIME){
@@ -19,7 +19,7 @@ void DataLinkLayer::getFrames()
                 cout << "timeout " << endl;
             }
         }
-        vector<bool> recievedFrame = physLayer.getFrame(); //Get the frame
+        vector<bool> recievedFrame = physLayer.popFrame(); //Get the frame
         removePadding(recievedFrame); 
         revBitStuff(recievedFrame);
         if(!CRCdecoder(recievedFrame)) continue;
@@ -320,8 +320,8 @@ void DataLinkLayer::sendTerminate(bool ID)
 
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
-    while(physLayer.isQueueFull()) usleep(1000);
-    physLayer.QueueFrame(frame);
+    while(physLayer.returnSendFlag()) usleep(1000);
+    physLayer.pushFrame(frame);
 }
 
 void DataLinkLayer::startTimer()
@@ -502,7 +502,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
 
 
         startTimer();
-        physLayer.QueueFrame(packet);
+        physLayer.pushFrame(packet);
 
         while(ackWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
             usleep(2000);
