@@ -212,7 +212,7 @@ bool NewPhysicalLayer::returnReceiveFlag()
 
 void NewPhysicalLayer::pushFrame(vector<bool> frame)                
 {
-    for(auto bit : frame) std::cout << bit; std::cout << endl;
+    //for(auto bit : frame) std::cout << bit; std::cout << endl;
     outgoingFrame=applyPreambleTrailer(convertToDTMF(frame));       // Convert binary frame to DTMF, and save as outgoingFrame
     sendFlag=true;
 }

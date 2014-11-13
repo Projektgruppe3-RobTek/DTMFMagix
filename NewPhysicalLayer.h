@@ -45,7 +45,6 @@ private:
     char            DTMFTones[16]={'1','2','3','A','4','5','6','B','7','8','9','C','*','0','#','D'};
     DTMFPlayer      Player;
     DTMFRecorder    Rec;
-    int             samplesSinceSync=0;
     long long       synctime;
     bool            receiveFlag;
     bool            sendFlag;

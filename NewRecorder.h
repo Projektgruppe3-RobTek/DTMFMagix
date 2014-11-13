@@ -2,7 +2,7 @@
 #include <portaudio.h>
 #include "RingBuffer.h"
 #include <vector>
-#define INPUTBUFFERSIZE 8820000   // 2* sample rate
+#define INPUTBUFFERSIZE 882000   // 2* sample rate
 #define REC_SAMPLE_RATE 44100
 #define SAMPLE_RATE 44100
 #pragma once
