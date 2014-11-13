@@ -187,7 +187,7 @@ void receiver(){
 	while (true){
 		while (dll.dataAvailable()){
 			vector<bool> frame = dll.popData();
-			saveFile(frame, stringToVectorBool("receivedFile.txt"));
+			saveFile(frame, stringToVectorBool("receivedFile.txt"), 1);
 			cout << "File received!" << endl;
 		}
 		usleep(1000);
