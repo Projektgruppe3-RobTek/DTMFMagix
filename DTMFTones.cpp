@@ -1,5 +1,4 @@
 #include "DTMFTones.h"
-using namespace std;
 
 DTMFTones::DTMFTones()
 {

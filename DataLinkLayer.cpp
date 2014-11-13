@@ -20,12 +20,14 @@ void DataLinkLayer::getFrames()
             }
         }
         vector<bool> recievedFrame = physLayer.popFrame(); //Get the frame
+        for (int a = 0; a < recievedFrame.size(); a++) cout << recievedFrame[a];
+        cout << endl;
         removePadding(recievedFrame); 
         revBitStuff(recievedFrame);
-        if(!CRCdecoder(recievedFrame)) continue;
+        if(!CRCdecoder(recievedFrame)) {cout << "fejl" << endl ; continue;}
         int frameID=getID(recievedFrame);
         int frameType=getType(recievedFrame);
-        //cout << "ID: " << frameID << "---" << "Type: " << frameType << endl;
+        cout << "ID: " << frameID << "---" << "Type: " << frameType << endl;
         switch(mode)
         {
             case Mode::idle: //Things to do if we are idle

@@ -218,8 +218,8 @@ void NewPhysicalLayer::pushFrame(vector<bool> frame)
 
 vector<bool> NewPhysicalLayer::popFrame()
 {
-    return convertToBinary(incommingFrame);                         // Convert incommingFrame to binary and return it
     receiveFlag=false;
+    return convertToBinary(incommingFrame);                         // Convert incommingFrame to binary and return it
 }
 
 void playFrameWrapper(NewPhysicalLayer * PhysLayer)

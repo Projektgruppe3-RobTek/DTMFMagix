@@ -6,7 +6,7 @@
 #include "DTMFTones.h"
 const int AMPLITUDEaudio = 28000;
 const int FREQUENCYaudio = 22100;   //Highest freq = 1633*2 = 3266 Hz min. sampling rate
-
+using namespace std;
 class DTMFPlayer{
     private:
         Uint32  sinStep1;

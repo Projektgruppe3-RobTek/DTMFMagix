@@ -4,6 +4,7 @@
 #include <vector>
 #define INPUTBUFFERSIZE 88200   // 2* sample rate
 #define REC_SAMPLE_RATE 44100
+#define SAMPLE_RATE 44100
 #pragma once
 using namespace std;
 
