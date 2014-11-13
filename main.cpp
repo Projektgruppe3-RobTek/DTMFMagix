@@ -1,203 +1,209 @@
-#include "DataLinkLayer.h"
-#include<iostream> 
-#include <string>
-#include <vector>
-#include <thread>
-#include <sys/stat.h>
 #include <fstream>
-#include <sys/time.h>
-#define MAXSIZE 128 //max size of frame in bits
+#include <string>
+#include <iostream>
+#include <vector>
+#include <boost/filesystem.hpp>
+#include <unistd.h>
+#include "DataLinkLayer.h"
+
+DataLinkLayer dll;
+
+bool flag[] = {0,1,1,1,1,1,1,0};
+bool invFlag[] = {0,1,1,1,1,1,1,1,0};
+
+using namespace boost::filesystem;
 using namespace std;
+
+vector<bool> stringToVectorBool(string dataStr){
+	vector<bool> dataBin;
+	for (int a = 0; a < dataStr.size(); a++){
+		for (int b = 7; b >= 0; b--){
+			dataBin.push_back(dataStr[a] & (1 << b));
+		}
+	}
+	return dataBin;
+}
+
+string vectorBoolToString(vector<bool> dataBin){
+	string dataStr;
+	for (int a = 0; a < (dataBin.size() / 8); a++){
+		char dataChar = 0;
+		for (int b = 0; b < 8 ; b++){
+			dataChar += (dataBin[a * 8 + b] << (7 - b));
+		}
+		dataStr += dataChar;
+	}
+	return dataStr;
+}
+
+bool saveFile(vector<bool> dataBin, vector<bool> dir, bool force = false){
+	if (!force && exists(vectorBoolToString(dir))) return 1;
+	ofstream file(vectorBoolToString(dir));
+	file << vectorBoolToString(dataBin);
+	file.close();
+	return 0;
+}
+
+vector<bool> loadFile(vector<bool> filename){
+	ifstream file(vectorBoolToString(filename), ios::in | ios::binary);
+	if (file){
+		string dataStr;
+		file.seekg(0, ios::end);
+		dataStr.resize(file.tellg());
+		file.seekg(0, ios::beg);
+		file.read(&dataStr[0], dataStr.size());
+		file.close();
+		return stringToVectorBool(dataStr);
+	}
+	vector<bool> temp;
+	return temp;
+}
+
+vector<bool> loadFileSize(vector<bool> filename){
+	return stringToVectorBool(to_string(file_size(vectorBoolToString(filename))));
+}
+
+bool deleteFile(vector<bool> fileName){
+	return remove(vectorBoolToString(fileName));
+}
+
+bool copyFile(vector<bool> fromFileName, vector<bool> toFileName, bool force = false){
+	return saveFile(loadFile(fromFileName), toFileName, force);
+}
+
+bool moveFile(vector<bool> fromFileName, vector<bool> toFileName, bool force = false){
+	if (!copyFile(fromFileName, toFileName, force = false)) deleteFile(fromFileName);
+	else return true;
+	return false;
+}
+
+vector<bool> bitStuff(vector<bool> dataBin){
+	for (int a = 0; a < dataBin.size() - 8; a++){
+		bool match = true;
+		for (int b = 0; b < 8; b++){
+			if (dataBin[a + b] != flag[b]) match = false;
+		}
+		if (match){
+			dataBin.insert(dataBin.begin() + a + 4, 1);
+		}
+	}
+	// Hvis der kommmer problemmer med bitstuffing gentag løkken
+	
+	return dataBin;
+}
+
+vector<bool> invBitStuff(vector<bool> dataBin){
+	for (int a = 0; a < dataBin.size() - 9; a++){
+		bool match = true;
+		for (int b = 0; b < 9; b++){
+			if (dataBin[a + b] != invFlag[b]) match = false;
+		}
+		if (match){
+			dataBin.erase(dataBin.begin() + a + 4);
+		}
+	}
+	// Hvis der kommmer problemmer med bitstuffing gentag løkken
+	// test for bistuffing md flag
+	return dataBin;
+}
+
+vector<bool> insertFlag(){
+	vector<bool> tempFlag;
+	for (int a = 0; a < 8; a++) tempFlag.push_back(flag[a]);
+	return tempFlag;
+}
+
+vector<bool> constructor(string fileName){
+	vector<bool> dataBin;
+	vector<bool> tempFlag = insertFlag();
+	vector<bool> size = bitStuff(loadFileSize(stringToVectorBool(fileName)));
+	vector<bool> name = bitStuff(stringToVectorBool(fileName));
+	vector<bool> data = bitStuff(loadFile(stringToVectorBool(fileName)));
+	
+	dataBin.insert(dataBin.end(), tempFlag.begin(), tempFlag.end());
+	dataBin.insert(dataBin.end(), size.begin(), size.end());
+	dataBin.insert(dataBin.end(), tempFlag.begin(), tempFlag.end());
+	dataBin.insert(dataBin.end(), name.begin(), name.end());
+	dataBin.insert(dataBin.end(), tempFlag.begin(), tempFlag.end());
+	dataBin.insert(dataBin.end(), data.begin(), data.end());
+	dataBin.insert(dataBin.end(), tempFlag.begin(), tempFlag.end());
+	
+	return dataBin;
+}
+
+void coutVectorBool(vector<bool> dataBin){
+	for (int a = 0; a < dataBin.size(); a++){
+		cout << dataBin[a];
+	}
+	cout << endl;
+}
+
+void sender(vector<bool> dataBin){
+	for (int a = 0; a < dataBin.size(); a += 128){
+		vector<bool> frame;
+		
+		if (dataBin.size() > a + 128){
+			frame.insert(frame.begin(), dataBin.begin() + a, dataBin.begin() + (a + 128));
+		}
+		else{
+			frame.insert(frame.begin(), dataBin.begin() + a, dataBin.end());
+		}
+		while (dll.dataBufferFull()) usleep(1000);
+		dll.pushData(frame);
+		//coutVectorBool(frame);
+	}
+}
+
+void process(int size){
+
+}
 /*
-We Prepend headers to the data when sending.
-Start header for start of data, con header for continueing and end for end of data
-Start=00
-con=01
-end=10
+void receiver(vector<bool> dataBin){
+	
+	vector<bool> frame;
+	
+	int numberOfFlags = 0;
+	
+	while (numberOfFlags < 4){
+		vector<bool> tempFrame;// = dl.pop();
+		frame.insert(frame.end(), tempFrame.begin(), tempFrame.end());
+		
+		for (int a = 0; a < frame.size() - 8; a++){
+			bool match = true;
+			for (int b = 0; b < 8; b++){
+				if (frame[a + b] != flag[b]) match = false;
+			}
+			if (match){
+				
+			}
+		}
+		
+	}
+	
+}
 */
-RingBuffer<string,100> InputQueue;
 
-bool sendData(vector<bool> Data,DataLinkLayer *DaLLObj)
-{
-    vector<vector<bool>> frames;
-    vector<bool> tmpframe;
-    for(int i=0;i<Data.size();i++)
-    {
-        if(tmpframe.size()==MAXSIZE-2)
-        {
-            frames.push_back(tmpframe);
-            tmpframe.clear();
-        }
-        tmpframe.push_back(Data[i]);
-    }
-    frames.push_back(tmpframe);
-    for(int i=0;i<frames.size();i++)
-    {
-        if(i==0) //first frame
-        {
-            frames[i].insert(frames[i].begin(),0);
-            frames[i].insert(frames[i].begin(),0);
-        }
-        else if(i==frames.size()-1) //last frame
-        {
-            frames[i].insert(frames[i].begin(),0);
-            frames[i].insert(frames[i].begin(),1);
-        }
-        else //rest of frames
-        {
-            frames[i].insert(frames[i].begin(),1);
-            frames[i].insert(frames[i].begin(),0);
-        }
-    }
-    for (auto frame : frames)
-    {
-        while(DaLLObj->dataBufferFull())
-        {
-            usleep(1000);
-        }
-        DaLLObj->pushData(frame);
-    }
-    while(DaLLObj->dataBufferSize()) usleep(1000);
-    return true;
+void receiver(){
+	while (true){
+		while (dll.dataAvailable()){
+			vector<bool> frame = dll.popData();
+			saveFile(frame, stringToVectorBool("receivedFile.txt"));
+		}
+		usleep(1000);
+	}
 }
 
-bool getData(vector<bool> &data,DataLinkLayer *DaLLObj)
-{
-    if (!DaLLObj->dataAvailable()) return false;
-    vector<vector<bool>> frames;
-    int frameheader=-1;
-    while(frameheader!=2)
-    {
-        while(!DaLLObj->dataAvailable()) usleep(1000);
-        frameheader=0;
-        auto frame=DaLLObj->popData();
-        //for( auto bit : frame) cout << bit; cout << endl; 
-        frameheader+=frame[0]<<1;
-        frame.erase(frame.begin());
-        frameheader+=frame[0];
-        frame.erase(frame.begin());
-     //   if (!frames.size() and frameheader) return false;
-     //   else if (frames.size() and !frameheader) return false;
-        frames.push_back(frame);
-    }
-    for(auto frame : frames)
-    {
-        for(auto bit : frame)
-        {
-            data.push_back(bit);
-        }
-    }
-    return true;
-}
+thread receiverThread;
 
-void getUserInput()
-{
-    while(true)
-    {
-        string input;
-        getline(cin,input);
-        InputQueue.push_back(input);
-    }
-
+int main(){
+	
+	receiverThread = thread(receiver);
+	
+	string fileName = "text.txt";
+	
+	sender(constructor(fileName));
+	while (true){
+		usleep(1000);
+	}
+	return 0;
 }
-void appendByte(vector<bool> &boolVec, unsigned char byte)
-{
-    for(int i=7;i>=0;i--)
-    {
-        if (byte-(1<<i) >= 0)
-        {
-            byte-=(1 << i);
-            boolVec.push_back(1);
-            
-        }
-        else boolVec.push_back(0);
-    }
-}
-unsigned char extractByte(vector<bool> &boolVec,long long pos)
-{
-    char byte=0;
-    for(int i=7;i>=0;i--)
-    {
-        byte+=boolVec[pos+7-i]<<i;
-    }
-    return byte;
-}
-bool boolvecToFile(string filepath,vector<bool> &boolVec)
-{
-    if(boolVec.size()%8) return false;
-    char *memblockToFile;
-    long long size=boolVec.size()/8;
-    memblockToFile=new char [size];
-    for(long long i=0;i<size;i++)
-    {
-        memblockToFile[i]=extractByte(boolVec,i*8);
-    }
-    ofstream file(filepath,ios::out | ios::binary | ios::trunc);
-    if (!file.is_open()) return false;
-    file.write(memblockToFile,size);
-    return file.good();
-    
-    
-}
-bool fileToBoolVector(string filepath,vector<bool> &boolVec)
-{
-    ifstream file(filepath, ios::in | ios::binary |ios::ate);
-    if(!file.is_open()) return false;
-    char * memblockToFile;
-    streampos size=file.tellg();
-    memblockToFile=new char [size];
-    file.seekg(0,ios::beg);
-    file.read(memblockToFile,size);
-    file.close();
-    for(int i=0;i<size;i++)
-    {
-        appendByte(boolVec, memblockToFile[i]);
-    }
-    return file.good();
-}
-int main()
-{
-    DataLinkLayer DaLLObj;
-    thread inputthread(getUserInput);
-    while(true)
-    {
-        while (!InputQueue.empty())
-        {
-            string inputstring=InputQueue.pop_front();
-            if (inputstring.substr(0,4)=="send")
-            {
-                string path=inputstring.substr(4,inputstring.size()-4);
-                while(path.size()>1 and path.front()==' ') path.erase(path.begin());
-                vector<bool> filedata;
-                if(!fileToBoolVector(path,filedata))
-                {
-                    cout << "path not valid" << endl;
-                }
-                else
-                {
-                     cout << "sending file" << endl;
-                     if(sendData(filedata,&DaLLObj) )
-                     {
-                        cout << "file send succesfully." << endl;
-                     }
-                     else
-                     {
-                        cout << "error while sending file" << endl;
-                     }
-                }
-            }
-            else if(inputstring.substr(0,4)=="quit") exit(0);
-            else if(inputstring.substr(0,6)=="status") cout << DaLLObj.getMode() << endl    ;
-        }
-        vector<bool> indata;
-        if (getData(indata,&DaLLObj))
-        {
-            cout << "Recieved file of size " << indata.size()/8 <<" bytes" << endl;
-            if(!boolvecToFile("data",indata)) cout << "error while saving file" << endl;
-            else cout << "File saved " << endl;
-        }
-    usleep(1000);
-    }   
-}
-
-
