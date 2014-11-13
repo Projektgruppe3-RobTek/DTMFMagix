@@ -188,6 +188,7 @@ void receiver(){
 		while (dll.dataAvailable()){
 			vector<bool> frame = dll.popData();
 			saveFile(frame, stringToVectorBool("receivedFile.txt"));
+			cout << "File received!" << endl;
 		}
 		usleep(1000);
 	}
@@ -195,13 +196,13 @@ void receiver(){
 
 thread receiverThread;
 
-int main(){
+int main(int arg, char ** args){
 	
 	receiverThread = thread(receiver);
 	
 	string fileName = "text.txt";
 	
-	sender(constructor(fileName));
+	if (arg > 1) sender(constructor(fileName));
 	while (true){
 		usleep(1000);
 	}
