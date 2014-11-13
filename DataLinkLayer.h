@@ -8,7 +8,7 @@
 //#include "physicalLayerEmu.h"
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
-#define SENDTIME 60
+#define SENDTIME 200
 
 using namespace std;
 /*
