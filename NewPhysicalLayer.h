@@ -8,8 +8,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <thread>
-#define TONELENGTH 150
-#define SILENTLENGTH 50
+#define TONELENGTH 75
+#define SILENTLENGTH 25
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
 #endif
