@@ -1,9 +1,9 @@
 CC=clang++ #Compiler
 CFLAGS= -c -std=c++11  -Wall  #Compiler Flags
-LDFLAGS=-lportaudio -lSDL2 -lboost_filesystem -lboost_system #Linker options
+LDFLAGS=-lportaudio -lSDL2 #Linker options
 SOURCES= DTMFTones.cpp NewPlayer.cpp Player.cpp Recorder.cpp main.cpp Goertzel.cpp physicalLayerEmu.cpp NewPhysicalLayer.cpp DataLinkLayer.cpp   #cpp files
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files
-EXECUTEABLE=Receiver #Output name
+EXECUTEABLE=DTMFMagix #Output name
 
 all: $(SOURCES) $(EXECUTEABLE)
 	

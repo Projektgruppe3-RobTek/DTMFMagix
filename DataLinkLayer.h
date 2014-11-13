@@ -96,7 +96,6 @@ class DataLinkLayer
         int getMode(); //Return mode
     private:
         NewPhysicalLayer physLayer;
-        //physicalLayer physLayer;
         bool lastinID=0;
         bool lastoutID=0;
         bool connectionRequest();
