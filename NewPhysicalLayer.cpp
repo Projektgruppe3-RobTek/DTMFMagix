@@ -194,7 +194,7 @@ void NewPhysicalLayer::getFrame()
             data.push_back(Note);                                                           // Save DTMF to datagram
         }
         if(bugfix) cout << "Frame successfull" << endl;
-        data.erase(data.end()-3,data.end());                                                // Remove end flag from datagram
+        data.erase(data.end()-4,data.end());                                                // Remove end flag from datagram
         incommingFrame=data;                                                                // Save datagram to incomming frame, to allow popFrame()
         receiveFlag=true;                                                                   
     }
@@ -212,6 +212,7 @@ bool NewPhysicalLayer::returnReceiveFlag()
 
 void NewPhysicalLayer::pushFrame(vector<bool> frame)                
 {
+    for(auto bit : frame) std::cout << bit; std::cout << endl;
     outgoingFrame=applyPreambleTrailer(convertToDTMF(frame));       // Convert binary frame to DTMF, and save as outgoingFrame
     sendFlag=true;
 }
