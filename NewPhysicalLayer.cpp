@@ -88,45 +88,53 @@ void NewPhysicalLayer::getFrame()
         char RecordedSequence[4];                                           // Initiate RecordedSequence array
         int SequenceCounter=0;
         char previousNote='!';
+        float previousFreq1=0;
+        float previousFreq2=0;
+        bool bestSync=false;
         if(bugfix) cout << "entering sync" << endl;
-        while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter))  // Compare last 4 recorded notes with sync sequence
+        while(!bestSync)
         {
-            while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
-            while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
-            usleep(SILENTLENGTH*1000+TONELENGTH*1000);                      // Sleep duration of silentlength + tonelength
-            vector<float> in1=Rec.GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
-            applyHamming(in1);                                              // Apply Hamming to in1
-            float freq1max=0;
-            int freq1Index=0;
-            float freq2max=0;
-            int freq2Index=0;
-            for(int k=0;k<4;k++)                                            // Calculate Goertzel on all vertical frequencies
-            {                                                               // Save index for frequency with largest Goertzel value
-                float gMag=doGoertzel(SAMPLE_RATE,Freqarray1[k],in1);
-                if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
-            }
-
-            for(int k=0;k<4;k++)                                            // Calculate Goertzel on all horizontal frequencies
-            {                                                               // Save index for frequency with largest Goertzel value
-                float gMag=doGoertzel(SAMPLE_RATE,Freqarray2[k],in1);
-                if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
-            }
-            char Note=DTMFTones[freq1Index*4+freq2Index];                   // Determine DTMF by frequency index
-            if(bugfix) cout << Note << endl;
-            if(Note!=previousNote)                                          // If 2 same notes in a row, sleep
+            while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter || !bestSync))  // Compare last 4 recorded notes with sync sequence
             {
-                RecordedSequence[SequenceCounter]=Note;                     // Save recorded DTMF in RecordedSequence array
-                SequenceCounter=(SequenceCounter+1)%4;
+                while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
+                while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
+                vector<float> in1=Rec.GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
+                applyHamming(in1);                                              // Apply Hamming to in1
+                float freq1max=0;
+                int freq1Index=0;
+                float freq2max=0;
+                int freq2Index=0;
+                for(int k=0;k<4;k++)                                            // Calculate Goertzel on all vertical frequencies
+                {                                                               // Save index for frequency with largest Goertzel value
+                    float gMag=doGoertzel(SAMPLE_RATE,Freqarray1[k],in1);
+                    if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
+                }
+
+                for(int k=0;k<4;k++)                                            // Calculate Goertzel on all horizontal frequencies
+                {                                                               // Save index for frequency with largest Goertzel value
+                    float gMag=doGoertzel(SAMPLE_RATE,Freqarray2[k],in1);
+                    if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+                }
+
+                char Note=DTMFTones[freq1Index*4+freq2Index];                   // Determine DTMF by frequency index
+                if(bugfix) cout << Note << endl;
+
+                RecordedSequence[SequenceCounter]=Note;                         // Save recorded DTMF in RecordedSequence array
+                if(Note!=previousNote) {SequenceCounter=(SequenceCounter+1)%4;}
+                if(previousFreq1<freq1max && previousFreq2<freq2max)
+                {
+                    gettimeofday(&tv,NULL);                                             
+                    synctime=tv.tv_sec*1000+tv.tv_usec/1000;
+                }
                 previousNote=Note;
+                previousFreq1=freq1max;
+                previousFreq2=freq2max;
+                if(previousFreq1<freq1max && previousFreq2<freq2max)
+                {
+                    bestSync=true;
+                }
             }
-            else
-            {
-                usleep(SILENTLENGTH*100);
-            }
-
-        }
-        gettimeofday(&tv,NULL);                                             
-        synctime=tv.tv_sec*1000+tv.tv_usec/1000;                                            // Save time sync occured
+        }                                            // Save time sync occured
         SequenceCounter=0;
         if(bugfix) cout << "entering start" << endl;
         while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))                     // Compare last 4 recorded notes with start flag sequence
