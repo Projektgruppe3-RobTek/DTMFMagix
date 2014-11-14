@@ -129,10 +129,7 @@ void NewPhysicalLayer::getFrame()
                 previousNote=Note;
                 previousFreq1=freq1max;
                 previousFreq2=freq2max;
-                if(previousFreq1<freq1max && previousFreq2<freq2max)
-                {
-                    bestSync=true;
-                }
+                if(previousFreq1<freq1max && previousFreq2<freq2max) {bestSync=true;}
             }
         }                                            // Save time sync occured
         SequenceCounter=0;
