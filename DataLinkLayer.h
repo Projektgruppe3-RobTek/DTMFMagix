@@ -4,7 +4,7 @@
 #include <thread>
 #include <array>
 #include <iostream>
-#include "NewPhysicalLayer.h" // Lyd
+#include "PhysicalLayer.h" // Lyd
 //#include "physicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
@@ -95,8 +95,7 @@ class DataLinkLayer
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
         int getMode(); //Return mode
     private:
-        NewPhysicalLayer physLayer;// Lyd
-        //physicalLayer physLayer;   // Fil
+        PhysicalLayer physLayer;// Lyd
         bool lastinID=0;
         bool lastoutID=0;
         bool connectionRequest();
