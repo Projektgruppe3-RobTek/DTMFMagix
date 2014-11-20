@@ -58,15 +58,23 @@ int DTMFRecorder::RecCallback( const void *inputBuffer,void *outputBuffer,unsign
 vector<float> DTMFRecorder::GetAudioData(int lenght ,int OffSet)
 {
     vector<float> Samples;   // Output vector
-    Samples.reserve((lenght*REC_SAMPLE_RATE/1000));
-    int HEADpos=RecData->head()-(OffSet*REC_SAMPLE_RATE/1000);
-    int TAILpos=(HEADpos-(lenght*REC_SAMPLE_RATE/1000))%RecData->capacity();
-    for(int i=TAILpos;i<(lenght*REC_SAMPLE_RATE/1000);i++)
+    RingBuffer<float,INPUTBUFFERSIZE> *copyBuf = RecData; //make a copy of Input buffer
+    if ((REC_SAMPLE_RATE*(OffSet+lenght)/1000) < INPUTBUFFERSIZE)
+        {
+            copyBuf->turn(REC_SAMPLE_RATE*(OffSet+lenght)/1000);             //Turn ringbuffer for offset
+        }
+        else
+        {
+            cout << "OFFSet to big" << endl;
+        }
+    for(int i = 0; i< (REC_SAMPLE_RATE*lenght/1000);i++)
     {
-        Samples.push_back(RecData->at((TAILpos+i)%RecData->capacity()));
+        Samples.push_back(copyBuf->pop_front());                     // Copy desired samples to Samples
     }
 
     return Samples;
+
+
 
 
 }
