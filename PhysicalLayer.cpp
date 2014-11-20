@@ -125,9 +125,12 @@ void PhysicalLayer::getFrame()
                 }
 
                 char Note=DTMFTones[freq1Index*4+freq2Index];                   // Determine DTMF by frequency index
-                if(bugfix) cout << note << endl;
+                if(bugfix) cout << Note << endl;
                 RecordedSequence[SequenceCounter]=Note;                         // Save recorded DTMF in RecordedSequence array
-                if(Note!=previousNote) {SequenceCounter=(SequenceCounter+1)%4;}
+                if(Note!=previousNote)
+                {
+                    SequenceCounter=(SequenceCounter+1)%4;
+                }
                 if(previousFreq1<freq1max && previousFreq2<freq2max)
                 {
                     gettimeofday(&tv,NULL);                                             
@@ -136,7 +139,10 @@ void PhysicalLayer::getFrame()
                 previousNote=Note;
                 previousFreq1=freq1max;
                 previousFreq2=freq2max;
-                if(previousFreq1<freq1max && previousFreq2<freq2max) {bestSync=true;}
+                if(previousFreq1<freq1max && previousFreq2<freq2max)
+                {
+                    bestSync=true;
+                }
             }
         }                                                                   
         SequenceCounter=0;
