@@ -104,23 +104,28 @@ void PhysicalLayer::getFrame()
                 int freq1Index=0;
                 float freq2max=0;
                 int freq2Index=0;
-                timeval t;
-                gettimeofday(&t,NULL);
-                cout << t.tv_sec*1000+t.tv_usec/1000 << endl;
                 for(int k=0;k<4;k++)                                            // Calculate Goertzel on all vertical frequencies
                 {                                                               // Save index for frequency with largest Goertzel value
                     float gMag=doGoertzel(REC_SAMPLE_RATE,Freqarray1[k],in1);
-                    if (gMag>freq1max) {freq1max=gMag; freq1Index=k;}
+                    if (gMag>freq1max) 
+                    {
+                        freq1max=gMag; 
+                        freq1Index=k;
+                    }
                 }
 
                 for(int k=0;k<4;k++)                                            // Calculate Goertzel on all horizontal frequencies
                 {                                                               // Save index for frequency with largest Goertzel value
                     float gMag=doGoertzel(REC_SAMPLE_RATE,Freqarray2[k],in1);
-                    if (gMag>freq2max) {freq2max=gMag; freq2Index=k;}
+                    if (gMag>freq2max) 
+                    {
+                        freq2max=gMag;
+                        freq2Index=k;
+                    }
                 }
 
                 char Note=DTMFTones[freq1Index*4+freq2Index];                   // Determine DTMF by frequency index
-
+                if(bugfix) cout << note << endl;
                 RecordedSequence[SequenceCounter]=Note;                         // Save recorded DTMF in RecordedSequence array
                 if(Note!=previousNote) {SequenceCounter=(SequenceCounter+1)%4;}
                 if(previousFreq1<freq1max && previousFreq2<freq2max)
