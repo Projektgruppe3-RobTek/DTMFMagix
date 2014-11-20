@@ -1,18 +1,24 @@
 #include <iostream>
 #include <vector>
+#include <unistd.h>
+#include "PhysicalLayer.h"
 using namespace std;
 
 int main()
 {
-    vector<int> tal;
-    for(int i=0;i<8;i++)
+    vector<bool> vec;
+    PhysicalLayer physLayer;
+    for(int i=0; i<20; i++)
     {
-        tal.push_back(i);
+        vec.push_back((i*i)%2);
     }
-    tal.erase(tal.end()-2,tal.end());
-    for(int i=0;i<tal.size();i++)
+    physLayer.pushFrame(vec);
+    while(!physLayer.returnReceiveFlag())
     {
-        cout << tal[i] << endl;
+        sleep(1);
     }
+    vec=physLayer.popFrame();
+    for(int i=0; i<vec.size(); i++)
+        cout << vec[i];
     return 0;
 }
