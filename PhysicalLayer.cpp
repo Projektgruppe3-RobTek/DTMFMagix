@@ -94,7 +94,7 @@ void PhysicalLayer::getFrame()
         if(bugfix) cout << "entering sync" << endl;
         while(!bestSync)
         {
-            while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter || !bestSync))  // Compare last 4 recorded notes with sync sequence
+            while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter) || !bestSync)  // Compare last 4 recorded notes with sync sequence
             {
                 while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
                 while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
@@ -120,7 +120,6 @@ void PhysicalLayer::getFrame()
                 }
 
                 char Note=DTMFTones[freq1Index*4+freq2Index];                   // Determine DTMF by frequency index
-                if(bugfix) cout << Note << endl;
 
                 RecordedSequence[SequenceCounter]=Note;                         // Save recorded DTMF in RecordedSequence array
                 if(Note!=previousNote) {SequenceCounter=(SequenceCounter+1)%4;}
@@ -134,7 +133,7 @@ void PhysicalLayer::getFrame()
                 previousFreq2=freq2max;
                 if(previousFreq1<freq1max && previousFreq2<freq2max) {bestSync=true;}
             }
-        }                                            // Save time sync occured
+        }                                                                   
         SequenceCounter=0;
         if(bugfix) cout << "entering start" << endl;
         while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))                     // Compare last 4 recorded notes with start flag sequence
