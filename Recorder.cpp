@@ -19,7 +19,7 @@ int Recorder::patestCallback(   const void *inputBuffer,void *outputBuffer,
     for(unsigned int i=0;i<framesPerBuffer;i++)
     {
         data->recBuff[data->NextRec++]=in[i]; //Maybe don't count NextRec up in the loop?? May cause problems
-        if (data->NextRec>=SAMPLE_RATE*RECBUFLENGHT) data-> NextRec=0;
+        if (data->NextRec>=REC_SAMPLE_RATE*RECBUFLENGHT) data-> NextRec=0;
     }
     return paContinue;
 }
@@ -36,7 +36,7 @@ Recorder::Recorder()
                                 1, //input channels
                                 0,
                                 paFloat32,
-                                SAMPLE_RATE,
+                                REC_SAMPLE_RATE,
                                 10, //This may need to be changed (lowered, but this may introduce noise/artifacts. Testing is needed)
                                     //Setting to one apperently don't cause artefacts (need confirmation), but much greater CPU usage.
                                 patestCallback,
@@ -61,21 +61,21 @@ vector<float> Recorder::GetAudioData(int lenght ,int OffSet) /*OffSet= Get data 
     }
     //endpoint is the last sample to put in our array
     int endPoint=RecData.NextRec;
-    endPoint -=(SAMPLE_RATE*OffSet)/1000;
-    if (endPoint<0) endPoint+=SAMPLE_RATE*RECBUFLENGHT;
+    endPoint -=(REC_SAMPLE_RATE*OffSet)/1000;
+    if (endPoint<0) endPoint+=REC_SAMPLE_RATE*RECBUFLENGHT;
     //startPoint is the first sample to put in our array
-    int startPoint=endPoint-(SAMPLE_RATE*lenght)/1000;
-    if (startPoint<0) startPoint+=SAMPLE_RATE*RECBUFLENGHT;
+    int startPoint=endPoint-(REC_SAMPLE_RATE*lenght)/1000;
+    if (startPoint<0) startPoint+=REC_SAMPLE_RATE*RECBUFLENGHT;
     //Now, put the requsted samples into a array
     int i=startPoint;
     vector<float> Samples;
-    Samples.reserve((SAMPLE_RATE*lenght)/1000);
+    Samples.reserve((REC_SAMPLE_RATE*lenght)/1000);
     while(i!=endPoint)
     {
         //cout <<i << endl;
         Samples.push_back(RecData.recBuff[i]);
         i++;
-        if (i==SAMPLE_RATE*RECBUFLENGHT) i=0;
+        if (i==REC_SAMPLE_RATE*RECBUFLENGHT) i=0;
     }
     return Samples;
 
