@@ -3,37 +3,32 @@
 
 DTMFRecorder::DTMFRecorder()
 {
-
-    PaStream *stream;               // Stream buffer
-    err = Pa_Initialize();          // Initialize Port audio
-
-    // Check for failed initaialization
+    RecData=new RingBuffer<float,INPUTBUFFERSIZE>;
+    cout << "test";
+    PaStream *stream;
+    err = Pa_Initialize();
     if (err != paNoError)
     {
         cout << Pa_GetErrorText(err) << endl;
         err = Pa_Terminate();
     }
 
-    // Open PortAudio with desired specs.
-     err = Pa_OpenDefaultStream(  &stream, /* stream buffer  */
+     err = Pa_OpenDefaultStream(  &stream,
                             INPUTCHANNELS, /* input channels */
                            OUTPUTCHANNELS, /* output channels */
                                 paFloat32, /* 32 bit floating point output */
                           REC_SAMPLE_RATE, /* Sample Rate */
-                            RECBUFFERSIZE, /* frames per buffer */
-                              RecCallback, /* this is your callback function */
-                                  &RecData ); /* Point passed to callback */
-    // Check if desired specs is obtained.
+                          REC_BUFFER_SIZE, /* frames per buffer */
+                           RecCallback, /* this is your callback function */
+                                  RecData ); /* Point passed to callback */
+
     if (err != paNoError)
     {
         cout << Pa_GetErrorText(err) << endl;
         err = Pa_Terminate();
     }
 
-    // Start reording
     err = Pa_StartStream(stream);
-
-    // Check for errors
     if (err != paNoError)
     {
 
@@ -44,20 +39,13 @@ DTMFRecorder::DTMFRecorder()
 
 }
 
-// Rec callback function, running in loops.
 int DTMFRecorder::RecCallback( const void *inputBuffer,void *outputBuffer,unsigned long framePerBuffer,
                     const PaStreamCallbackTimeInfo* timeInfo,PaStreamCallbackFlags statusFlags,
                     void *userData )
 {
-
-    // Casting from PortAudio to RingBuffer
     RingBuffer<float,INPUTBUFFERSIZE> *data = (RingBuffer<float,INPUTBUFFERSIZE>*)userData;
     float *in = (float*)inputBuffer;
-
-
     (void) outputBuffer;        /* Prevent unused variable warning. */
-
-    // Keep recording and add input to RingBuffer, from inputbuffer
     for(unsigned int i = 0; i< framePerBuffer; i++)
     {
     data->push_back(in[i]);
@@ -70,22 +58,12 @@ int DTMFRecorder::RecCallback( const void *inputBuffer,void *outputBuffer,unsign
 vector<float> DTMFRecorder::GetAudioData(int lenght ,int OffSet)
 {
     vector<float> Samples;   // Output vector
-
-    //Make a copy of Input buffer
-    RingBuffer<float,INPUTBUFFERSIZE> copyBuf = RecData;
-
-    // Check if requested samples is presented in RingBuffer
-    if ((REC_SAMPLE_RATE*(OffSet+lenght)/1000) < INPUTBUFFERSIZE)
-        {
-            copyBuf.turn(-REC_SAMPLE_RATE*(OffSet+lenght)/1000);             //Turn ringbuffer for offset
-        }
-        else
-        {
-            cout << "OFFSet to big" << endl;
-        }
-    for(int i = 0; i< (REC_SAMPLE_RATE*lenght/1000);i++)
+    Samples.reserve((lenght*REC_SAMPLE_RATE/1000));
+    int HEADpos=RecData->head()-(OffSet*REC_SAMPLE_RATE/1000);
+    int TAILpos=(HEADpos-(lenght*REC_SAMPLE_RATE/1000))%RecData->capacity();
+    for(int i=TAILpos;i<(lenght*REC_SAMPLE_RATE/1000);i++)
     {
-        Samples.push_back(copyBuf.pop_front());                     // Copy desired samples to Samples
+        Samples.push_back(RecData->at((TAILpos+i)%RecData->capacity()));
     }
 
     return Samples;
@@ -95,10 +73,11 @@ vector<float> DTMFRecorder::GetAudioData(int lenght ,int OffSet)
 
 DTMFRecorder::~DTMFRecorder()
 {
-    // Close recording and check for errors
+    delete RecData;
     err = Pa_Terminate();
     if (err !=  paNoError)
     {
         cout << Pa_GetErrorText(err) << endl;
     }
 }
+
