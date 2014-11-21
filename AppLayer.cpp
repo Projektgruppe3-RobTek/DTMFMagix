@@ -17,8 +17,8 @@ void AppLayer::receiver(){
 	vector<bool> requestedFile;
 	vector<bool> requestedFileName;
 	
-	int numberOfFrames;
-	int estimatedSize;
+	int numberOfFrames = 0;
+	int estimatedSize = 0;
 	
 	while (!stop){
 		
