@@ -11,7 +11,7 @@ void DataLinkLayer::getFrames()
 {
     while(true)
     {   
-        while (!physLayer.returnReceiveFlag()) //is there a new frame?
+        while (!physLayer.dataAvailable()) //is there a new frame?
         {
             usleep(1000);
             if(mode==Mode::client and getTimer() > 500 * SENDTIME){
@@ -19,7 +19,7 @@ void DataLinkLayer::getFrames()
                 cout << "timeout " << endl;
             }
         }
-        vector<bool> recievedFrame = physLayer.popFrame(); //Get the frame
+        vector<bool> recievedFrame = physLayer.popData(); //Get the frame
         for (int a = 0; a < recievedFrame.size(); a++) cout << recievedFrame[a];
         cout << endl;
         removePadding(recievedFrame); 
@@ -322,8 +322,8 @@ void DataLinkLayer::sendTerminate(bool ID)
 
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
-    while(physLayer.returnSendFlag()) usleep(1000);
-    physLayer.pushFrame(frame);
+    while(physLayer.layerBusy()) usleep(1000);
+    physLayer.pushData(frame);
 }
 
 void DataLinkLayer::startTimer()
@@ -504,7 +504,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
 
 
         startTimer();
-        physLayer.pushFrame(packet);
+        physLayer.pushData(packet);
 
         while(ackWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
             usleep(2000);

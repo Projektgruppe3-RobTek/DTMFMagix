@@ -26,10 +26,10 @@ private:
 
 public:
     PhysicalLayer();
-    bool	    returnReceiveFlag();
-    bool            returnSendFlag();
-    vector<bool>    popFrame();
-    void            pushFrame(vector<bool>);
+    bool            dataAvailable();
+    bool            layerBusy();
+    vector<bool>    popData();
+    void            pushData(vector<bool>);
     void            getFrame();
     void            playFrame();
     ~PhysicalLayer();
@@ -43,7 +43,7 @@ private:
     char            endFlag[4]={'*','8','6','A'};
     char            DTMFTones[16]={'1','2','3','A','4','5','6','B','7','8','9','C','*','0','#','D'};
     DTMFPlayer      Player;
-    DTMFRecorder        Rec;
+    DTMFRecorder    Rec;
     long long       synctime;
     bool            receiveFlag;
     bool            sendFlag;
@@ -52,7 +52,7 @@ private:
     vector<char>    incommingFrame;
     vector<char>    outgoingFrame;
     timeval         tv;
-    bool            bugfix=true;
+    bool            bugfix=false;
 };
 void getFrameWrapper(PhysicalLayer * DaLLObj);
 void playFrameWrapper(PhysicalLayer * DaLLObj);

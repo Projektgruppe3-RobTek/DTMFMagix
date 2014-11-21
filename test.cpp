@@ -1,24 +1,34 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <cstdlib>
+#include <ctime>
 #include "PhysicalLayer.h"
 using namespace std;
 
 int main()
 {
-    vector<bool> vec;
+    srand(time(NULL));
+    vector<bool> vecin;
+    vector<bool> vecout;
     PhysicalLayer physLayer;
-    for(int i=0; i<20; i++)
+    for(int i=0; i<200; i++)
     {
-        vec.push_back((i*i)%2);
+        vecin.push_back((rand() % 100)%2);
     }
-    physLayer.pushFrame(vec);
+    for(int i=0; i<vecin.size(); i++)
+        cout << vecin[i];
+    cout << endl;
+    physLayer.pushFrame(vecin);
     while(!physLayer.returnReceiveFlag())
     {
-        sleep(1);
+        usleep(100);
     }
-    vec=physLayer.popFrame();
-    for(int i=0; i<vec.size(); i++)
-        cout << vec[i];
+    vecout=physLayer.popFrame();
+    for(int i=0; i<vecout.size(); i++)
+        cout << vecout[i];
+    cout << endl;
+    if(vecin==vecout)
+        cout << "tillykke";
     return 0;
 }
