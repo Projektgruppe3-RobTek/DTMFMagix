@@ -4,6 +4,10 @@ AppLayer::AppLayer(){
 	receiveThread = thread(receiverWrapper, this);
 }
 
+AppLayer::~AppLayer() {
+    stop=true;
+    receiveThread.join();
+}
 void AppLayer::receiver(){
 	vector<bool> size;
 	vector<bool> hash;
@@ -16,9 +20,9 @@ void AppLayer::receiver(){
 	int numberOfFrames;
 	int estimatedSize;
 	
-	while (true){
+	while (!stop){
 		
-		while (dll.dataAvailable()){
+		while (!stop and dll.dataAvailable()){
 			
 			vector<bool> frame = dll.popData();
 			

@@ -95,6 +95,7 @@ class DataLinkLayer
         void getFrames(); //Grab frames from physical layer, parse to AppLayer if reqiured.
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
         int getMode(); //Return mode
+        ~DataLinkLayer();
     private:
         PhysicalLayer physLayer;// Lyd
         bool lastinID=0;
@@ -111,6 +112,7 @@ class DataLinkLayer
         ack ackWait;
         Connection conWait;
         Mode mode=Mode::idle;
+        bool stop=false;
 };
 void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);

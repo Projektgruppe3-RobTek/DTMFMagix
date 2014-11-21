@@ -37,7 +37,7 @@ class AppLayer{
 	public:
 		
 		AppLayer();
-		
+		~AppLayer();
 		void sendMessage(string message);
 		void sendFile(string fileName);
 		void sendFile(string fileName, string targetName);
@@ -92,7 +92,7 @@ class AppLayer{
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
 		
 		thread receiveThread;
-		
+		bool stop=false;
 		bool startFlag[9][APP_FLAG_SIZE] = {
 			{0,0,0,0,0},// size
 			{0,0,0,1,0},// name

@@ -22,7 +22,7 @@ private:
 	vector<char>	applyPreambleTrailer(vector<char>);
 	vector<char>	convertToDTMF(vector<bool>);
 	vector<bool>	convertToBinary(vector<char>);
-
+    bool            stop=false;
 
 public:
     PhysicalLayer();

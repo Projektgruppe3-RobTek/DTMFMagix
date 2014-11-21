@@ -68,7 +68,7 @@ vector<bool> PhysicalLayer::convertToBinary(vector<char> dFrame)
 
 void PhysicalLayer::playFrame()                  // If sendFlag = true, play outgoing frame and set sendFlag = false
 {
-    while(true)
+    while(!stop)
     {
         usleep(2000);
         if(sendFlag)
@@ -83,13 +83,13 @@ void PhysicalLayer::playFrame()                  // If sendFlag = true, play out
 
 void PhysicalLayer::getFrame()
 {
-    while(true)
+    while(!stop)
     {
         char RecordedSequence[4];                                           // Initiate RecordedSequence array
         int SequenceCounter=0;
         char previousNote='!';
         if(bugfix) cout << "entering sync" << endl;
-        while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter))  // Compare last 4 recorded notes with sync sequence
+        while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter) and !stop)  // Compare last 4 recorded notes with sync sequence
         {
             while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
             while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
@@ -134,7 +134,7 @@ void PhysicalLayer::getFrame()
         }                                                               
         SequenceCounter=0;
         if(bugfix) cout << "entering start" << endl;
-        while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))                     // Compare last 4 recorded notes with start flag sequence
+        while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter) and !stop)                     // Compare last 4 recorded notes with start flag sequence
         {
             do
             {                                                                               
@@ -175,7 +175,7 @@ void PhysicalLayer::getFrame()
         vector<char> data;                                                                  // Initiate datagram
         SequenceCounter=0;
         if(bugfix) cout << "entering end" << endl;
-        while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))                       // Compare last 4 recorded notes with end flag sequence
+        while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter) and !stop)                       // Compare last 4 recorded notes with end flag sequence
         {
             do
             {
@@ -257,7 +257,9 @@ void getFrameWrapper(PhysicalLayer * PhysLayer)
 
 PhysicalLayer::~PhysicalLayer()
 {
-
+    stop=true;
+    incommingThread.join();
+    outgoingThread.join();
 }
 
 template <typename Type>
