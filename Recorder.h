@@ -1,32 +1,43 @@
-#include<portaudio.h>
-#include<iostream>
-#include<cmath>
-#include<array>
-#include <ctime>
+#include <iostream>
+#include <portaudio.h>
+#include "RingBuffer.h"
 #include <vector>
-#define REC_SAMPLE_RATE 44100
-#define RECBUFLENGHT 10
-#ifndef M_PI
-#define M_PI        3.14159265358979323846
-#endif
+#define INPUTBUFFERSIZE 882000   // 2* sample rate
+#define REC_SAMPLE_RATE 8000
+#define INPUTCHANNELS 1
+#define OUTPUTCHANNELS 0
+#define REC_BUFFER_SIZE 8
+#pragma once
+using namespace std;
+
+// Container for input	
 typedef struct
 {
-    std::array<float,REC_SAMPLE_RATE*RECBUFLENGHT> recBuff; //don't do this! may cause lag! don't use dynamic memory. Maybe use a ringbuffer instead. Size?    
-    int NextRec=0;
-} PortAudioData;
-class Recorder
-{
-private:
-    static int patestCallback(  const void *inputBuffer,void *outputBuffer,
-                            unsigned long framesPerBuffer,
-                            const PaStreamCallbackTimeInfo *timeInfo,
-                            PaStreamCallbackFlags statusFlags,
-                            void *userData );
-    PaStream *stream;
-    PortAudioData RecData;
+    float *recBuff = new float[INPUTBUFFERSIZE];    // point to place en heap.
+    int streamPlace=0;
+} RecordingContainer;
+
+
+class DTMFRecorder{
+
 public:
-    Recorder();
-    ~Recorder();
-    std::vector<float> GetAudioData(int lenght ,int OffSet);
+    DTMFRecorder();
+
+    // Method called by Physical layer
+    vector<float> GetAudioData(int lenght ,int OffSet);
+
+    ~DTMFRecorder();
+
+
+private:
+    PaError err;				// Error control
+    RecordingContainer RecData;			// Create container
+    int collect;
+    vector<float> Samples;
+    
+    // Callback function for recorder
+    static int RecCallback( const void *inputBuffer,void *outputBuffer,unsigned long framePerBuffer,
+                    const PaStreamCallbackTimeInfo* timeInfo,PaStreamCallbackFlags statusFlags,
+                    void *userData ) ;
 
 };

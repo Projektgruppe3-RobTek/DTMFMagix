@@ -43,7 +43,7 @@ private:
     char            endFlag[4]={'*','8','6','A'};
     char            DTMFTones[16]={'1','2','3','A','4','5','6','B','7','8','9','C','*','0','#','D'};
     DTMFPlayer      Player;
-    Recorder        Rec;
+    DTMFRecorder        Rec;
     long long       synctime;
     bool            receiveFlag;
     bool            sendFlag;
