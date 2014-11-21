@@ -91,7 +91,7 @@ void PhysicalLayer::getFrame()
         if(bugfix) cout << "entering sync" << endl;
         while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter))  // Compare last 4 recorded notes with sync sequence
         {
-            //while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
+            while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
             while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
             vector<float> in1=Rec.GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
             applyHamming(in1);                                              // Apply Hamming to in1
