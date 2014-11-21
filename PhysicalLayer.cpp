@@ -20,7 +20,7 @@ vector<char> PhysicalLayer::applyPreambleTrailer(vector<char> data)
     vector<char> startFlagVec(startFlag, startFlag + 4);            //
     vector<char> endFlagVec(endFlag, endFlag + 4);                  // Save sync and flag arrays, as vectors
     vector<char> frame;                                             // Create empty vector
-    for(int i = 0; i<3; i++)
+    for(int i = 0; i<SYNCREPEAT; i++)
     {
         frame.insert(frame.end(), syncSequenceVec.begin(), syncSequenceVec.end());  // Add sync to frame vector 3 times
     }
@@ -85,11 +85,11 @@ void PhysicalLayer::getFrame()
 {
     while(!stop)
     {
-        char RecordedSequence[4];                                           // Initiate RecordedSequence array
+        char RecordedSequence[SYNCLENGHT];                                           // Initiate RecordedSequence array
         int SequenceCounter=0;
         char previousNote='!';
         if(bugfix) cout << "entering sync" << endl;
-        while(!ArrayComp(RecordedSequence,SyncSequence,4,SequenceCounter) and !stop)  // Compare last 4 recorded notes with sync sequence
+        while(!ArrayComp(RecordedSequence,SyncSequence,SYNCLENGHT,SequenceCounter) and !stop)  // Compare last 4 recorded notes with sync sequence
         {
             while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
             while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
@@ -124,7 +124,7 @@ void PhysicalLayer::getFrame()
             RecordedSequence[SequenceCounter]=Note;                         // Save recorded DTMF in RecordedSequence array
             if(Note!=previousNote)
             {
-                SequenceCounter=(SequenceCounter+1)%4;
+                SequenceCounter=(SequenceCounter+1)%SYNCLENGHT;
                 gettimeofday(&tv,NULL);                                             
                 synctime=tv.tv_sec*1000+tv.tv_usec/1000-TONELENGTH/2;
                 if(bugfix) cout << Note << endl;
