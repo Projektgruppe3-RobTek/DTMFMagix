@@ -14,7 +14,7 @@ void DataLinkLayer::getFrames()
         while (!physLayer.dataAvailable()) //is there a new frame?
         {
             usleep(1000);
-            if(mode==Mode::client and getTimer() > 500 * SENDTIME){
+            if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + 25) * SENDTIME){
                 mode = Mode::idle; //release connection if server is dead
                 cout << "timeout " << endl;
             }
@@ -453,8 +453,8 @@ bool DataLinkLayer::connectionRequest(){
     conWait.type=1;
  
     while(conWait.waiting){
-        if (requestsSend%5==4){
-            usleep((((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4 + rand() % (2000+requestsSend*MAX_FRAMESIZE*2))*1000); //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard and a random time
+        if (requestsSend % 3 == 2){
+            usleep((((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4 + rand() % (2000 + requestsSend * MAX_FRAMESIZE * 2)) * 1000); //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard and a random time
             cout << "Stepping down, failed to send request (DLL)" << endl;
             if(mode == Mode::client) return false;
         }
@@ -462,7 +462,7 @@ bool DataLinkLayer::connectionRequest(){
         startTimer();
         sendRequest(!lastoutID);
         lastoutID = !lastoutID;
-        while(conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
@@ -484,7 +484,7 @@ bool DataLinkLayer::releaseConnection(){
         startTimer();
         sendTerminate(!lastoutID);
         lastoutID = !lastoutID;
-        while(conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 

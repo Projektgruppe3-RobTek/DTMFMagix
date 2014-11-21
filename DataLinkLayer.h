@@ -8,7 +8,7 @@
 //#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
-#define SENDTIME TONELENGTH+SILENTLENGTH
+#define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
 
 using namespace std;
