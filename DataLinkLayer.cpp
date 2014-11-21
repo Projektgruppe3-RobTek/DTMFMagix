@@ -454,15 +454,15 @@ bool DataLinkLayer::connectionRequest(){
  
     while(conWait.waiting){
         if (requestsSend%5==4){
-            usleep((((56 + 32) * SENDTIME) + 100 + rand() % (2000+requestsSend*500))*1000); //ack 56 tone, data max length 32 tone, 100 is added as a guard and a random time
-            cout << "d" << endl;
+            usleep((((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4 + rand() % (2000+requestsSend*MAX_FRAMESIZE*2))*1000); //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard and a random time
+            cout << "Stepping down, failed to send request (DLL)" << endl;
             if(mode == Mode::client) return false;
         }
 
         startTimer();
         sendRequest(!lastoutID);
         lastoutID = !lastoutID;
-        while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+        while(conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
@@ -484,7 +484,7 @@ bool DataLinkLayer::releaseConnection(){
         startTimer();
         sendTerminate(!lastoutID);
         lastoutID = !lastoutID;
-        while(conWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+        while(conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
@@ -510,7 +510,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
         startTimer();
         physLayer.pushData(packet);
 
-        while(ackWait.waiting and getTimer() < ((56 + 32) * SENDTIME) + 100){ //ack 56 tone, data max length 32 tone, 100 is added as a guard
+        while(ackWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 

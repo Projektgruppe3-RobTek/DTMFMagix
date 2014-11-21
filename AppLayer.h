@@ -18,7 +18,7 @@ using namespace std;
 
 #define APP_SHOW_SUBDIRECTORIES	false
 
-#define APP_MAX_FRAME_SIZE	128 // bit
+#define APP_MAX_FRAME_SIZE	MAX_FRAMESIZE // bit
 #define APP_FLAG_SIZE		5   // bit
 #define APP_DATA_FRAME_SIZE 	(APP_MAX_FRAME_SIZE - APP_FLAG_SIZE) // bit
 
