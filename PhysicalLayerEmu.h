@@ -9,7 +9,7 @@
 #include <string>
 #define mediafile "./media.txt"
 #define newmediafile "./newmedia.txt"
-class physicalLayer
+class PhysicalLayer
 {
     private:
         bool getNewState();
@@ -20,11 +20,11 @@ class physicalLayer
         int getTimer();
         int framenumber;
     public:
-        physicalLayer();
-        void pushFrame(std::vector<bool> );
-        bool returnSendFlag();
-        bool returnReceiveFlag();
-        std::vector<bool> popFrame(); 
+        PhysicalLayer();
+        void pushData(std::vector<bool> );
+        bool layerBusy();
+        bool dataAvailable();
+        std::vector<bool> popData(); 
         void FrameGrabber();
         void FrameSender();
         
@@ -37,6 +37,6 @@ class physicalLayer
         
 };
 
-void frameGrabWrapper(physicalLayer * physLayerObj);
-void frameSendWrapper(physicalLayer * physLayerObj);
+void frameGrabWrapper(PhysicalLayer * physLayerObj);
+void frameSendWrapper(PhysicalLayer * physLayerObj);
 

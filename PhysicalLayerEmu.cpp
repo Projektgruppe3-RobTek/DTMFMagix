@@ -1,11 +1,11 @@
-#include "physicalLayerEmu.h"
+#include "PhysicalLayerEmu.h"
 #include <iostream>
 //#define randomflip
 //#define flippercent 0.1f
 #define debug
 using namespace std;
 
-physicalLayer::physicalLayer()
+PhysicalLayer::PhysicalLayer()
 {
     startTimer();
     timer.tv_usec -= 50000;
@@ -22,7 +22,7 @@ physicalLayer::physicalLayer()
     framenumber=rand()%1000000000+1;
 }
 
-void physicalLayer::pushFrame(vector<bool> frame) 
+void PhysicalLayer::pushData(vector<bool> frame) 
 {
     #ifdef debug
     cout << "Framesize=" << frame.size() << endl;
@@ -30,21 +30,21 @@ void physicalLayer::pushFrame(vector<bool> frame)
     outBuffer.push_back(frame);
 }
 
-bool physicalLayer::returnSendFlag()
+bool PhysicalLayer::layerBusy()
 {
     return outBuffer.full();
 }
 
-bool physicalLayer::returnReceiveFlag()
+bool PhysicalLayer::dataAvailable()
 {
     return inBuffer.size();
 }
-vector<bool> physicalLayer::popFrame()
+vector<bool> PhysicalLayer::popData()
 {
     return inBuffer.pop_front();
 }
 
-void physicalLayer::FrameGrabber()
+void PhysicalLayer::FrameGrabber()
 {
     while(true)
     {
@@ -57,7 +57,7 @@ void physicalLayer::FrameGrabber()
     }
 }
 
-void physicalLayer::FrameSender()
+void PhysicalLayer::FrameSender()
 {
     while(true)
     {
@@ -68,29 +68,29 @@ void physicalLayer::FrameSender()
         setNewState(1);
     }   
 }
-void physicalLayer::startTimer()
+void PhysicalLayer::startTimer()
 {
     gettimeofday(&timer, NULL);
 }
 
-int physicalLayer::getTimer()
+int PhysicalLayer::getTimer()
 {
     timeval tv;
     gettimeofday(&tv, NULL);
     return (tv.tv_sec * 1000 + tv.tv_usec / 1000 )  - (timer.tv_sec * 1000 + timer.tv_usec / 1000);
 }
 
-void frameGrabWrapper(physicalLayer * physLayerObj)
+void frameGrabWrapper(PhysicalLayer * physLayerObj)
 {
     physLayerObj->FrameGrabber();
 }
 
-void frameSendWrapper(physicalLayer * physLayerObj)
+void frameSendWrapper(PhysicalLayer * physLayerObj)
 {
     physLayerObj->FrameSender();
 }
 
-bool physicalLayer::getNewState()
+bool PhysicalLayer::getNewState()
 {
     ifstream newStateFile;
     newStateFile.open(newmediafile);
@@ -105,14 +105,14 @@ bool physicalLayer::getNewState()
     }
     else return false;
 }
-void physicalLayer::setNewState(bool state)
+void PhysicalLayer::setNewState(bool state)
 {
     ofstream newStateFile;
     newStateFile.open(newmediafile, ios::trunc);
     if (state) newStateFile << to_string(++framenumber);
     else newStateFile << '0';
 }
-vector<bool> physicalLayer::getData()
+vector<bool> PhysicalLayer::getData()
 {
     vector<bool> data;
     
@@ -128,7 +128,7 @@ vector<bool> physicalLayer::getData()
     }
     return data;
 }
-void physicalLayer::setData(vector<bool> data)
+void PhysicalLayer::setData(vector<bool> data)
 {
     #ifdef randomflip
     for(int i = 0; i<data.size(); i++)
