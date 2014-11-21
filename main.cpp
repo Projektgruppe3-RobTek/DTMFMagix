@@ -22,7 +22,7 @@ int main(){
 		
 		int arg = args.size();
 		
-		if (args[0] == "Send"){
+		if (args[0] == "send"){
 			if (arg == 2){
 				AppL.sendFile(args[1]);
 			}
@@ -30,7 +30,7 @@ int main(){
 				AppL.sendFile(args[1], args[2]);
 			}
 		}
-		else if (args[0] == "Request"){
+		else if (args[0] == "request"){
 			if (arg == 2){
 				AppL.requestFile(args[1]);
 			}
@@ -38,23 +38,23 @@ int main(){
 				AppL.requestFile(args[1], args[2]);
 			}
 		}
-		else if (args[0] == "Delete"){
+		else if (args[0] == "delete"){
 			if (arg == 2){
 				AppL.requestDeleteFile(args[1]);
 			}
 		}
-		else if (args[0] == "SendMessage"){
+		else if (args[0] == "sendmessage"){
 			if (arg == 2){
 				AppL.sendMessage(args[1]);
 			}
 		}
-		else if (args[0] == "FileTree"){
+		else if (args[0] == "filetree"){
 			if (arg == 2){
 				AppL.requestFileTree(args[1]);
 			}
 			else AppL.requestFileTree(".");
 		}
-		else if (args[0] == "MakeDir"){
+		else if (args[0] == "makedir"){
 			if (arg == 2){
 				AppL.requestMakeDir(args[1]);
 			}
