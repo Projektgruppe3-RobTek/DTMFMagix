@@ -37,7 +37,8 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_SIZE_FLAG])){ // stop størrelse fra framen
 				size.insert(size.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				estimatedSize = (stoi(vectorBoolToString(size).c_str()) * 8) / APP_DATA_FRAME_SIZE + 3;
+				estimatedSize = (stoi(vectorBoolToString(size)) * 8) / APP_DATA_FRAME_SIZE + 3;
+				data.reserve((stoi(vectorBoolToString(size))));
 			}
 			else if (cmpFlag(frame, startFlag[APP_NAME_FLAG])){ // start navn fra framen
 				name.insert(name.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
@@ -55,7 +56,7 @@ void AppLayer::receiver(){
 					saveFile(data, name, 1);
 					if (debug){
 						sendMessage(stringToVectorBool("File received and saved!\n"));
-						
+						cout << estimatedSize << endl;
 						cout << "File reseived and saved as " << vectorBoolToString(name) << endl;
 						cout << "Frames received: " << numberOfFrames << endl;
 						cout << "Size frames: " << (size.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
@@ -63,7 +64,7 @@ void AppLayer::receiver(){
 						cout << "Data frames: " << (data.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
 						cout << "File size: " << vectorBoolToString(size) << endl;
 						cout << "Name: " << vectorBoolToString(name) << endl;
-						cout << "Data:\n" << vectorBoolToString(data) << endl;
+						//cout << "Data:\n" << vectorBoolToString(data) << endl;
 				
 						cout << endl;
 					}
@@ -73,8 +74,8 @@ void AppLayer::receiver(){
 					if (debug) sendMessage(stringToVectorBool("File corrupted!"));
 					if (debug) cout << "File corrupted!" << endl;
 				}
-				for(auto bit : MD5(data)) cout << bit; cout << endl;
-				for(auto bit : hash) cout << bit; cout << endl;
+				//for(auto bit : hash) cout << bit; cout << endl;
+				//for(auto bit : MD5(data)) cout << bit; cout << endl;
 				hash.clear();
 				size.clear();
 				name.clear();
@@ -309,14 +310,15 @@ void AppLayer::sendMessage(string message){
 
 void AppLayer::sendFile(vector<bool> fileName){
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
+	    //for(auto bit : MD5(loadFile(fileName))) cout << bit; cout << endl; 
 		sendFrames(loadFileSize(fileName), APP_SIZE_FLAG);
-		for(auto out : loadFileSize(fileName)) cout << out << " "; cout << endl;
 		sendFrames(fileName, APP_NAME_FLAG);
 		sendFrames(MD5(loadFile(fileName)), APP_HASH_FLAG);
 		sendFrames(loadFile(fileName), APP_DATA_FLAG);
 	}
 	else{
 		if (debug) cout << "File doesn't exists!" << endl;
+		cout << vectorBoolToString(fileName) << endl;
 	}
 }
 

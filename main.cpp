@@ -22,7 +22,7 @@ int main(){
 		}
 		
 		int arg = args.size();
-		for(string &streng :args) boost::algorithm::to_lower(streng);
+		boost::algorithm::to_lower(args[0]);
 		if (args[0] == "send"){
 			if (arg == 2){
 				AppL.sendFile(args[1]);
