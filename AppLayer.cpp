@@ -37,7 +37,7 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_SIZE_FLAG])){ // stop størrelse fra framen
 				size.insert(size.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				estimatedSize = (stoi(vectorBoolToString(size)) * 8) / APP_DATA_FRAME_SIZE + 3;
+				estimatedSize = (stoi(vectorBoolToString(size).c_str()) * 8) / APP_DATA_FRAME_SIZE + 3;
 			}
 			else if (cmpFlag(frame, startFlag[APP_NAME_FLAG])){ // start navn fra framen
 				name.insert(name.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
@@ -50,7 +50,7 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_DATA_FLAG])){ // stop data fra framen
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				
+				cout << data.size() << endl;
 				if (hash == MD5(data)){
 					saveFile(data, name, 1);
 					if (debug){
@@ -68,16 +68,19 @@ void AppLayer::receiver(){
 						cout << endl;
 					}
 					
-					size.clear();
-					name.clear();
-					data.clear();
-					numberOfFrames = 0;
-					estimatedSize = 0;
 				}
 				else{
 					if (debug) sendMessage(stringToVectorBool("File corrupted!"));
 					if (debug) cout << "File corrupted!" << endl;
 				}
+				for(auto bit : MD5(data)) cout << bit; cout << endl;
+				for(auto bit : hash) cout << bit; cout << endl;
+				hash.clear();
+				size.clear();
+				name.clear();
+				data.clear();
+				numberOfFrames = 0;
+				estimatedSize = 0;
 			}
 			else if (cmpFlag(frame, startFlag[APP_REQUEST_FILE_FLAG])){
 				requestedFile.insert(requestedFile.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
@@ -307,6 +310,7 @@ void AppLayer::sendMessage(string message){
 void AppLayer::sendFile(vector<bool> fileName){
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
 		sendFrames(loadFileSize(fileName), APP_SIZE_FLAG);
+		for(auto out : loadFileSize(fileName)) cout << out << " "; cout << endl;
 		sendFrames(fileName, APP_NAME_FLAG);
 		sendFrames(MD5(loadFile(fileName)), APP_HASH_FLAG);
 		sendFrames(loadFile(fileName), APP_DATA_FLAG);

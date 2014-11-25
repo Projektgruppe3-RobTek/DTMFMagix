@@ -9,6 +9,8 @@
 #include <string>
 #define mediafile "./media.txt"
 #define newmediafile "./newmedia.txt"
+#define TONELENGTH 1
+#define SILENTLENGTH 1
 class PhysicalLayer
 {
     private:
