@@ -160,7 +160,7 @@ void DTMFPlayer::delaySetup()
 void DTMFPlayer::sampleAdjust(int length)
 {
     // Adjust number of samples for current buffer fillup.
-            if (samplesLeft< length-sampleTurn)
+            if ((int)samplesLeft< length-sampleTurn)
             {
                 sampleRun = samplesLeft;
             }

@@ -24,7 +24,7 @@ float doGoertzel(int sampleRate/*Rate the signal is sampled at*/, float targetFr
     float q2 = 0.; //sample two times ago
     
     //Compute goertzel transform
-    for (int i = 0; i < samples.size(); i++){ 
+    for (unsigned int i = 0; i < samples.size(); i++){ 
         q0 = coeff * q1 - q2 + samples[i];
         q2 = q1;
         q1 = q0;

@@ -201,7 +201,7 @@ void getDatagramsWraper(DataLinkLayer *DaLLObj)
 void DataLinkLayer::bitStuff(vector<bool> &frame) //Bitstuff.
 {                                                 //We bitstuff with the inverse of the last bit in our flag.
     vector<int> elementsToStuff;
-    for(int i = flag.size() - 1; i < frame.size(); i++)
+    for(unsigned int i = flag.size() - 1; i < frame.size(); i++)
     {
         if(flagcheck(frame, i - ((int)flag.size() - 1), flag, flag.size() - 1)) elementsToStuff.push_back(i);
     }
@@ -217,7 +217,7 @@ void DataLinkLayer::bitStuff(vector<bool> &frame) //Bitstuff.
 void DataLinkLayer::revBitStuff(vector<bool> &frame) 
 {
     vector<int> elementsToRemove;
-    for(int i = flag.size() - 1; i < frame.size(); i++)
+    for(unsigned int i = flag.size() - 1; i < frame.size(); i++)
     {
         if (flagcheck(frame, i - (int)flag.size() + 1, flag, flag.size() - 1)) elementsToRemove.push_back(i);
     }

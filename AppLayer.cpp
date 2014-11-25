@@ -147,6 +147,7 @@ void AppLayer::receiver(){
 				requestedFile.insert(requestedFile.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 				if (exists(vectorBoolToString(requestedFile)) && is_regular_file(vectorBoolToString(requestedFile))){
 					if (name.size()){
+
 						if (debug) cout << "File requested: " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
 						sendFile(requestedFile, name,true);
 						if (debug) cout << "Sending file " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
@@ -254,19 +255,20 @@ void receiverWrapper(AppLayer *ALObj){
 
 int AppLayer::vectorBoolToInt(vector<bool> dataBin){
 	int dataInt = 0;
-	for (int a = 0; a < dataBin.size() / 8; a++){
+	for (unsigned int a = 0; a < dataBin.size() / 8; a++){
 		char dataChar = 0;
 		for (int b = 0; b < 8; b++){
 			dataChar |= dataBin[dataBin.size() - 1 - b - 8 * a] << b;
 		}
 		dataInt += (dataChar - '0') * pow(10, a);
 	}
+
 	return dataInt;
 }
 
 vector<bool> AppLayer::stringToVectorBool(string dataStr){
 	vector<bool> dataBin;
-	for (int a = 0; a < dataStr.size(); a++){
+	for (unsigned int a = 0; a < dataStr.size(); a++){
 		for (int b = 7; b >= 0; b--){
 			dataBin.push_back(dataStr[a] & (1 << b));
 		}
@@ -276,7 +278,7 @@ vector<bool> AppLayer::stringToVectorBool(string dataStr){
 
 string AppLayer::vectorBoolToString(vector<bool> dataBin){
 	string dataStr;
-	for (int a = 0; a < (dataBin.size() / 8); a++){
+	for (unsigned int a = 0; a < (dataBin.size() / 8); a++){
 		char dataChar = 0;
 		for (int b = 0; b < 8 ; b++){
 			dataChar += (dataBin[a * 8 + b] << (7 - b));
@@ -468,7 +470,7 @@ void AppLayer::sendFileTree(vector<bool> pathTarget, bool subdirectories){
 	copy(directory_iterator(vectorBoolToString(pathTarget)), directory_iterator(), back_inserter(filePath));
 	sort(filePath.begin(), filePath.end());
 	sendFileDetail(pathTarget);
-	for (int a = 0; a < filePath.size(); a++){
+	for (unsigned int a = 0; a < filePath.size(); a++){
 		if (is_regular_file(filePath[a])){
 			sendFileDetail(stringToVectorBool(filePath[a].string()));
 		}
@@ -528,7 +530,7 @@ vector<bool> AppLayer::compress (vector<bool> uncompressed)
 	    delete memblockout;
 	    return compressed;
 	}
-	for(int i=0; i<destlenght; i++)
+	for(unsigned int i=0; i<destlenght; i++)
 	{
 	    appendByte(compressed,memblockout[i]);
 	}
@@ -550,7 +552,7 @@ vector<bool> AppLayer::decompress(vector<bool> compressed)
         decompressedsize*=2;
         decompressedmem = new char[decompressedsize];
     }
-    for(int i=0; i<decompressedsize; i++)
+    for(unsigned int i=0; i<decompressedsize; i++)
 	{
 	    appendByte(decompressed,decompressedmem[i]);
 	}
