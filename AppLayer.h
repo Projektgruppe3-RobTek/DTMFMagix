@@ -49,7 +49,7 @@ class AppLayer{
 		void requestDeleteFile(string fileName);
 		void requestFileTree(string path);
 		void requestMakeDir(string path);
-		
+		string stripPath(string filename);
 		void receiver();
 		
 		
@@ -77,7 +77,6 @@ class AppLayer{
 		vector<bool> loadFile(vector<bool> filename);
 		vector<bool> stringToVectorBool(string dataStr);
 		string vectorBoolToString(vector<bool> dataBin);
-		
 		int vectorBoolToInt(vector<bool> dataBin);
 		
 		//bool copyFile(vector<bool> source, vector<bool> destination, bool force);

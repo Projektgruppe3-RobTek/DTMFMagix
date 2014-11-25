@@ -538,6 +538,12 @@ vector<bool> AppLayer::compress (vector<bool> uncompressed)
 	delete memblockout;
 	return compressed;
 }
+string AppLayer::stripPath(string filename)
+{
+    int lastslashpos=filename.find_last_of("/");
+    return filename.substr(lastslashpos+1);
+    
+}
 vector<bool> AppLayer::decompress(vector<bool> compressed)
 {
     vector<bool> decompressed;

@@ -25,7 +25,7 @@ int main(){
 		boost::algorithm::to_lower(args[0]);
 		if (args[0] == "send"){
 			if (arg == 2){
-				AppL.sendFile(args[1]);
+				AppL.sendFile(args[1], AppL.stripPath(args[1]));
 			}
 			else if (arg == 3){
 				AppL.sendFile(args[1], args[2]);
@@ -33,7 +33,7 @@ int main(){
 		}
 		else if (args[0] == "sendcompressed"){
 			if (arg == 2){
-				AppL.sendFile(args[1],true);
+				AppL.sendFile(args[1], AppL.stripPath(args[1]),true);
 			}
 			else if (arg == 3){
 				AppL.sendFile(args[1], args[2],true);
@@ -41,7 +41,7 @@ int main(){
 		} 
 		else if (args[0] == "request"){
 			if (arg == 2){
-				AppL.requestFile(args[1]);
+				AppL.requestFile(args[1], AppL.stripPath(args[1]));
 			}
 			else if (arg == 3){
 				AppL.requestFile(args[1], args[2]);
@@ -49,7 +49,7 @@ int main(){
 		}
 		else if (args[0] == "requestcompressed"){
 			if (arg == 2){
-				AppL.requestFile(args[1],true);
+				AppL.requestFile(args[1], AppL.stripPath(args[1]),true);
 			}
 			else if (arg == 3){
 				AppL.requestFile(args[1], args[2],true);
