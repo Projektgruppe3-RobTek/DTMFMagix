@@ -51,7 +51,6 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_DATA_FLAG])){ // stop data fra framen
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				cout << data.size() << endl;
 				if (hash == MD5(data)){
 					saveFile(data, name, 1);
 					if (debug){
@@ -296,7 +295,9 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 	frame.insert(frame.begin(), dataBin.begin(), dataBin.begin() + dataBin.size());
 	dataBin.erase(dataBin.begin(), dataBin.end());
 	frame.insert(frame.begin(), endFlag[type], endFlag[type] + APP_FLAG_SIZE);
-	
+	while (dll.dataBufferFull()){
+			usleep(1000);
+		}
 	dll.pushData(frame);
 }
 
@@ -318,7 +319,6 @@ void AppLayer::sendFile(vector<bool> fileName){
 	}
 	else{
 		if (debug) cout << "File doesn't exists!" << endl;
-		cout << vectorBoolToString(fileName) << endl;
 	}
 }
 
