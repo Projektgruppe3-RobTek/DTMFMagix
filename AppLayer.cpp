@@ -278,11 +278,13 @@ bool AppLayer::moveFile(vector<bool> source, vector<bool> destination, bool forc
 */
 
 void AppLayer::sendFrames(vector<bool> dataBin, int type){
-	while (dataBin.size() >= APP_DATA_FRAME_SIZE){ 
+    long dataBinOffset=0;
+	while ( ((int)dataBin.size())-dataBinOffset >= APP_DATA_FRAME_SIZE){ 
 		vector<bool> frame;
 		
-		frame.insert(frame.begin(), dataBin.begin(), dataBin.begin() + APP_DATA_FRAME_SIZE);
-		dataBin.erase(dataBin.begin(), dataBin.begin() + APP_DATA_FRAME_SIZE);
+		frame.insert(frame.begin(), dataBin.begin()+dataBinOffset, dataBin.begin()+dataBinOffset + APP_DATA_FRAME_SIZE);
+		//dataBin.erase(dataBin.begin(), dataBin.begin() + APP_DATA_FRAME_SIZE);
+		dataBinOffset+=APP_DATA_FRAME_SIZE;
 		frame.insert(frame.begin(), startFlag[type], startFlag[type] + APP_FLAG_SIZE);
 		while (dll.dataBufferFull()){
 			usleep(1000);
@@ -292,8 +294,8 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 	}
 	
 	vector<bool> frame;
-	frame.insert(frame.begin(), dataBin.begin(), dataBin.begin() + dataBin.size());
-	dataBin.erase(dataBin.begin(), dataBin.end());
+	frame.insert(frame.begin(), dataBin.begin()+dataBinOffset, dataBin.begin() + dataBin.size());
+	//dataBin.erase(dataBin.begin(), dataBin.end());
 	frame.insert(frame.begin(), endFlag[type], endFlag[type] + APP_FLAG_SIZE);
 	while (dll.dataBufferFull()){
 			usleep(1000);
