@@ -52,7 +52,7 @@ class RingBuffer
 
         T pop_front()
         {
-            //if (empty()) throw(std::range_error("Buffer is empty")); //bad luck, don't do this!
+            if (empty()) throw(std::range_error("Buffer is empty")); //bad luck, don't do this!
             T returnval=Buffer[TAIL];
             TAIL=(TAIL+1)%capacity();
             ioTotal--;

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <boost/algorithm/string.hpp>    
 
 AppLayer AppL;
 
@@ -21,7 +22,7 @@ int main(){
 		}
 		
 		int arg = args.size();
-		
+		boost::algorithm::to_lower(args[0]);
 		if (args[0] == "send"){
 			if (arg == 2){
 				AppL.sendFile(args[1]);

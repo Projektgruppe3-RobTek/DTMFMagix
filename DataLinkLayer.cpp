@@ -396,23 +396,23 @@ void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
     {
         Dividend.push_back(0);
     }
-
+    int DividendOffset=0;
     for (unsigned int i=0; i < dataWord.size(); i++)
     {
-        if(Dividend[0])                                         // If the MSB is 1, XOR with Divisor
+        if(Dividend[0+DividendOffset])                                         // If the MSB is 1, XOR with Divisor
         {
             for(unsigned int j=0; j<Divisor.size(); j++)
             {
-                Dividend[j] = Dividend[j] ^ Divisor[j];
+                Dividend[j+DividendOffset] = Dividend[j+DividendOffset] ^ Divisor[j];
             }
         }
-        Dividend.erase(Dividend.begin()) ;                      // When XOR is done, the vector is moved one
-                                                                // place to the left.
+        //Dividend.erase(Dividend.begin()) ;                      // When XOR is done, the vector is moved one
+        DividendOffset++;                                                        // place to the left.
     }
 
     for(unsigned int i=0; i<Divisor.size()-1; i++)              // When the division is done, the remainder
     {                                                           // is put behind the Dataword to make the Codeword
-        dataWord.push_back(Dividend[i]);
+        dataWord.push_back(Dividend[i+DividendOffset]);
     }
 }
 
