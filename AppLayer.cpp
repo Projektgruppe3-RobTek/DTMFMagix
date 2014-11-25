@@ -37,7 +37,7 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_SIZE_FLAG])){ // stop størrelse fra framen
 				size.insert(size.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				estimatedSize = (stoi(vectorBoolToString(size)) * 8) / APP_DATA_FRAME_SIZE + 3;
+				estimatedSize = (stoi(vectorBoolToString(size)) * 8) / APP_DATA_FRAME_SIZE + 3+1;
 				data.reserve((stoi(vectorBoolToString(size))));
 			}
 			else if (cmpFlag(frame, startFlag[APP_NAME_FLAG])){ // start navn fra framen
@@ -46,7 +46,7 @@ void AppLayer::receiver(){
 			else if (cmpFlag(frame, endFlag[APP_NAME_FLAG])){ // stop navn fra framen
 				name.insert(name.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 			}
-			else if (cmpFlag(frame, startFlag[APP_DATA_FLAG])){ // start data fra framen
+			else if (cmpFlag(frame, startFlag[APP_DATA_FLAG]) or cmpFlag(frame, startFlag[APP_COMPRESSED_DATA_FLAG])){ // start data fra framen
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 			}
 			else if (cmpFlag(frame, endFlag[APP_DATA_FLAG])){ // stop data fra framen
@@ -55,12 +55,11 @@ void AppLayer::receiver(){
 					saveFile(data, name, 1);
 					if (debug){
 						sendMessage(stringToVectorBool("File received and saved!\n"));
-						cout << estimatedSize << endl;
 						cout << "File reseived and saved as " << vectorBoolToString(name) << endl;
 						cout << "Frames received: " << numberOfFrames << endl;
 						cout << "Size frames: " << (size.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
 						cout << "Name frames: " << (name.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
-						cout << "Data frames: " << (data.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
+						cout << "Data frames: " << (data.size() - 1) / APP_DATA_FRAME_SIZE + 1+1 << endl;
 						cout << "File size: " << vectorBoolToString(size) << endl;
 						cout << "Name: " << vectorBoolToString(name) << endl;
 						//cout << "Data:\n" << vectorBoolToString(data) << endl;
@@ -82,7 +81,44 @@ void AppLayer::receiver(){
 				numberOfFrames = 0;
 				estimatedSize = 0;
 			}
-			else if (cmpFlag(frame, startFlag[APP_REQUEST_FILE_FLAG])){
+			else if (cmpFlag(frame, endFlag[APP_COMPRESSED_DATA_FLAG])) // stop data fra framen
+			{
+				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
+				if (hash == MD5(data)){
+				    int datasize=data.size();
+				    data=decompress(data);
+					saveFile(data, name, 1);
+					if (debug){
+						sendMessage(stringToVectorBool("File received and saved!\n"));
+						cout << "File reseived and saved as " << vectorBoolToString(name) << endl;
+						cout << "Frames received: " << numberOfFrames << endl;
+						cout << "Size frames: " << (size.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
+						cout << "Name frames: " << (name.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
+						cout << "Data frames: " << (datasize - 1) / APP_DATA_FRAME_SIZE + 1+1 << endl;
+						cout << "Compressed size: " << vectorBoolToString(size) << endl;
+						cout << "Decompressed size: " << data.size()/8 << endl;
+						cout << "Name: " << vectorBoolToString(name) << endl;
+						//cout << "Data:\n" << vectorBoolToString(data) << endl;
+				
+						cout << endl;
+					}
+					
+				}
+				else
+				{
+					if (debug) sendMessage(stringToVectorBool("File corrupted!"));
+					if (debug) cout << "File corrupted!" << endl;
+				}
+				//for(auto bit : hash) cout << bit; cout << endl;
+				//for(auto bit : MD5(data)) cout << bit; cout << endl;
+				hash.clear();
+				size.clear();
+				name.clear();
+				data.clear();
+				numberOfFrames = 0;
+				estimatedSize = 0;
+			}
+			else if (cmpFlag(frame, startFlag[APP_REQUEST_FILE_FLAG]) or cmpFlag(frame, startFlag[APP_REQUEST_COMPRESSED_FILE_FLAG])){
 				requestedFile.insert(requestedFile.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 			}
 			else if (cmpFlag(frame, endFlag[APP_REQUEST_FILE_FLAG])){
@@ -96,6 +132,28 @@ void AppLayer::receiver(){
 					else{
 						if (debug) cout << "File requested: " << vectorBoolToString(requestedFile) << endl;
 						sendFile(requestedFile);
+						if (debug) cout << "Sending file " << vectorBoolToString(requestedFile) << endl;
+					}
+				}
+				else{
+					if (debug) sendMessage(stringToVectorBool("File doesn't exists!"));
+				}
+				requestedFile.clear();
+				requestedFileName.clear();
+				name.clear();
+				numberOfFrames = 0;
+			}
+			else if (cmpFlag(frame, endFlag[APP_REQUEST_COMPRESSED_FILE_FLAG])){
+				requestedFile.insert(requestedFile.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
+				if (exists(vectorBoolToString(requestedFile)) && is_regular_file(vectorBoolToString(requestedFile))){
+					if (name.size()){
+						if (debug) cout << "File requested: " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
+						sendFile(requestedFile, name,true);
+						if (debug) cout << "Sending file " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
+					}
+					else{
+						if (debug) cout << "File requested: " << vectorBoolToString(requestedFile) << endl;
+						sendFile(requestedFile,true);
 						if (debug) cout << "Sending file " << vectorBoolToString(requestedFile) << endl;
 					}
 				}
@@ -281,9 +339,8 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
     long dataBinOffset=0;
 	while ( ((int)dataBin.size())-dataBinOffset >= APP_DATA_FRAME_SIZE){ 
 		vector<bool> frame;
-		
+		frame.reserve(APP_DATA_FRAME_SIZE);
 		frame.insert(frame.begin(), dataBin.begin()+dataBinOffset, dataBin.begin()+dataBinOffset + APP_DATA_FRAME_SIZE);
-		//dataBin.erase(dataBin.begin(), dataBin.begin() + APP_DATA_FRAME_SIZE);
 		dataBinOffset+=APP_DATA_FRAME_SIZE;
 		frame.insert(frame.begin(), startFlag[type], startFlag[type] + APP_FLAG_SIZE);
 		while (dll.dataBufferFull()){
@@ -295,7 +352,6 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 	
 	vector<bool> frame;
 	frame.insert(frame.begin(), dataBin.begin()+dataBinOffset, dataBin.begin() + dataBin.size());
-	//dataBin.erase(dataBin.begin(), dataBin.end());
 	frame.insert(frame.begin(), endFlag[type], endFlag[type] + APP_FLAG_SIZE);
 	while (dll.dataBufferFull()){
 			usleep(1000);
@@ -311,55 +367,63 @@ void AppLayer::sendMessage(string message){
 	sendMessage(stringToVectorBool(message));
 }
 
-void AppLayer::sendFile(vector<bool> fileName){
+void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
-	    //for(auto bit : MD5(loadFile(fileName))) cout << bit; cout << endl; 
-		sendFrames(loadFileSize(fileName), APP_SIZE_FLAG);
+	    //for(auto bit : MD5(loadFile(fileName))) cout << bit; cout << endl;
+	    vector<bool> file=loadFile(fileName);
+	    if (compressed) file=compress(file);
+		sendFrames(stringToVectorBool(to_string(file.size()/8)), APP_SIZE_FLAG);
 		sendFrames(fileName, APP_NAME_FLAG);
-		sendFrames(MD5(loadFile(fileName)), APP_HASH_FLAG);
-		sendFrames(loadFile(fileName), APP_DATA_FLAG);
+		sendFrames(MD5(file), APP_HASH_FLAG);
+		if (compressed)	sendFrames(file, APP_COMPRESSED_DATA_FLAG);
+		else sendFrames(file, APP_DATA_FLAG);
 	}
 	else{
 		if (debug) cout << "File doesn't exists!" << endl;
 	}
 }
 
-void AppLayer::sendFile(string fileName){
-	sendFile(stringToVectorBool(fileName));
+void AppLayer::sendFile(string fileName,bool compressed){
+	sendFile(stringToVectorBool(fileName),compressed);
 }
 
-void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName){
+void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool compressed){
 	
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
-		sendFrames(loadFileSize(fileName), APP_SIZE_FLAG);
+	    vector<bool> file=loadFile(fileName);
+	    if (compressed) file=compress(file);
+		sendFrames(stringToVectorBool(to_string(file.size()/8)), APP_SIZE_FLAG);
 		sendFrames(targetName, APP_NAME_FLAG);
-		sendFrames(MD5(loadFile(fileName)), APP_HASH_FLAG);
-		sendFrames(loadFile(fileName), APP_DATA_FLAG);
+		sendFrames(MD5(file), APP_HASH_FLAG);
+		if (compressed)	sendFrames(file, APP_COMPRESSED_DATA_FLAG);
+		else sendFrames(file, APP_DATA_FLAG);
 	}
 	else{
 		if (debug) cout << "File doesn't exists!" << endl;
 	}
 }
 
-void AppLayer::sendFile(string fileName, string targetName){
-	sendFile(stringToVectorBool(fileName), stringToVectorBool(targetName));
+void AppLayer::sendFile(string fileName, string targetName,bool compressed){
+	sendFile(stringToVectorBool(fileName), stringToVectorBool(targetName),compressed);
 }
 
-void AppLayer::requestFile(vector<bool> fileName){
-	sendFrames(fileName, APP_REQUEST_FILE_FLAG);
+void AppLayer::requestFile(vector<bool> fileName,bool compressed){
+	if (compressed) sendFrames(fileName, APP_REQUEST_COMPRESSED_FILE_FLAG);
+	else sendFrames(fileName, APP_REQUEST_FILE_FLAG);
 }
 
-void AppLayer::requestFile(string fileName){
-	requestFile(stringToVectorBool(fileName));
+void AppLayer::requestFile(string fileName, bool compressed){
+	requestFile(stringToVectorBool(fileName),compressed);
 }
 
-void AppLayer::requestFile(vector<bool> fileName, vector<bool> targetName){
+void AppLayer::requestFile(vector<bool> fileName, vector<bool> targetName, bool compressed){
 	sendFrames(targetName, APP_NAME_FLAG);
-	sendFrames(fileName, APP_REQUEST_FILE_FLAG);
+	if (compressed) sendFrames(fileName, APP_REQUEST_COMPRESSED_FILE_FLAG);
+	else sendFrames(fileName, APP_REQUEST_FILE_FLAG);
 }
 
-void AppLayer::requestFile(string fileName, string targetName){
-	requestFile(stringToVectorBool(fileName), stringToVectorBool(targetName));
+void AppLayer::requestFile(string fileName, string targetName,bool compressed){
+	requestFile(stringToVectorBool(fileName), stringToVectorBool(targetName),compressed);
 }
 
 void AppLayer::requestDeleteFile(vector<bool> fileName){

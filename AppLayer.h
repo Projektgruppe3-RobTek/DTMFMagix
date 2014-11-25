@@ -42,10 +42,10 @@ class AppLayer{
 		AppLayer();
 		~AppLayer();
 		void sendMessage(string message);
-		void sendFile(string fileName);
-		void sendFile(string fileName, string targetName);
-		void requestFile(string fileName);
-		void requestFile(string fileName, string targetName);
+		void sendFile(string fileName,bool compressed=0);
+		void sendFile(string fileName, string targetName,bool compressed=0);
+		void requestFile(string fileName,bool compressed=0);
+		void requestFile(string fileName, string targetName,bool compressed=0);
 		void requestDeleteFile(string fileName);
 		void requestFileTree(string path);
 		void requestMakeDir(string path);
@@ -65,10 +65,10 @@ class AppLayer{
 		DataLinkLayer dll;
 		
 		void sendMessage(vector<bool> message);
-		void sendFile(vector<bool> fileName);
-		void sendFile(vector<bool> fileName, vector<bool> targetName);
-		void requestFile(vector<bool> fileName);
-		void requestFile(vector<bool> fileName, vector<bool> targetName);
+		void sendFile(vector<bool> fileName,bool compressed=0);
+		void sendFile(vector<bool> fileName, vector<bool> targetName,bool compressed=0);
+		void requestFile(vector<bool> fileName,bool compressed=0);
+		void requestFile(vector<bool> fileName, vector<bool> targetName,bool compressed=0);
 		void requestDeleteFile(vector<bool> fileName);
 		void requestFileTree(vector<bool> path);
 		void requestMakeDir(vector<bool> path);
@@ -107,8 +107,8 @@ class AppLayer{
 			{0,1,1,0,0},// fileTreeRequest
 			{0,1,1,1,0},// make folder
 			{1,0,0,0,0},// hash (MD5)
-			{1,0,0,0,1},// Compresed data
-			{1,0,0,1,0} // RequestCompressedfile 
+			{1,0,0,1,0},// Compresed data
+			{1,0,1,0,0} // RequestCompressedfile 
 		};
 		bool endFlag[11][APP_FLAG_SIZE] = {
 			{0,0,0,0,1},// size
@@ -120,8 +120,8 @@ class AppLayer{
 			{0,1,1,0,1},// fileTreeRequest
 			{0,1,1,1,1},// make folder
 			{1,0,0,0,1},// hash (MD5)
-			{1,0,0,1,0},// Compresed data
-			{1,0,0,1,1} // RequestCompressedfile
+			{1,0,0,1,1},// Compresed data
+			{1,0,1,0,1} // RequestCompressedfile
 		};		
 };
 
