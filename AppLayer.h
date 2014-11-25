@@ -23,16 +23,17 @@ using namespace std;
 #define APP_FLAG_SIZE		5   // bit
 #define APP_DATA_FRAME_SIZE 	(APP_MAX_FRAME_SIZE - APP_FLAG_SIZE) // bit
 
-#define APP_SIZE_FLAG		    0
-#define APP_NAME_FLAG		    1
-#define APP_DATA_FLAG		    2
-#define APP_COMPRESSED_DATA_FLAG 3
-#define APP_REQUEST_FILE_FLAG	4
-#define APP_DELTE_FILE_FLAG	    5
-#define APP_MESSAGE_FLAG	    6
-#define APP_FILE_TREE_FLAG	    7
-#define APP_MAKE_FOLDER_FLAG	8
-#define APP_HASH_FLAG		    9
+#define APP_SIZE_FLAG                       0
+#define APP_NAME_FLAG	                    1
+#define APP_DATA_FLAG	                    2
+#define APP_REQUEST_FILE_FLAG               3
+#define APP_DELTE_FILE_FLAG	                4
+#define APP_MESSAGE_FLAG	                5
+#define APP_FILE_TREE_FLAG	                6
+#define APP_MAKE_FOLDER_FLAG	            7
+#define APP_HASH_FLAG		                8
+#define APP_COMPRESSED_DATA_FLAG            9
+#define APP_REQUEST_COMPRESSED_FILE_FLAG    10
 
 class AppLayer{
 	
@@ -96,7 +97,7 @@ class AppLayer{
 		
 		thread receiveThread;
 		bool stop=false;
-		bool startFlag[9][APP_FLAG_SIZE] = {
+		bool startFlag[11][APP_FLAG_SIZE] = {
 			{0,0,0,0,0},// size
 			{0,0,0,1,0},// name
 			{0,0,1,0,0},// data
@@ -105,9 +106,11 @@ class AppLayer{
 			{0,1,0,1,0},// message
 			{0,1,1,0,0},// fileTreeRequest
 			{0,1,1,1,0},// make folder
-			{1,0,0,0,0} // hash (MD5)
+			{1,0,0,0,0},// hash (MD5)
+			{1,0,0,0,1},// Compresed data
+			{1,0,0,1,0} // RequestCompressedfile 
 		};
-		bool endFlag[9][APP_FLAG_SIZE] = {
+		bool endFlag[11][APP_FLAG_SIZE] = {
 			{0,0,0,0,1},// size
 			{0,0,0,1,1},// name
 			{0,0,1,0,1},// data
@@ -116,7 +119,9 @@ class AppLayer{
 			{0,1,0,1,1},// message
 			{0,1,1,0,1},// fileTreeRequest
 			{0,1,1,1,1},// make folder
-			{1,0,0,0,1} // hash (MD5)
+			{1,0,0,0,1},// hash (MD5)
+			{1,0,0,1,0},// Compresed data
+			{1,0,0,1,1} // RequestCompressedfile
 		};		
 };
 
