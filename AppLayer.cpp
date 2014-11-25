@@ -425,7 +425,7 @@ void AppLayer::appendByte(vector<bool> &dataBin, unsigned char byte){
 
 vector<bool> AppLayer::MD5(vector<bool> dataBin){
 	string filestr = vectorBoolToString(dataBin);
-	char *memblock = new char[filestr.size()];
+	char *memblock;
 	memblock = const_cast<char*>(filestr.c_str());
 	byte digest[CryptoPP::Weak1::MD5::DIGESTSIZE];
 	
@@ -437,4 +437,51 @@ vector<bool> AppLayer::MD5(vector<bool> dataBin){
 		appendByte(md5, digest[a]);
 	}
 	return md5;
+}
+
+vector<bool> AppLayer::compress (vector<bool> uncompressed)
+{
+    cout << uncompressed.size() << endl;
+    vector<bool> compressed;
+    string filestr = vectorBoolToString(uncompressed);
+	char *memblockin;
+	unsigned int destlenght=(int)(1.01 * filestr.size() + 600);
+	char *memblockout = new char[destlenght];
+	memblockin = const_cast<char*>(filestr.c_str());
+	unsigned int filelenght=filestr.size();
+	if(BZ2_bzBuffToBuffCompress(memblockout, &destlenght, memblockin, filelenght, 9, 0, 30)!=BZ_OK)
+	{
+	    cout << "Error while compressing" << endl;
+	    delete memblockin;
+	    delete memblockout;
+	    return compressed;
+	}
+	for(int i=0; i<destlenght; i++)
+	{
+	    appendByte(compressed,memblockout[i]);
+	}
+	cout << compressed.size() << endl;
+	delete memblockout;
+	return compressed;
+}
+vector<bool> AppLayer::decompress(vector<bool> compressed)
+{
+    vector<bool> decompressed;
+    string compressedstr = vectorBoolToString(compressed);
+    unsigned int compressedsize=compressedstr.size();
+    char *compressedmem=const_cast<char*>(compressedstr.c_str());
+    unsigned int decompressedsize=compressedsize;
+    char *decompressedmem = new char[decompressedsize];
+    while( (BZ2_bzBuffToBuffDecompress(decompressedmem,&decompressedsize,compressedmem,compressedsize,0,0)==BZ_OUTBUFF_FULL))
+    {
+        delete decompressedmem;
+        decompressedsize*=2;
+        decompressedmem = new char[decompressedsize];
+    }
+    for(int i=0; i<decompressedsize; i++)
+	{
+	    appendByte(decompressed,decompressedmem[i]);
+	}
+    delete decompressedmem;
+    return decompressed;
 }

@@ -4,6 +4,7 @@
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 
 #include <fstream>
+#include <bzlib.h>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -22,15 +23,16 @@ using namespace std;
 #define APP_FLAG_SIZE		5   // bit
 #define APP_DATA_FRAME_SIZE 	(APP_MAX_FRAME_SIZE - APP_FLAG_SIZE) // bit
 
-#define APP_SIZE_FLAG		0
-#define APP_NAME_FLAG		1
-#define APP_DATA_FLAG		2
-#define APP_REQUEST_FILE_FLAG	3
-#define APP_DELTE_FILE_FLAG	4
-#define APP_MESSAGE_FLAG	5
-#define APP_FILE_TREE_FLAG	6
-#define APP_MAKE_FOLDER_FLAG	7
-#define APP_HASH_FLAG		8
+#define APP_SIZE_FLAG		    0
+#define APP_NAME_FLAG		    1
+#define APP_DATA_FLAG		    2
+#define APP_COMPRESSED_DATA_FLAG 3
+#define APP_REQUEST_FILE_FLAG	4
+#define APP_DELTE_FILE_FLAG	    5
+#define APP_MESSAGE_FLAG	    6
+#define APP_FILE_TREE_FLAG	    7
+#define APP_MAKE_FOLDER_FLAG	8
+#define APP_HASH_FLAG		    9
 
 class AppLayer{
 	
@@ -69,7 +71,8 @@ class AppLayer{
 		void requestDeleteFile(vector<bool> fileName);
 		void requestFileTree(vector<bool> path);
 		void requestMakeDir(vector<bool> path);
-		
+		vector<bool> compress(vector<bool> uncompressed);
+		vector<bool> decompress(vector<bool> compressed);
 		vector<bool> loadFile(vector<bool> filename);
 		vector<bool> stringToVectorBool(string dataStr);
 		string vectorBoolToString(vector<bool> dataBin);
