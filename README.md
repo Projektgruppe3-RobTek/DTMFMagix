@@ -16,12 +16,12 @@ Compilation and Requirements
 
 The application depends on the following external libraries
 
--Portaudio  -- To play audio
--SDL2       -- To record audio
--Boost      -- For various filesystem operations
--Crypto++   -- For md5sum calculation
--bzip2      -- For compression
--readline   -- For interactive commandline usage
+*Portaudio  -- To play audio
+*SDL2       -- To record audio
+*Boost      -- For various filesystem operations
+*Crypto++   -- For md5sum calculation
+*bzip2      -- For compression
+*readline   -- For interactive commandline usage
 
 Furthermore it relies on the standard c++11 library and either clang++ or g++.
 
