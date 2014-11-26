@@ -7,73 +7,26 @@
 #include <unistd.h>
 #include <boost/algorithm/string.hpp>
 #include <readline/readline.h>
-#include <readline/history.h>    
+#include <readline/history.h>  
+#include "autoCompletion.h"  
 
-AppLayer AppL;
-string commands[]= {"send\0","sendcompressed\0","request\0","requestcompressed\0","delete\0","sendmessage\0","filetree\0","makedir\0"};
-static char** my_completion( const char * text , int start,  int end);
-char* my_generator(const char* text, int state);
-char * dupstr (char* s);
-bool stringcmp(char *str1, char *str2, int len)
-{
-    for(int i=0;i<len;i++)
-    {
-        if (str1[i]!=str2[i]) return false;
-    }
-    return true;    
-
-}
-static char** my_completion( const char * text , int start,  int end)
+AppLayer AppL; 
+static char** customCompletion( const char * text , int start,  int end)
 {
     char **matches;
     matches = (char **)NULL;
  
     if (start == 0)
-        matches = rl_completion_matches ((char*)text, &my_generator);
+        matches = rl_completion_matches ((char*)text, &commandGenerator);
  
     return (matches);
- 
 }
- 
-char* my_generator(const char* text, int state)
-{
-    static int list_index, len;
-    char *name;
-    if (!state) {
-        list_index = 0;
-        len = strlen (text);
-    }
-    while ((name = (char *)commands[list_index].c_str()) and list_index<sizeof(commands)/sizeof(string)) {
-        list_index++;
-        if (stringcmp (name, (char*)text, len))
-        {
-            return(dupstr(name));
-        }
-    }
-    
-    /* If no names matched, then return NULL. */
-    return ((char *)NULL);
- 
-}
-
-int rl_possible_completions_sub(int count,int invoking_key)
-{
-    return rl_complete_internal('!');
-} 
-char * dupstr (char* s) {
-  char *r;
- 
-  r = new char[((strlen (s) + 1))];
-  strcpy (r, s);
-  return (r);
-}
-
 int main(){
 	char *input, shell_prompt[1000];
 	
 	// Configure readline to auto-complete paths when the tab key is hit.
     rl_bind_key('\t', rl_possible_completions_sub);
-    rl_attempted_completion_function = my_completion;
+    rl_attempted_completion_function = customCompletion;
 	while (true)
 	{
 		// Create prompt string from user name and current working directory.
