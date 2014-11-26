@@ -11,21 +11,65 @@
 
 AppLayer AppL;
 string commands[]= {"send","sendcompressed","request","requestcompressed","delete","sendmessage","filetree","makedir"};
+static char** my_completion( const char * text , int start,  int end);
+char* my_generator(const char* text, int state);
+char * dupstr (char* s);
+static char** my_completion( const char * text , int start,  int end)
+{
+    char **matches;
+    matches = (char **)NULL;
+ 
+    if (start == 0)
+        matches = rl_completion_matches ((char*)text, &my_generator);
+ 
+    return (matches);
+ 
+}
+ 
+char* my_generator(const char* text, int state)
+{
+    int list_index, len;
+    char *name;
+    if (!state) {
+        list_index = 0;
+        len = strlen (text);
+    }
+    while ((name = (char *)commands[list_index].c_str())) {
+        list_index++;
+ 
+        if (strncmp (name, text, len) == 0)
+        {
+            return(dupstr(name));
+        }
+    }
+    
+    /* If no names matched, then return NULL. */
+    return ((char *)NULL);
+ 
+}
 
 int rl_possible_completions_sub(int count,int invoking_key)
 {
     return rl_complete_internal('!');
 } 
+char * dupstr (char* s) {
+  char *r;
+ 
+  r = new char[((strlen (s) + 1))];
+  strcpy (r, s);
+  return (r);
+}
 
 int main(){
 	char *input, shell_prompt[1000];
 	
 	// Configure readline to auto-complete paths when the tab key is hit.
     rl_bind_key('\t', rl_possible_completions_sub);
+    rl_attempted_completion_function = my_completion;
 	while (true)
 	{
 		// Create prompt string from user name and current working directory.
-        snprintf(shell_prompt, sizeof(shell_prompt), "Yo! What do you wanna do now? Enter a fucking command!$");
+        snprintf(shell_prompt, sizeof(shell_prompt), "Yo! What do you wanna do now? Enter a fucking command!$ ");
         
         // Display prompt and read input (n.b. input must be freed after use)...
         input = readline(shell_prompt);
