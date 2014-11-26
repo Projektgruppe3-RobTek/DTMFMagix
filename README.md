@@ -16,12 +16,12 @@ Compilation and Requirements
 
 The application depends on the following external libraries
 
-*Portaudio  -- To play audio
-*SDL2       -- To record audio
-*Boost      -- For various filesystem operations
-*Crypto++   -- For md5sum calculation
-*bzip2      -- For compression
-*readline   -- For interactive commandline usage
+* Portaudio  -- To play audio
+* SDL2       -- To record audio
+* Boost      -- For various filesystem operations
+* Crypto++   -- For md5sum calculation
+* bzip2      -- For compression
+* readline   -- For interactive commandline usage
 
 Furthermore it relies on the standard c++11 library and either clang++ or g++.
 
@@ -29,15 +29,15 @@ Furthermore it relies on the standard c++11 library and either clang++ or g++.
 
 install the requeried libraries
 
-Inline 'sudo apt-get install portaudio19-dev libsdl2-dev libboost-all-dev libcrypto++-dev libbz2-dev libreadline-dev clang build-essential'
+`sudo apt-get install portaudio19-dev libsdl2-dev libboost-all-dev libcrypto++-dev libbz2-dev libreadline-dev clang build-essential`
 
 Compile
 
-Inline 'make'
+`make`
 
 Run the application
 
-./DTMFMagix
+`./DTMFMagix`
 
 ###ArchLinux
 
