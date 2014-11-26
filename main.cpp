@@ -2,17 +2,39 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
-#include <boost/algorithm/string.hpp>    
+#include <cstdlib>
+#include <cstdio>
+#include <unistd.h>
+#include <boost/algorithm/string.hpp>
+#include <readline/readline.h>
+#include <readline/history.h>    
 
 AppLayer AppL;
+string commands[]= {"send","sendcompressed","request","requestcompressed","delete","sendmessage","filetree","makedir"};
+
+int rl_possible_completions_sub(int count,int invoking_key)
+{
+    return rl_complete_internal('!');
+} 
 
 int main(){
+	char *input, shell_prompt[1000];
 	
-	while (true){
-		
-		string input;
-		getline(cin, input);
-		istringstream text(input);
+	// Configure readline to auto-complete paths when the tab key is hit.
+    rl_bind_key('\t', rl_possible_completions_sub);
+	while (true)
+	{
+		// Create prompt string from user name and current working directory.
+        snprintf(shell_prompt, sizeof(shell_prompt), "Yo! What do you wanna do now? Enter a fucking command!$");
+        
+        // Display prompt and read input (n.b. input must be freed after use)...
+        input = readline(shell_prompt);
+           
+        // Check for EOF.
+        if (!input) break;
+        
+        string inputstring=input;
+		istringstream text(inputstring);
 		vector<string> args;
 		
 		while (true){
@@ -21,8 +43,11 @@ int main(){
 			args.push_back(temp);
 		}
 		
+		
 		int arg = args.size();
-		boost::algorithm::to_lower(args[0]);
+		if (arg==0) continue;
+		add_history(input);
+		
 		if (args[0] == "send"){
 			if (arg == 2){
 				AppL.sendFile(args[1], AppL.stripPath(args[1]));
@@ -75,7 +100,8 @@ int main(){
 			if (arg == 2){
 				AppL.requestMakeDir(args[1]);
 			}
-		}	
+		}
+        delete input;
 	}
 	return 0;
 }
