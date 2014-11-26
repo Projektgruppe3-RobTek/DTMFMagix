@@ -89,7 +89,6 @@ void PhysicalLayer::getFrame()
         int SequenceCounter=0;
         char previousNote='!';
         if(bugfix) cout << "entering sync" << endl;
-        int i=0;
         while(!ArrayComp(RecordedSequence,SyncSequence,SYNCLENGHT,SequenceCounter))  // Compare last 4 recorded notes with sync sequence
         {
             usleep(250);
