@@ -44,7 +44,7 @@ char* my_generator(const char* text, int state)
         list_index = 0;
         len = strlen (text);
     }
-    while ((name = (char *)commands[list_index].c_str()) and list_index<8) {
+    while ((name = (char *)commands[list_index].c_str()) and list_index<COMMANDS) {
         list_index++;
         if (stringcmp (name, (char*)text, len))
         {
