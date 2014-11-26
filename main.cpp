@@ -11,7 +11,6 @@
 
 AppLayer AppL;
 string commands[]= {"send\0","sendcompressed\0","request\0","requestcompressed\0","delete\0","sendmessage\0","filetree\0","makedir\0"};
-#define COMMANDS 8
 static char** my_completion( const char * text , int start,  int end);
 char* my_generator(const char* text, int state);
 char * dupstr (char* s);
@@ -44,7 +43,7 @@ char* my_generator(const char* text, int state)
         list_index = 0;
         len = strlen (text);
     }
-    while ((name = (char *)commands[list_index].c_str()) and list_index<COMMANDS) {
+    while ((name = (char *)commands[list_index].c_str()) and list_index<sizeof(commands)/sizeof(string)) {
         list_index++;
         if (stringcmp (name, (char*)text, len))
         {
