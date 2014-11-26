@@ -30,6 +30,7 @@ public:
 
 
 private:
+    PaStream* stream;
     PaError err;				// Error control
     RecordingContainer RecData;			// Create container
     int collect;

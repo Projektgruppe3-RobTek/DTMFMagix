@@ -29,8 +29,8 @@ int main(){
     rl_attempted_completion_function = customCompletion;
 	while (true)
 	{
-		// Create prompt string from user name and current working directory.
-        snprintf(shell_prompt, sizeof(shell_prompt), "Yo! What do you wanna do now? Enter a fucking command!$ ");
+		// Create (empty) prompt string
+        snprintf(shell_prompt, sizeof(shell_prompt), "");
         
         // Display prompt and read input (n.b. input must be freed after use)...
         input = readline(shell_prompt);
@@ -112,5 +112,5 @@ int main(){
 		}
         delete input;
 	}
-	return 0;
+	exit(0);
 }

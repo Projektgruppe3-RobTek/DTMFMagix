@@ -3,7 +3,6 @@
 
 DTMFRecorder::DTMFRecorder()
 {
-    PaStream *stream;
     err = Pa_Initialize();			// Initialize portaudio
     if (err != paNoError)
     {
@@ -57,12 +56,12 @@ int DTMFRecorder::RecCallback( const void *inputBuffer,void *outputBuffer,unsign
     //Fill container with recording (ringbuffer)
     for(unsigned int i = 0; i< framePerBuffer; i++)
     {
-    input->recBuff[input->streamPlace] = in[i];
-    input->streamPlace++;
-    if(input->streamPlace == INPUTBUFFERSIZE)
-    {
-    input->streamPlace =0;
-    }
+        input->recBuff[input->streamPlace] = in[i];
+        input->streamPlace++;
+        if(input->streamPlace == INPUTBUFFERSIZE)
+        {
+            input->streamPlace =0;
+        }
     }
     return paContinue;
 
@@ -105,11 +104,16 @@ for (int i =0; i< REC_SAMPLE_RATE*lenght/1000;i++)
 DTMFRecorder::~DTMFRecorder()
 {
     // Free space on head and terminate recorder.
-    delete [] RecData.recBuff;
+    err = Pa_CloseStream( stream );
+    if( err != paNoError )
+    {
+        cout << Pa_GetErrorText(err) << endl;
+    }
     err = Pa_Terminate();
     if (err !=  paNoError)
     {
         cout << Pa_GetErrorText(err) << endl;
     }
+    delete [] RecData.recBuff;
 }
 

@@ -21,7 +21,13 @@ PhysicalLayer::PhysicalLayer()
     srand(timer.tv_usec); 
     framenumber=rand()%1000000000+1;
 }
-
+PhysicalLayer::~PhysicalLayer()
+{
+    stop=true;
+    sendert.join();
+    recievert.join();
+    
+}
 void PhysicalLayer::pushData(vector<bool> frame) 
 {
     #ifdef debug
@@ -48,7 +54,8 @@ void PhysicalLayer::FrameGrabber()
 {
     while(true)
     {
-        while(!getNewState()) usleep(2000);
+        if(stop) break;
+        while(!getNewState() and !stop) usleep(500);
         
         vector<bool> frame = getData();
         while(inBuffer.full()) usleep(500);
@@ -61,7 +68,12 @@ void PhysicalLayer::FrameSender()
 {
     while(true)
     {
-        while(outBuffer.empty()) usleep(1000);
+        if(stop) return;
+        while(outBuffer.empty())
+        {
+            if(stop) return;
+            usleep(500);
+        }
         if (getNewState()) continue;
         
         setData(outBuffer.pop_front());

@@ -89,8 +89,9 @@ void PhysicalLayer::getFrame()
         int SequenceCounter=0;
         char previousNote='!';
         if(bugfix) cout << "entering sync" << endl;
-        while(!ArrayComp(RecordedSequence,SyncSequence,SYNCLENGHT,SequenceCounter) and !stop)  // Compare last 4 recorded notes with sync sequence
+        while(!ArrayComp(RecordedSequence,SyncSequence,SYNCLENGHT,SequenceCounter))  // Compare last 4 recorded notes with sync sequence
         {
+            if(stop) return;
             while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
             while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
             vector<float> in1=Rec.GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
@@ -134,8 +135,9 @@ void PhysicalLayer::getFrame()
         }                                                               
         SequenceCounter=0;
         if(bugfix) cout << "entering start" << endl;
-        while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter) and !stop)                     // Compare last 4 recorded notes with start flag sequence
+        while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))                     // Compare last 4 recorded notes with start flag sequence
         {
+            if(stop) return;
             do
             {                                                                               
                 usleep(1000);
@@ -175,8 +177,9 @@ void PhysicalLayer::getFrame()
         vector<char> data;                                                                  // Initiate datagram
         SequenceCounter=0;
         if(bugfix) cout << "entering end" << endl;
-        while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter) and !stop)                       // Compare last 4 recorded notes with end flag sequence
+        while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))                       // Compare last 4 recorded notes with end flag sequence
         {
+            if(stop) return;
             do
             {
                 usleep(1000);

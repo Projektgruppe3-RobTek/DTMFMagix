@@ -14,10 +14,12 @@ DataLinkLayer::~DataLinkLayer()
 
 void DataLinkLayer::getFrames()
 {
-    while(!stop)
-    {   
-        while (!physLayer.dataAvailable() and !stop) //is there a new frame?
+    while(true)
+    {
+        if(stop) return;   
+        while (!physLayer.dataAvailable()) //is there a new frame?
         {
+            if(stop) return;
             usleep(1000);
             if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + 25) * SENDTIME){
                 mode = Mode::idle; //release connection if server is dead

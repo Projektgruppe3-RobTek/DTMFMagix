@@ -347,9 +347,9 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 		frame.insert(frame.begin(), startFlag[type], startFlag[type] + APP_FLAG_SIZE);
 		while (dll.dataBufferFull()){
 			usleep(1000);
+			if(stop) return;
 		}
 		dll.pushData(frame);
-		usleep(1000);
 	}
 	
 	vector<bool> frame;
@@ -357,6 +357,7 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 	frame.insert(frame.begin(), endFlag[type], endFlag[type] + APP_FLAG_SIZE);
 	while (dll.dataBufferFull()){
 			usleep(1000);
+			if(stop) return;
 		}
 	dll.pushData(frame);
 }
@@ -471,6 +472,8 @@ void AppLayer::sendFileTree(vector<bool> pathTarget, bool subdirectories){
 	sort(filePath.begin(), filePath.end());
 	sendFileDetail(pathTarget);
 	for (unsigned int a = 0; a < filePath.size(); a++){
+	    if(stop) return;
+	    
 		if (is_regular_file(filePath[a])){
 			sendFileDetail(stringToVectorBool(filePath[a].string()));
 		}
