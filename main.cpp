@@ -14,6 +14,15 @@ string commands[]= {"send","sendcompressed","request","requestcompressed","delet
 static char** my_completion( const char * text , int start,  int end);
 char* my_generator(const char* text, int state);
 char * dupstr (char* s);
+bool stringcmp(char *str1, char *str2, int len)
+{
+    for(int i=0;i<len;i++)
+    {
+        if (str1[i]!=str2[i]) return false;
+    }
+    return true;    
+
+}
 static char** my_completion( const char * text , int start,  int end)
 {
     char **matches;
@@ -28,7 +37,7 @@ static char** my_completion( const char * text , int start,  int end)
  
 char* my_generator(const char* text, int state)
 {
-    int list_index, len;
+    static int list_index, len;
     char *name;
     if (!state) {
         list_index = 0;
@@ -36,8 +45,7 @@ char* my_generator(const char* text, int state)
     }
     while ((name = (char *)commands[list_index].c_str())) {
         list_index++;
- 
-        if (strncmp (name, text, len) == 0)
+        if (stringcmp (name, (char*)text, len))
         {
             return(dupstr(name));
         }
@@ -144,6 +152,10 @@ int main(){
 			if (arg == 2){
 				AppL.requestMakeDir(args[1]);
 			}
+		}
+		else
+		{
+		    cout << "Command \"" << inputstring << "\" not recognized." << endl;
 		}
         delete input;
 	}
