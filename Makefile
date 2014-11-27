@@ -5,7 +5,7 @@ CFLAGS= -c -std=c++11 -fpermissive     #Compiler Flags
 ifeq ($(OS),Arch)
     LDFLAGS=-lportaudio -lSDL2 -lboost_filesystem -lboost_system -lcryptopp -lbz2 -lreadline#Linker options
 else
-    LDFLAGS=  -lboost_filesystem -lboost_system -lcryptopp -lbz2 -lreadline -lpthread -lSDL2main -lSDL2 -lmingw32 -lportaudio  #Linker options
+    LDFLAGS=  -Bstatic -lboost_filesystem -lboost_system  -lbz2 -lreadline -lpthread -lSDL2main -lSDL2 -lmingw32 -lportaudio   #Linker options
 endif
 SOURCES= AppLayer.cpp DTMFTones.cpp Player.cpp Recorder.cpp main.cpp Goertzel.cpp PhysicalLayer.cpp DataLinkLayer.cpp  autoCompletion.cpp #cpp files
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files

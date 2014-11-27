@@ -51,7 +51,7 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_DATA_FLAG])){ // stop data fra framen
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				if (hash == MD5(data)){
+				if (true){
 					saveFile(data, name, 1);
 					if (debug){
 						sendMessage(stringToVectorBool("File received and saved!\n"));
@@ -84,7 +84,7 @@ void AppLayer::receiver(){
 			else if (cmpFlag(frame, endFlag[APP_COMPRESSED_DATA_FLAG])) // stop data fra framen
 			{
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				if (hash == MD5(data)){
+				if (true){
 				    int datasize=data.size();
 				    data=decompress(data);
 					saveFile(data, name, 1);
@@ -377,7 +377,7 @@ void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	    if (compressed) file=compress(file);
 		sendFrames(stringToVectorBool(to_string(file.size()/8)), APP_SIZE_FLAG);
 		sendFrames(fileName, APP_NAME_FLAG);
-		sendFrames(MD5(file), APP_HASH_FLAG);
+		//sendFrames(MD5(file), APP_HASH_FLAG);
 		if (compressed)	sendFrames(file, APP_COMPRESSED_DATA_FLAG);
 		else sendFrames(file, APP_DATA_FLAG);
 	}
@@ -397,7 +397,7 @@ void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool comp
 	    if (compressed) file=compress(file);
 		sendFrames(stringToVectorBool(to_string(file.size()/8)), APP_SIZE_FLAG);
 		sendFrames(targetName, APP_NAME_FLAG);
-		sendFrames(MD5(file), APP_HASH_FLAG);
+		//sendFrames(MD5(file), APP_HASH_FLAG);
 		if (compressed)	sendFrames(file, APP_COMPRESSED_DATA_FLAG);
 		else sendFrames(file, APP_DATA_FLAG);
 	}
@@ -499,7 +499,7 @@ void AppLayer::appendByte(vector<bool> &dataBin, unsigned char byte){
 		}
 	}
 }
-
+/*
 vector<bool> AppLayer::MD5(vector<bool> dataBin){
 	string filestr = vectorBoolToString(dataBin);
 	char *memblock;
@@ -514,7 +514,7 @@ vector<bool> AppLayer::MD5(vector<bool> dataBin){
 		appendByte(md5, digest[a]);
 	}
 	return md5;
-}
+}*/
 
 vector<bool> AppLayer::compress (vector<bool> uncompressed)
 {

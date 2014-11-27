@@ -11,7 +11,6 @@
 #include <readline/history.h>  
 #include "autoCompletion.h"  
 
-AppLayer AppL; 
 static char** customCompletion( const char * text , int start,  int end)
 {
     char **matches;
@@ -22,12 +21,14 @@ static char** customCompletion( const char * text , int start,  int end)
  
     return (matches);
 }
-int main(int b,char **a){
+int main(){
+	cout << "test" << endl;
 	char *input, shell_prompt[1000];
 	
 	// Configure readline to auto-complete paths when the tab key is hit.
     rl_bind_key('\t', rl_possible_completions_sub);
     rl_attempted_completion_function = customCompletion;
+	AppLayer AppL; 
 	while (true)
 	{
 		// Create (empty) prompt string

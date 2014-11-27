@@ -10,8 +10,8 @@
 #include <vector>
 #include <stdlib.h>
 #include <boost/filesystem.hpp>
-#include <cryptopp/md5.h>
-#include <cryptopp/hex.h>
+//#include <cryptopp/md5.h>
+//#include <cryptopp/hex.h>
 #include "DataLinkLayer.h"
 
 using namespace boost::filesystem;
@@ -90,11 +90,11 @@ class AppLayer{
 		bool cmpFlag(vector<bool> dataBin, bool *flag);
 		void sendFileDetail(vector<bool> path);
 		void sendFileTree(vector<bool> pathTarget, bool subdirectories);
-		vector<bool> MD5(vector<bool> dataBin);
+		//vector<bool> MD5(vector<bool> dataBin);
 		
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
 		
-		pthread_t* receiveThread;
+		pthread_t receiveThread;
 		bool stop=false;
 		bool startFlag[11][APP_FLAG_SIZE] = {
 			{0,0,0,0,0},// size
