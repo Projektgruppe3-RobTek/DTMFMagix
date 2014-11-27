@@ -10,7 +10,7 @@
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-#define DLLDEBUG
+//#define DLLDEBUG
 using namespace std;
 /*
 Layout of frame:

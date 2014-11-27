@@ -42,7 +42,9 @@ void DataLinkLayer::getFrames()
         }
         int frameID=getID(recievedFrame);
         int frameType=getType(recievedFrame);
-        //cout << "ID: " << frameID << "---" << "Type: " << frameType << endl;
+        #ifdef DLLDEBUG
+        cout << "ID: " << frameID << "---" << "Type: " << frameType << endl;
+        #endif 
         switch(mode)
         {
             case Mode::idle: //Things to do if we are idle
@@ -53,8 +55,8 @@ void DataLinkLayer::getFrames()
                 if (frameType == 2) //request
                 {
                     lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    sendAccept(lastinID);
+                    //lastoutID =! lastoutID;
                     mode = Mode::client;
                     startTimer();
                 }
@@ -70,8 +72,8 @@ void DataLinkLayer::getFrames()
                 else if(frameType == 4) //terminate
                 {
                     lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    sendAccept(lastinID);
+                    //lastoutID =! lastoutID;
                 }
                 else 
                 {
@@ -79,7 +81,7 @@ void DataLinkLayer::getFrames()
                     cout << "ERROR in idle recieve (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
                     cout << "This is the frame: " << endl;
-                    for(auto bit : recievedFrame) cout << bit; cout << endl;
+                    //for(auto bit : recievedFrame) cout << bit; cout << endl;
                     #endif 
                 }
             break;
@@ -103,15 +105,15 @@ void DataLinkLayer::getFrames()
                 else if (frameType == 2) //request
                 {
                     lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    sendAccept(lastinID);
+                    //lastoutID =! lastoutID;
                 }
                 else if (frameType == 4) //Terminate
                 {
                     mode = Mode::idle;
                     lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    sendAccept(lastinID);
+                    //lastoutID =! lastoutID;
                 }
                 else 
                 {
@@ -119,7 +121,7 @@ void DataLinkLayer::getFrames()
                     cout << "ERROR in client recieve (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
                     cout << "This is the frame: " << endl;
-                    for(auto bit : recievedFrame) cout << bit; cout << endl;
+                    //for(auto bit : recievedFrame) cout << bit; cout << endl;
                     #endif 
                 }
             break;
@@ -157,7 +159,7 @@ void DataLinkLayer::getFrames()
                     cout << "ERROR in server recieve (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
                     cout << "This is the frame: " << endl;
-                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                    //for(auto bit : recievedFrame) cout << bit; cout << endl; 
                     #endif
                 }
             break;
@@ -173,7 +175,7 @@ void DataLinkLayer::getFrames()
 
 void DataLinkLayer::getDatagrams(){
     vector<bool> data_to_send;
-    bool connectionLost = false;
+    int connectionLost = false;
 
     while(!stop){
         while((mode == Mode::client or outBuffer.empty()) and !stop){ 
@@ -182,8 +184,7 @@ void DataLinkLayer::getDatagrams(){
         
         while(outBuffer.size() and !stop){
             if(mode != Mode::server and !connectionRequest()) break;
-            if(!connectionLost)
-            {
+            if(!connectionLost){
                 data_to_send = outBuffer.pop_front();
 
                 setType(data_to_send, 0);
@@ -481,7 +482,7 @@ bool DataLinkLayer::connectionRequest(){
 
         startTimer();
         sendRequest(!lastoutID);
-        lastoutID = !lastoutID;
+        //lastoutID = !lastoutID;
         while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
@@ -498,12 +499,13 @@ bool DataLinkLayer::releaseConnection(){
     while(!stop and conWait.waiting){
         if (terminateSend > 5){
             mode = Mode::idle;
+            
             return false;
         }
 
         startTimer();
         sendTerminate(!lastoutID);
-        lastoutID = !lastoutID;
+        //lastoutID = !lastoutID;
         while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
@@ -521,7 +523,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
     while(!stop and ackWait.waiting){
         if (packetsSend > 5){
             sendTerminate(!lastoutID);
-            lastoutID = !lastoutID;
+            //lastoutID = !lastoutID;
             mode = Mode::idle;
             return false;
         }
