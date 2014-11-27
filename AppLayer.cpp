@@ -1,12 +1,12 @@
 #include "AppLayer.h"
 
 AppLayer::AppLayer(){
-	receiveThread = thread(receiverWrapper, this);
+	receiveThread = pthread_create(receiveThread,(pthread_attr_t *)NULL,receiverWrapper, static_cast<void*>(this));
 }
 
 AppLayer::~AppLayer() {
     stop=true;
-    receiveThread.join();
+    pthread_join(receiveThread,NULL);
 }
 void AppLayer::receiver(){
 	vector<bool> size;

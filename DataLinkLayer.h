@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <sys/time.h>
-#include <thread>
+#include <pthread.h>
 #include <array>
 #include <iostream>
 #include "PhysicalLayer.h" // Lyd
@@ -107,8 +107,8 @@ class DataLinkLayer
         timeval timer;
         RingBuffer<vector<bool>,BUFFERSIZE> inBuffer;
         RingBuffer<vector<bool>,BUFFERSIZE> outBuffer;
-        thread getFramesThread;
-        thread getDatagramsThread;
+        pthread_t* getFramesThread;
+        pthread_t* getDatagramsThread;
         ack ackWait;
         Connection conWait;
         Mode mode=Mode::idle;

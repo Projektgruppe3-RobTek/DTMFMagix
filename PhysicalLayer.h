@@ -3,10 +3,9 @@
 #include "Player.h"
 #include "Goertzel.h"
 #include <vector>
-#include <thread>
 #include <sys/time.h>
 #include <unistd.h>
-#include <thread>
+#include <pthread.h>
 #define TONELENGTH 35
 #define SILENTLENGTH 2
 #ifndef M_PI
@@ -49,8 +48,8 @@ private:
     long long       synctime;
     bool            receiveFlag;
     bool            sendFlag;
-    thread          incommingThread;
-    thread          outgoingThread;
+    pthread_t*          incommingThread;
+    pthread_t*          outgoingThread;
     vector<char>    incommingFrame;
     vector<char>    outgoingFrame;
     timeval         tv;

@@ -2,14 +2,14 @@
 #include <iostream>
 DataLinkLayer::DataLinkLayer()
 {
-    getFramesThread = thread(getFramesWrapper, this);
-    getDatagramsThread = thread(getDatagramsWraper, this);
+	pthread_create(getFramesThread,(pthread_attr_t *)NULL,getFramesWrapper, static_cast<void*>(this));
+	pthread_create(getDatagramsThread,(pthread_attr_t *)NULL,getDatagramsWraper, static_cast<void*>(this));
 }
 DataLinkLayer::~DataLinkLayer()
 {
     stop=true;
-    getFramesThread.join();
-    getDatagramsThread.join();
+	pthread_join(getFramesThread,NULL);
+	pthread_join(getDatagramsThread,NULL);
 }
 
 void DataLinkLayer::getFrames()

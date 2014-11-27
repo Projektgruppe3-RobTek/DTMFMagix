@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include "AppLayer.h"
 #include <iostream>
 #include <sstream>
@@ -21,7 +22,7 @@ static char** customCompletion( const char * text , int start,  int end)
  
     return (matches);
 }
-int main(){
+int main(int b,char **a){
 	char *input, shell_prompt[1000];
 	
 	// Configure readline to auto-complete paths when the tab key is hit.

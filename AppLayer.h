@@ -94,7 +94,7 @@ class AppLayer{
 		
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
 		
-		thread receiveThread;
+		pthread_t* receiveThread;
 		bool stop=false;
 		bool startFlag[11][APP_FLAG_SIZE] = {
 			{0,0,0,0,0},// size
