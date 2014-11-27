@@ -2,14 +2,14 @@
 #include <iostream>
 DataLinkLayer::DataLinkLayer()
 {
-	pthread_create(getFramesThread,(pthread_attr_t *)NULL,getFramesWrapper, static_cast<void*>(this));
-	pthread_create(getDatagramsThread,(pthread_attr_t *)NULL,getDatagramsWraper, static_cast<void*>(this));
+	getFramesThread=boost::thread(getFramesWrapper,this);
+	getDatagramsThread=boost::thread(getDatagramsWraper,this);
 }
 DataLinkLayer::~DataLinkLayer()
 {
     stop=true;
-	pthread_join(getFramesThread,NULL);
-	pthread_join(getDatagramsThread,NULL);
+	getFramesThread.join();
+	getDatagramsThread.join();
 }
 
 void DataLinkLayer::getFrames()

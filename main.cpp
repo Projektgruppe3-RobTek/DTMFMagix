@@ -22,15 +22,17 @@ static char** customCompletion( const char * text , int start,  int end)
     return (matches);
 }
 int main(){
-	cout << "test" << endl;
+	#ifndef WIN
 	char *input, shell_prompt[1000];
 	
 	// Configure readline to auto-complete paths when the tab key is hit.
     rl_bind_key('\t', rl_possible_completions_sub);
     rl_attempted_completion_function = customCompletion;
+	#endif
 	AppLayer AppL; 
 	while (true)
 	{
+		#ifndef WIN
 		// Create (empty) prompt string
         snprintf(shell_prompt, sizeof(shell_prompt), "");
         
@@ -41,6 +43,11 @@ int main(){
         if (!input) break;
         
         string inputstring=input;
+		#endif
+		#ifdef WIN
+		string inputstring;
+		getline(cin, inputstring);
+		#endif
 		istringstream text(inputstring);
 		vector<string> args;
 		
@@ -53,7 +60,9 @@ int main(){
 		
 		int arg = args.size();
 		if (arg==0) continue;
+		#ifndef WIN
 		add_history(input);
+		#endif
 		
 		if (args[0] == "send"){
 			if (arg == 2){
@@ -112,7 +121,9 @@ int main(){
 		{
 		    cout << "Command \"" << inputstring << "\" not recognized." << endl;
 		}
+		#ifndef WIN
         delete input;
+		#endif
 	}
 	exit(0);
 }

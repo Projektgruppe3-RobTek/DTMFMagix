@@ -5,7 +5,7 @@
 #include <vector>
 #include <sys/time.h>
 #include <unistd.h>
-#include <pthread.h>
+#include <boost/thread.hpp>
 #define TONELENGTH 35
 #define SILENTLENGTH 2
 #ifndef M_PI
@@ -48,8 +48,8 @@ private:
     long long       synctime;
     bool            receiveFlag;
     bool            sendFlag;
-    pthread_t*          incommingThread;
-    pthread_t*          outgoingThread;
+    boost::thread          incommingThread;
+    boost::thread          outgoingThread;
     vector<char>    incommingFrame;
     vector<char>    outgoingFrame;
     timeval         tv;

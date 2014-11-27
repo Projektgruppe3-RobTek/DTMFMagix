@@ -10,6 +10,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
 //#include <cryptopp/md5.h>
 //#include <cryptopp/hex.h>
 #include "DataLinkLayer.h"
@@ -94,7 +95,7 @@ class AppLayer{
 		
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
 		
-		pthread_t receiveThread;
+		boost::thread receiveThread;
 		bool stop=false;
 		bool startFlag[11][APP_FLAG_SIZE] = {
 			{0,0,0,0,0},// size

@@ -2,8 +2,8 @@
 
 PhysicalLayer::PhysicalLayer() // Default constructer
 {
-	pthread_create(incommingThread,(pthread_attr_t *)NULL,getFrameWrapper, static_cast<void*>(this));
-	pthread_create(outgoingThread,(pthread_attr_t *)NULL,playFrameWrapper, static_cast<void*>(this));
+	incommingThread=boost::thread(getFrameWrapper, this);
+	outgoingThread=boost::thread(playFrameWrapper,this);
 }
 
 void PhysicalLayer::applyHamming(vector<float> &data) // Applies Hamming to given vector
@@ -262,8 +262,8 @@ void getFrameWrapper(PhysicalLayer * PhysLayer)
 PhysicalLayer::~PhysicalLayer()
 {
     stop=true;
-	pthread_join(incommingThread,NULL);
-	pthread_join(outgoingThread,NULL);
+	incommingThread.join();
+	outgoingThread.join();
 }
 
 template <typename Type>
