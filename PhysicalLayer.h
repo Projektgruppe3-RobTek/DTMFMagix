@@ -3,7 +3,6 @@
 #include "Player.h"
 #include "Goertzel.h"
 #include <vector>
-#include <thread>
 #include <sys/time.h>
 #include <unistd.h>
 #include <thread>
@@ -12,7 +11,6 @@
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
 #endif
-#pragma once
 #define SYNCLENGHT 3
 #define SYNCREPEAT 5
 using namespace std;

@@ -8,10 +8,10 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <stdlib.h>
 #include <boost/filesystem.hpp>
 #include <cryptopp/md5.h>
 #include <cryptopp/hex.h>
+#include <thread>
 #include "DataLinkLayer.h"
 
 using namespace boost::filesystem;
@@ -51,7 +51,8 @@ class AppLayer{
 		void requestMakeDir(string path);
 		string stripPath(string filename);
 		void receiver();
-		
+		int getEstimatedSize();
+		int getNumberOfFrames();
 		
 		
 	private:
@@ -93,7 +94,8 @@ class AppLayer{
 		vector<bool> MD5(vector<bool> dataBin);
 		
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
-		
+		int estimatedSize=0;
+		int numberOfFrames=0;
 		thread receiveThread;
 		bool stop=false;
 		bool startFlag[11][APP_FLAG_SIZE] = {

@@ -17,8 +17,8 @@ void AppLayer::receiver(){
 	vector<bool> requestedFile;
 	vector<bool> requestedFileName;
 	
-	int numberOfFrames = 0;
-	int estimatedSize = 0;
+	numberOfFrames = 0;
+	estimatedSize = 0;
 	
 	while (!stop){
 		
@@ -567,4 +567,12 @@ vector<bool> AppLayer::decompress(vector<bool> compressed)
 	}
     delete decompressedmem;
     return decompressed;
+}
+int AppLayer::getEstimatedSize()
+{
+    return estimatedSize;
+}
+int AppLayer::getNumberOfFrames()
+{
+    return numberOfFrames;
 }
