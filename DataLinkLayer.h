@@ -4,13 +4,13 @@
 #include <thread>
 #include <array>
 #include <iostream>
-#include "PhysicalLayer.h" // Lyd
-//#include "PhysicalLayerEmu.h" // Fil
+//#include "PhysicalLayer.h" // Lyd
+#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-#define DLLDEBUG
+//#define DLLDEBUG
 using namespace std;
 /*
 Layout of frame:

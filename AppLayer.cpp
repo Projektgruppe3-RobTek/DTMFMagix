@@ -1,6 +1,7 @@
 #include "AppLayer.h"
 
 AppLayer::AppLayer(){
+	cout << "Applayer created" << endl;
 	receiveThread = thread(receiverWrapper, this);
 }
 
