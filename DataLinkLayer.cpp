@@ -52,9 +52,7 @@ void DataLinkLayer::getFrames()
                 
                 if (frameType == 2) //request
                 {
-                    //lastinID = frameID;
-                    sendAccept(0);
-                    //lastoutID =! lastoutID;
+                    sendAccept();
                     mode = Mode::client;
                     startTimer();
                 }
@@ -62,16 +60,13 @@ void DataLinkLayer::getFrames()
                 {
                     if(conWait.waiting and conWait.type == 1)
                     {
-                        //lastinID = frameID;
                         mode = Mode::server;
                         conWait.waiting = 0;
                     }
                 }
                 else if(frameType == 4) //terminate
                 {
-                    //lastinID = frameID;
-                    sendAccept(0);
-                    //lastoutID =! lastoutID;
+                    sendAccept();
                 }
                 else 
                 {
@@ -102,16 +97,12 @@ void DataLinkLayer::getFrames()
                 }
                 else if (frameType == 2) //request
                 {
-                    //lastinID = frameID;
-                    sendAccept(0);
-                    //lastoutID =! lastoutID;
+                    sendAccept();
                 }
                 else if (frameType == 4) //Terminate
                 {
                     mode = Mode::idle;
-                    //lastinID = frameID;
-                    sendAccept(0);
-                    //lastoutID =! lastoutID;
+                    sendAccept();
                 }
                 else 
                 {
@@ -135,7 +126,6 @@ void DataLinkLayer::getFrames()
                 }
                 else if (frameType == 3) //accept
                 {
-                    //lastinID = frameID;
                     if(conWait.waiting and conWait.type == 1) //If we are waiting for request accept (we should not be doing that at this point), mark it as recieved
                     {
                         #ifdef DLLDEBUG
@@ -323,19 +313,19 @@ void DataLinkLayer::sendACK(bool ID)
     sendControl(1,ID);
 }
 
-void DataLinkLayer::sendRequest(bool ID)
+void DataLinkLayer::sendRequest()
 {
-    sendControl(2,ID);
+    sendControl(2,0);
 }
 
-void DataLinkLayer::sendAccept(bool ID)
+void DataLinkLayer::sendAccept()
 {
-    sendControl(3,ID);
+    sendControl(3,0);
 }
 
-void DataLinkLayer::sendTerminate(bool ID)
+void DataLinkLayer::sendTerminate()
 {
-    sendControl(4,ID);
+    sendControl(4,0);
 }
 
 void DataLinkLayer::sendFrame(vector<bool> &frame)
@@ -476,8 +466,7 @@ bool DataLinkLayer::connectionRequest(){
         }
 
         startTimer();
-        sendRequest(0);
-        //lastoutID = !lastoutID;
+        sendRequest();
         while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
@@ -498,8 +487,7 @@ bool DataLinkLayer::releaseConnection(){
         }
 
         startTimer();
-        sendTerminate(0);
-        //lastoutID = !lastoutID;
+        sendTerminate();
         while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
@@ -516,8 +504,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
     
     while(!stop and ackWait.waiting){
         if (packetsSend > 5){
-            sendTerminate(0);
-            //lastoutID = !lastoutID;
+            sendTerminate();
             mode = Mode::idle;
             return false;
         }

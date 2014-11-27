@@ -4,13 +4,13 @@
 #include <thread>
 #include <array>
 #include <iostream>
-//#include "PhysicalLayer.h" // Lyd
-#include "PhysicalLayerEmu.h" // Fil
+#include "PhysicalLayer.h" // Lyd
+//#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-#define DLLDEBUG
+//#define DLLDEBUG
 using namespace std;
 /*
 Layout of frame:
@@ -74,9 +74,9 @@ class DataLinkLayer
         void startTimer(); //Start the timer
         int getTimer(); //Return milliseconds since setTimer was called.
         void sendACK(bool ID); //send ACK.
-        void sendRequest(bool ID); //send Request
-        void sendAccept(bool ID); //send Accept
-        void sendTerminate(bool ID); //send Terminate
+        void sendRequest(); //send Request
+        void sendAccept(); //send Accept
+        void sendTerminate(); //send Terminate
         void sendControl(int Type,bool ID);
         void sendFrame(vector<bool> &frame);
         bool connect(); //Try to set the node as master. This is blocking.
