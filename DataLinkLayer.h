@@ -4,8 +4,8 @@
 #include <thread>
 #include <array>
 #include <iostream>
-#include "PhysicalLayer.h" // Lyd
-//#include "PhysicalLayerEmu.h" // Fil
+//#include "PhysicalLayer.h" // Lyd
+#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
@@ -66,7 +66,6 @@ class DataLinkLayer
         bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
 
         bool getID(vector<bool> &frame); //Get id of frame
-        void setID(vector<bool> &frame); //set id of frame.
         void setID(vector<bool> &frame, int ID); //set id of frame.
 
         int getType(vector<bool> &frame); //Get type of frame.

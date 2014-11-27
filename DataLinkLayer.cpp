@@ -52,9 +52,9 @@ void DataLinkLayer::getFrames()
                 
                 if (frameType == 2) //request
                 {
-                    lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    //lastinID = frameID;
+                    sendAccept(0);
+                    //lastoutID =! lastoutID;
                     mode = Mode::client;
                     startTimer();
                 }
@@ -62,16 +62,16 @@ void DataLinkLayer::getFrames()
                 {
                     if(conWait.waiting and conWait.type == 1)
                     {
-                        lastinID = frameID;
+                        //lastinID = frameID;
                         mode = Mode::server;
                         conWait.waiting = 0;
                     }
                 }
                 else if(frameType == 4) //terminate
                 {
-                    lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    //lastinID = frameID;
+                    sendAccept(0);
+                    //lastoutID =! lastoutID;
                 }
                 else 
                 {
@@ -102,16 +102,16 @@ void DataLinkLayer::getFrames()
                 }
                 else if (frameType == 2) //request
                 {
-                    lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    //lastinID = frameID;
+                    sendAccept(0);
+                    //lastoutID =! lastoutID;
                 }
                 else if (frameType == 4) //Terminate
                 {
                     mode = Mode::idle;
-                    lastinID = frameID;
-                    sendAccept(!lastoutID);
-                    lastoutID =! lastoutID;
+                    //lastinID = frameID;
+                    sendAccept(0);
+                    //lastoutID =! lastoutID;
                 }
                 else 
                 {
@@ -135,7 +135,7 @@ void DataLinkLayer::getFrames()
                 }
                 else if (frameType == 3) //accept
                 {
-                    lastinID = frameID;
+                    //lastinID = frameID;
                     if(conWait.waiting and conWait.type == 1) //If we are waiting for request accept (we should not be doing that at this point), mark it as recieved
                     {
                         #ifdef DLLDEBUG
@@ -187,7 +187,8 @@ void DataLinkLayer::getDatagrams(){
                 data_to_send = outBuffer.pop_front();
 
                 setType(data_to_send, 0);
-                setID(data_to_send);
+                lastoutID=!lastoutID;
+                setID(data_to_send,lastoutID);
                 CRCencoder(data_to_send);
                 bitStuff(data_to_send);
                 setPadding(data_to_send);
@@ -275,11 +276,6 @@ bool DataLinkLayer::getID(vector<bool> &frame)
     return ID;
 }
 
-void DataLinkLayer::setID(vector<bool> &frame)
-{
-    lastoutID = !lastoutID;
-    frame.insert(frame.begin(), lastoutID);
-}
 void DataLinkLayer::setID(vector<bool> &frame, int ID) //This is mostly for ACK's
 {                                       //Don't change lastoutID.
     frame.insert(frame.begin(), ID);
@@ -480,8 +476,8 @@ bool DataLinkLayer::connectionRequest(){
         }
 
         startTimer();
-        sendRequest(!lastoutID);
-        lastoutID = !lastoutID;
+        sendRequest(0);
+        //lastoutID = !lastoutID;
         while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
@@ -502,8 +498,8 @@ bool DataLinkLayer::releaseConnection(){
         }
 
         startTimer();
-        sendTerminate(!lastoutID);
-        lastoutID = !lastoutID;
+        sendTerminate(0);
+        //lastoutID = !lastoutID;
         while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
@@ -520,8 +516,8 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
     
     while(!stop and ackWait.waiting){
         if (packetsSend > 5){
-            sendTerminate(!lastoutID);
-            lastoutID = !lastoutID;
+            sendTerminate(0);
+            //lastoutID = !lastoutID;
             mode = Mode::idle;
             return false;
         }
