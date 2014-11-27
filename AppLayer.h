@@ -53,6 +53,8 @@ class AppLayer{
 		void receiver();
 		int getEstimatedSize();
 		int getNumberOfFrames();
+		int getFramesSend();
+		int getTotalFramesToSend();
 		
 		
 	private:
@@ -79,7 +81,8 @@ class AppLayer{
 		vector<bool> stringToVectorBool(string dataStr);
 		string vectorBoolToString(vector<bool> dataBin);
 		int vectorBoolToInt(vector<bool> dataBin);
-		
+		int totalFramesToSend=0;
+		int FramesSend=0;
 		//bool copyFile(vector<bool> source, vector<bool> destination, bool force);
 		//bool moveFile(vector<bool> source, vector<bool> destination, bool force);
 		

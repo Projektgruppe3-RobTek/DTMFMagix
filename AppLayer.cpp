@@ -37,8 +37,8 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_SIZE_FLAG])){ // stop størrelse fra framen
 				size.insert(size.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				estimatedSize = (stoi(vectorBoolToString(size)) * 8) / APP_DATA_FRAME_SIZE + 3+1;
-				data.reserve((stoi(vectorBoolToString(size))));
+				estimatedSize = stoi(vectorBoolToString(size));
+				data.reserve((stoi(vectorBoolToString(size)))*APP_DATA_FRAME_SIZE);
 			}
 			else if (cmpFlag(frame, startFlag[APP_NAME_FLAG])){ // start navn fra framen
 				name.insert(name.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
@@ -338,6 +338,7 @@ bool AppLayer::moveFile(vector<bool> source, vector<bool> destination, bool forc
 */
 
 void AppLayer::sendFrames(vector<bool> dataBin, int type){
+
     long dataBinOffset=0;
 	while ( ((int)dataBin.size())-dataBinOffset >= APP_DATA_FRAME_SIZE){ 
 		vector<bool> frame;
@@ -350,6 +351,7 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 			if(stop) return;
 		}
 		dll.pushData(frame);
+		FramesSend++;
 	}
 	
 	vector<bool> frame;
@@ -360,6 +362,7 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 			if(stop) return;
 		}
 	dll.pushData(frame);
+	FramesSend++;
 }
 
 void AppLayer::sendMessage(vector<bool> message){
@@ -372,10 +375,12 @@ void AppLayer::sendMessage(string message){
 
 void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
-	    //for(auto bit : MD5(loadFile(fileName))) cout << bit; cout << endl;
+	
 	    vector<bool> file=loadFile(fileName);
 	    if (compressed) file=compress(file);
-		sendFrames(stringToVectorBool(to_string(file.size()/8)), APP_SIZE_FLAG);
+	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + fileName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 3;
+	    FramesSend=0;
+		sendFrames(stringToVectorBool(to_string(totalFramesToSend)), APP_SIZE_FLAG);
 		sendFrames(fileName, APP_NAME_FLAG);
 		sendFrames(MD5(file), APP_HASH_FLAG);
 		if (compressed)	sendFrames(file, APP_COMPRESSED_DATA_FLAG);
@@ -395,7 +400,9 @@ void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool comp
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
 	    vector<bool> file=loadFile(fileName);
 	    if (compressed) file=compress(file);
-		sendFrames(stringToVectorBool(to_string(file.size()/8)), APP_SIZE_FLAG);
+	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + targetName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 3;
+	    FramesSend=0;
+		sendFrames(stringToVectorBool(to_string(totalFramesToSend)), APP_SIZE_FLAG);
 		sendFrames(targetName, APP_NAME_FLAG);
 		sendFrames(MD5(file), APP_HASH_FLAG);
 		if (compressed)	sendFrames(file, APP_COMPRESSED_DATA_FLAG);
@@ -575,4 +582,12 @@ int AppLayer::getEstimatedSize()
 int AppLayer::getNumberOfFrames()
 {
     return numberOfFrames;
+}
+int AppLayer::getFramesSend()
+{
+    return FramesSend-dll.dataBufferSize();
+}
+int AppLayer::getTotalFramesToSend()
+{
+    return totalFramesToSend;
 }
