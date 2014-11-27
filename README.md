@@ -29,7 +29,7 @@ Furthermore it relies on the standard c++11 library and either clang++ or g++.
 
 install the requeried libraries
 
-`sudo apt-get install portaudio19-dev libsdl2-dev libboost-all-dev libcrypto++-dev libbz2-dev libreadline-dev clang build-essential`
+`sudo apt-get install portaudio19-dev libsdl2-dev libboost-all-dev libcrypto++-dev libbz2-dev libreadline-dev clang build-essential libjack-dev libjack0`
 
 Compile
 
