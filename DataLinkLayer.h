@@ -4,13 +4,13 @@
 #include <thread>
 #include <array>
 #include <iostream>
-#include "PhysicalLayer.h" // Lyd
-//#include "PhysicalLayerEmu.h" // Fil
+//#include "PhysicalLayer.h" // Lyd
+#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-//#define DLLDEBUG
+#define DLLDEBUG
 using namespace std;
 /*
 Layout of frame:
@@ -66,7 +66,6 @@ class DataLinkLayer
         bool CRCdecoder(vector<bool> &codeWord); //Make codeword into dataword, discard frame if corrupt. return false on fail, else true.
 
         bool getID(vector<bool> &frame); //Get id of frame
-        void setID(vector<bool> &frame); //set id of frame.
         void setID(vector<bool> &frame, int ID); //set id of frame.
 
         int getType(vector<bool> &frame); //Get type of frame.
@@ -116,4 +115,3 @@ void getFramesWrapper(DataLinkLayer *DaLLObj);
 void getDatagramsWraper(DataLinkLayer *DaLLObj);
 void getDatagramsAndFramesThread(DataLinkLayer *DaLLObj);
 bool flagcheck(vector<bool> &vec1, int start1,array<bool, 8> &flag, int lenght);
-
