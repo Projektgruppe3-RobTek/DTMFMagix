@@ -23,7 +23,9 @@ void DataLinkLayer::getFrames()
             usleep(1000);
             if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + 25) * SENDTIME){
                 mode = Mode::idle; //release connection if server is dead
+                #ifdef DLLDEBUG
                 cout << "timeout " << endl;
+                #endif
             }
         }
         vector<bool> recievedFrame = physLayer.popData(); //Get the frame
@@ -33,7 +35,9 @@ void DataLinkLayer::getFrames()
         revBitStuff(recievedFrame);
         if(!CRCdecoder(recievedFrame))
         {
+            #ifdef DLLDEBUG
             cout << "Fejl i CRC!!!" << endl;
+            #endif 
             continue;
         }
         int frameID=getID(recievedFrame);
@@ -63,7 +67,7 @@ void DataLinkLayer::getFrames()
                         conWait.waiting = 0;
                     }
                 }
-                else if(frameType == 5) //terminate
+                else if(frameType == 4) //terminate
                 {
                     lastinID = frameID;
                     sendAccept(!lastoutID);
@@ -71,10 +75,12 @@ void DataLinkLayer::getFrames()
                 }
                 else 
                 {
+                    #ifdef DLLDEBUG
                     cout << "ERROR in idle recieve (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
                     cout << "This is the frame: " << endl;
-                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                    for(auto bit : recievedFrame) cout << bit; cout << endl;
+                    #endif 
                 }
             break;
                 
@@ -100,7 +106,7 @@ void DataLinkLayer::getFrames()
                     sendAccept(!lastoutID);
                     lastoutID =! lastoutID;
                 }
-                else if (frameType == 5) //Terminate
+                else if (frameType == 4) //Terminate
                 {
                     mode = Mode::idle;
                     lastinID = frameID;
@@ -109,10 +115,12 @@ void DataLinkLayer::getFrames()
                 }
                 else 
                 {
+                    #ifdef DLLDEBUG
                     cout << "ERROR in client recieve (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
                     cout << "This is the frame: " << endl;
-                    for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                    for(auto bit : recievedFrame) cout << bit; cout << endl;
+                    #endif 
                 }
             break;
             
@@ -130,25 +138,33 @@ void DataLinkLayer::getFrames()
                     lastinID = frameID;
                     if(conWait.waiting and conWait.type == 1) //If we are waiting for request accept (we should not be doing that at this point), mark it as recieved
                     {
+                        #ifdef DLLDEBUG
                         cout << "ERROR in server request wait" << endl;
+                        #endif
                     }
                     else if (conWait.waiting and conWait.type == 0) //If we are waiting for terminate accept,
                     {                                                //mark as recieved and change mode to not connected.
                         mode = Mode::idle;
                         conWait.waiting = false;
                     }
+                    #ifdef DLLDEBUG
                     else cout << "ERROR in accept recieve master" << endl;
+                    #endif
                 }
                 else 
                 {
+                    #ifdef DLLDEBUG
                     cout << "ERROR in server recieve (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
                     cout << "This is the frame: " << endl;
                     for(auto bit : recievedFrame) cout << bit; cout << endl; 
+                    #endif
                 }
             break;
+            #ifdef DLLDEBUG
             default:
                 cout << "ERROR" << endl;
+            #endif
         
         }
     }
@@ -321,14 +337,9 @@ void DataLinkLayer::sendAccept(bool ID)
     sendControl(3,ID);
 }
 
-void DataLinkLayer::sendDecline(bool ID)
-{
-    sendControl(4,ID);
-}
-
 void DataLinkLayer::sendTerminate(bool ID)
 {
-    sendControl(5,ID);
+    sendControl(4,ID);
 }
 
 void DataLinkLayer::sendFrame(vector<bool> &frame)
@@ -462,7 +473,9 @@ bool DataLinkLayer::connectionRequest(){
     while(conWait.waiting and !stop){
         if (requestsSend % 3 == 2){
             usleep((((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4 + rand() % (2000 + requestsSend * MAX_FRAMESIZE * 2)) * 1000); //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard and a random time
+            #ifdef DLLDEBUG
             cout << "Stepping down, failed to send request (DLL)" << endl;
+            #endif
             if(mode == Mode::client) return false;
         }
 
@@ -475,7 +488,7 @@ bool DataLinkLayer::connectionRequest(){
 
         requestsSend++;
     }
-    return true;
+    return (mode == Mode::server);
 }
 
 bool DataLinkLayer::releaseConnection(){

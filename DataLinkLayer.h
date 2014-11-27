@@ -10,7 +10,7 @@
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-
+#define DLLDEBUG
 using namespace std;
 /*
 Layout of frame:
@@ -23,8 +23,7 @@ Frametypes:
 001 = ACK
 010 = request
 011 = accept
-100 = decline
-101 = terminate
+100 = terminate
 
 */
 /* Befor sending frame, we do this in this order:
@@ -78,7 +77,6 @@ class DataLinkLayer
         void sendACK(bool ID); //send ACK.
         void sendRequest(bool ID); //send Request
         void sendAccept(bool ID); //send Accept
-        void sendDecline(bool ID); //send Decline
         void sendTerminate(bool ID); //send Terminate
         void sendControl(int Type,bool ID);
         void sendFrame(vector<bool> &frame);
