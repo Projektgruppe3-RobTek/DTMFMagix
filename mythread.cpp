@@ -12,11 +12,17 @@ void MyThread::run()
 	
     while(true)
     {
-    	if(*sending)
+    	
+		if(*sending && appL->getTotalFramesToSend() == appL->getFramesSend())
 		{
-			cout << "SENDING!!" << endl;
-			emit NumberChanged(appL->getTotalFramesToSend(),appL->getFramesSend());
+		*sending = false;
+		} 		
+		else if(*sending)
+		{
+		emit NumberChanged(appL->getTotalFramesToSend(),appL->getFramesSend());
 		}
+		
+				
 		else
 		{
        		emit NumberChanged(appL->getEstimatedSize(),appL->getNumberOfFrames());
