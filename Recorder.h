@@ -21,15 +21,16 @@ typedef struct
 class DTMFRecorder{
 
 public:
-    DTMFRecorder();
 
     // Method called by Physical layer
     vector<float> GetAudioData(int lenght ,int OffSet);
-
+    static DTMFRecorder* getInstance();
     ~DTMFRecorder();
 
 
 private:
+	static DTMFRecorder* instance;
+	DTMFRecorder();
     PaStream* stream;
     PaError err;				// Error control
     RecordingContainer RecData;			// Create container

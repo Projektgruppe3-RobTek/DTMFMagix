@@ -81,9 +81,8 @@ class DataLinkLayer
         void sendFrame(vector<bool> &frame);
         bool connect(); //Try to set the node as master. This is blocking.
         bool terminate(); //Flush the data queue and terminate master status. This is blocking.
-
+		DataLinkLayer();
     public:
-        DataLinkLayer();
         bool dataAvailable(); //Is there new data for AppLayer?
         vector<bool> popData(); //return data to AppLayer.
         bool dataBufferFull(); //is outBuffer full?
@@ -93,8 +92,10 @@ class DataLinkLayer
         void getDatagrams(); //Grab frames from inBuffer and parse to physical layer.
         int getMode(); //Return mode
         ~DataLinkLayer();
+        static DataLinkLayer *getInstance();
     private:
-        PhysicalLayer physLayer;// Lyd
+    	static DataLinkLayer *instance;
+        PhysicalLayer *physLayer;// Lyd
         bool lastinID=0;
         bool lastoutID=0;
         bool connectionRequest();

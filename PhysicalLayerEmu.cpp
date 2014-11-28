@@ -26,7 +26,13 @@ PhysicalLayer::~PhysicalLayer()
     stop=true;
     sendert.join();
     recievert.join();
-    
+    delete instance;
+}
+PhysicalLayer* PhysicalLayer::instance = nullptr;
+PhysicalLayer *PhysicalLayer::getInstance()
+{
+	if(instance==nullptr) instance = new PhysicalLayer;
+	return instance;
 }
 void PhysicalLayer::pushData(vector<bool> frame) 
 {

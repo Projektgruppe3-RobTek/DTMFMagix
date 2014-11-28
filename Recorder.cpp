@@ -41,6 +41,12 @@ DTMFRecorder::DTMFRecorder()
 
 
 }
+DTMFRecorder* DTMFRecorder::instance = nullptr;
+DTMFRecorder *DTMFRecorder::getInstance()
+{
+	if(instance==nullptr) instance = new DTMFRecorder;
+	return instance;
+}
 // Callback function
 int DTMFRecorder::RecCallback( const void *inputBuffer,void *outputBuffer,unsigned long framePerBuffer,
                     const PaStreamCallbackTimeInfo* timeInfo,PaStreamCallbackFlags statusFlags,
@@ -115,5 +121,6 @@ DTMFRecorder::~DTMFRecorder()
         cout << Pa_GetErrorText(err) << endl;
     }
     delete [] RecData.recBuff;
+    delete instance;
 }
 

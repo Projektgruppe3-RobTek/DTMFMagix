@@ -2,6 +2,8 @@
 
 PhysicalLayer::PhysicalLayer() // Default constructer
 {
+	Rec=DTMFRecorder::getInstance();
+	Player=DTMFPlayer::getInstance();
     incommingThread=thread(getFrameWrapper,this);
     outgoingThread=thread(playFrameWrapper,this);
 }
@@ -73,7 +75,7 @@ void PhysicalLayer::playFrame()                  // If sendFlag = true, play out
         usleep(2000);
         if(sendFlag)
         {
-            Player.PlayDTMF(outgoingFrame,TONELENGTH,SILENTLENGTH);
+            Player->PlayDTMF(outgoingFrame,TONELENGTH,SILENTLENGTH);
             sendFlag=false;
         }
 
@@ -95,7 +97,7 @@ void PhysicalLayer::getFrame()
             if(stop) return;
             while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
             while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
-            vector<float> in1=Rec.GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
+            vector<float> in1=Rec->GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
             applyHamming(in1);                                              // Apply Hamming to in1
             float freq1max=0;
             int freq1Index=0;
@@ -145,7 +147,7 @@ void PhysicalLayer::getFrame()
                 gettimeofday(&tv,NULL);
             } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
             usleep(TONELENGTH*1000);
-            vector<float> in2=Rec.GetAudioData(TONELENGTH,0);                               // Save samples made last TONELENGTH ms in vector in2
+            vector<float> in2=Rec->GetAudioData(TONELENGTH,0);                               // Save samples made last TONELENGTH ms in vector in2
             applyHamming(in2);
             float freq1max=0;
             int freq1Index=0;
@@ -187,7 +189,7 @@ void PhysicalLayer::getFrame()
                 gettimeofday(&tv,NULL);
             } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
             usleep(TONELENGTH*1000);
-            vector<float> in=Rec.GetAudioData(TONELENGTH,0);                                // Save samples made last TONELENGTH ms in vector in3
+            vector<float> in=Rec->GetAudioData(TONELENGTH,0);                                // Save samples made last TONELENGTH ms in vector in3
             applyHamming(in);
             float freq1max=0;
             int freq1Index=0;
@@ -257,13 +259,19 @@ void getFrameWrapper(PhysicalLayer * PhysLayer)
 {
     PhysLayer->getFrame();
 }
-
+PhysicalLayer* PhysicalLayer::instance = nullptr;
+PhysicalLayer *PhysicalLayer::getInstance()
+{
+	if(instance==nullptr) instance = new PhysicalLayer;
+	return instance;
+}
 
 PhysicalLayer::~PhysicalLayer()
 {
     stop=true;
     incommingThread.join();
     outgoingThread.join();
+    delete instance;
 }
 
 template <typename Type>

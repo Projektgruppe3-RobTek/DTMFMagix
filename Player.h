@@ -41,9 +41,10 @@ class DTMFPlayer{
 
         SDL_AudioSpec obtainedSpec;     // Communication to hardware.
         DTMFTones Tones;                // DTMF class
-
+		static DTMFPlayer* instance;
+		DTMFPlayer();
     public:
-        DTMFPlayer();
+        static DTMFPlayer* getInstance();
         ~DTMFPlayer();
         void generateSamples(Sint16 *stream, int lenght);
         void WaitForFinish();

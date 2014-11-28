@@ -67,7 +67,7 @@ class AppLayer{
 			const bool debug = true;
 		#endif
 		
-		DataLinkLayer dll;
+		DataLinkLayer *dll;
 		
 		
 		bool cli;

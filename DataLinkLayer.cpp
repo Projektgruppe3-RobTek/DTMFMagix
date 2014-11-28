@@ -2,6 +2,7 @@
 #include <iostream>
 DataLinkLayer::DataLinkLayer()
 {
+	physLayer=PhysicalLayer::getInstance();
     getFramesThread = thread(getFramesWrapper, this);
     getDatagramsThread = thread(getDatagramsWraper, this);
 }
@@ -10,14 +11,20 @@ DataLinkLayer::~DataLinkLayer()
     stop=true;
     getFramesThread.join();
     getDatagramsThread.join();
+    delete instance;
 }
-
+DataLinkLayer *DataLinkLayer::getInstance()
+{
+	if(instance==nullptr) instance = new DataLinkLayer;
+	return instance;
+}
+DataLinkLayer* DataLinkLayer::instance = nullptr;
 void DataLinkLayer::getFrames()
 {
     while(true)
     {
         if(stop) return;   
-        while (!physLayer.dataAvailable()) //is there a new frame?
+        while (!physLayer->dataAvailable()) //is there a new frame?
         {
             if(stop) return;
             usleep(1000);
@@ -28,7 +35,7 @@ void DataLinkLayer::getFrames()
                 #endif
             }
         }
-        vector<bool> recievedFrame = physLayer.popData(); //Get the frame
+        vector<bool> recievedFrame = physLayer->popData(); //Get the frame
         //for (int a = 0; a < recievedFrame.size(); a++) cout << recievedFrame[a];
         //cout << endl;
         removePadding(recievedFrame); 
@@ -330,8 +337,8 @@ void DataLinkLayer::sendTerminate()
 
 void DataLinkLayer::sendFrame(vector<bool> &frame)
 {
-    while(physLayer.layerBusy() and !stop) usleep(1000);
-    physLayer.pushData(frame);
+    while(physLayer->layerBusy() and !stop) usleep(1000);
+    physLayer->pushData(frame);
 }
 
 void DataLinkLayer::startTimer()
@@ -513,7 +520,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
 
 
         startTimer();
-        physLayer.pushData(packet);
+        physLayer->pushData(packet);
 
         while(!stop and ackWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);

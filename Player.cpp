@@ -32,6 +32,7 @@ DTMFPlayer::DTMFPlayer()
 DTMFPlayer::~DTMFPlayer()
 {
     SDL_CloseAudio();               // Close audio device
+    delete instance;
 }
 
 
@@ -47,9 +48,12 @@ DTMFPlayer::~DTMFPlayer()
     DTMFPlayer *Player =(DTMFPlayer *) DualToneP;
     Player->generateSamples(stream,length);
 }
-
-
-
+DTMFPlayer* DTMFPlayer::instance = nullptr;
+DTMFPlayer *DTMFPlayer::getInstance()
+{
+	if(instance==nullptr) instance = new DTMFPlayer;
+	return instance;
+}
 
 
 void DTMFPlayer::generateSamples(Sint16 *stream, int length)

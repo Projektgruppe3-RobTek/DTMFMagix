@@ -22,9 +22,10 @@ class PhysicalLayer
         int getTimer();
         int framenumber;
         bool stop=false;
+        static PhysicalLayer* instance;
+		PhysicalLayer();
     public:
-        PhysicalLayer();
-        ~PhysicalLayer();
+        static PhysicalLayer* getInstance();
         void pushData(std::vector<bool> );
         bool layerBusy();
         bool dataAvailable();

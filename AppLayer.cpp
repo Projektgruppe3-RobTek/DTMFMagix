@@ -2,6 +2,7 @@
 
 AppLayer::AppLayer(bool _cli){
 	cli = _cli;
+	dll=DataLinkLayer::getInstance();
 	receiveThread = thread(receiverWrapper, this);
 }
 
@@ -23,9 +24,9 @@ void AppLayer::receiver(){
 	
 	while (!stop){
 		
-		while (!stop and dll.dataAvailable()){
+		while (!stop and dll->dataAvailable()){
 			
-			vector<bool> frame = dll.popData();
+			vector<bool> frame = dll->popData();
 			cout << "Frame size: " << frame.size() <<  endl;
 			numberOfFrames++;
 			
@@ -297,22 +298,22 @@ void AppLayer::sendFrames(vector<bool> dataBin, int type){
 		frame.insert(frame.begin(), dataBin.begin()+dataBinOffset, dataBin.begin()+dataBinOffset + APP_DATA_FRAME_SIZE);
 		dataBinOffset+=APP_DATA_FRAME_SIZE;
 		frame.insert(frame.begin(), startFlag[type], startFlag[type] + APP_FLAG_SIZE);
-		while (dll.dataBufferFull()){
+		while (dll->dataBufferFull()){
 			usleep(1000);
 			if(stop) return;
 		}
-		dll.pushData(frame);
+		dll->pushData(frame);
 		FramesSend++;
 	}
 	
 	vector<bool> frame;
 	frame.insert(frame.begin(), dataBin.begin()+dataBinOffset, dataBin.begin() + dataBin.size());
 	frame.insert(frame.begin(), endFlag[type], endFlag[type] + APP_FLAG_SIZE);
-	while (dll.dataBufferFull()){
+	while (dll->dataBufferFull()){
 			usleep(1000);
 			if(stop) return;
 		}
-	dll.pushData(frame);
+	dll->pushData(frame);
 	FramesSend++;
 }
 
@@ -340,7 +341,7 @@ void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	else{
 		if (debug || cli) cout << "File doesn't exists!" << endl;
 	}
-	while(dll.dataBufferSize()) usleep(1000);
+	while(dll->dataBufferSize()) usleep(1000);
 }
 
 void AppLayer::sendFile(string fileName,bool compressed){
@@ -363,7 +364,7 @@ void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool comp
 	else{
 		if (debug || cli) cout << "File doesn't exists!" << endl;
 	}
-	while(dll.dataBufferSize()) usleep(1000);
+	while(dll->dataBufferSize()) usleep(1000);
 }
 
 void AppLayer::sendFile(string fileName, string targetName,bool compressed){
@@ -538,7 +539,7 @@ int AppLayer::getNumberOfFrames()
 }
 int AppLayer::getFramesSend()
 {
-    return FramesSend-dll.dataBufferSize();
+    return FramesSend-dll->dataBufferSize();
 }
 int AppLayer::getTotalFramesToSend()
 {
