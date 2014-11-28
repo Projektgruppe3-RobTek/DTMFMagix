@@ -37,6 +37,7 @@ private:
     Ui::DTMFMagix *ui;
     AppLayer *appLayer;
     std::thread sendThread;
+    bool sending;
 };
 void sendFileWrapper(AppLayer * appLayer,string,string);
 

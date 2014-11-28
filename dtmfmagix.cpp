@@ -8,8 +8,8 @@ DTMFMagix::DTMFMagix(QWidget *parent) :
 {
 	appLayer=AppLayer::getInstance();
     ui->setupUi(this);
-
-    mThread = new MyThread(this,appLayer);
+    sending = false;
+    mThread = new MyThread(this,appLayer,&sending);
     connect(mThread,SIGNAL(NumberChanged(int,int)),this,SLOT(onNumberChanged(int,int)));
     mThread->start();
 }
@@ -31,6 +31,7 @@ void DTMFMagix::on_browseButton_clicked()
 
 void DTMFMagix::on_sendButton_clicked()
 {
+    sending = true;
     filePath[0]=ui->pathEdit->text();
     //appLayer->sendFile(filePath[0].toStdString());
     sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),appLayer->stripPath(filePath[0].toStdString()));
