@@ -21,6 +21,7 @@ DTMFMagix::~DTMFMagix()
 
 void DTMFMagix::on_browseButton_clicked()
 {
+
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setViewMode(QFileDialog::Detail);
@@ -31,10 +32,15 @@ void DTMFMagix::on_browseButton_clicked()
 
 void DTMFMagix::on_sendButton_clicked()
 {
+    ui->sendButton->setEnabled(false);
+    if(sendThread.joinable())
+    {
+        sendThread.join();
+    }
     sending = true;
     filePath[0]=ui->pathEdit->text();
     //appLayer->sendFile(filePath[0].toStdString());
-    sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),appLayer->stripPath(filePath[0].toStdString()));
+    sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),appLayer->stripPath(filePath[0].toStdString()),this);
 }
 
 void DTMFMagix::on_requestButton_clicked()
@@ -50,7 +56,13 @@ void DTMFMagix::onNumberChanged(int max, int current)
     ui->progressBar->setValue(current);
 }
 
-void sendFileWrapper(AppLayer *appLayer,string path,string name)
+void sendFileWrapper(AppLayer *appLayer,string path,string name,DTMFMagix *Magix)
 {
     appLayer->sendFile(path,name);
+    Magix->setDone();
+}
+
+void DTMFMagix::setDone()
+{
+    ui->sendButton->setEnabled(true);
 }
