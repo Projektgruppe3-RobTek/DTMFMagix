@@ -9,7 +9,7 @@ DTMFMagix::DTMFMagix(QWidget *parent) :
 	appLayer=AppLayer::getInstance();
     ui->setupUi(this);
     sending = false;
-    mThread = new MyThread(this,appLayer,sending);
+    mThread = new MyThread(this,appLayer,&sending);
     connect(mThread,SIGNAL(NumberChanged(int,int)),this,SLOT(onNumberChanged(int,int)));
     mThread->start();
 }

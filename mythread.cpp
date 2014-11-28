@@ -1,10 +1,10 @@
 #include "mythread.h"
 #include <QtCore>
 
-MyThread::MyThread(QObject *parent,AppLayer *appL_,bool &send) :
+MyThread::MyThread(QObject *parent,AppLayer *appL_,bool *send) :
     QThread(parent),appL(appL_)
 {
-	sending = &send;
+	sending = send;
 }
 
 void MyThread::run()
