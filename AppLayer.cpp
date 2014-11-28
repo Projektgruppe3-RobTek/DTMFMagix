@@ -1,11 +1,11 @@
 #include "AppLayer.h"
 
-AppLayer::AppLayer(){
-	cout << "Applayer created" << endl;
+AppLayer::AppLayer(bool _cli){
+	cli = _cli;
 	receiveThread = thread(receiverWrapper, this);
 }
 
-AppLayer::~AppLayer() {
+AppLayer::~AppLayer(){
     stop=true;
     receiveThread.join();
 }
@@ -29,7 +29,7 @@ void AppLayer::receiver(){
 			cout << "Frame size: " << frame.size() <<  endl;
 			numberOfFrames++;
 			
-			if (estimatedSize != 0) if (debug) cout << "frames received: " << numberOfFrames << " of " << estimatedSize << endl;
+			if (estimatedSize != 0) if (debug || cli) cout << "frames received: " << numberOfFrames << " of " << estimatedSize << endl;
 			
 			if (cmpFlag(frame, startFlag[APP_SIZE_FLAG])){ // start størrelse fra framen
 				size.insert(size.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
@@ -56,8 +56,8 @@ void AppLayer::receiver(){
 						saveFile(decompress(data), name, 1);
 					}
 					else saveFile(data, name, 1);
-					if (debug){
-						sendMessage(stringToVectorBool("File received and saved!\n"));
+					if (debug || cli){
+						if(debug)sendMessage(stringToVectorBool("File received and saved!\n"));
 						cout << "File reseived and saved as " << vectorBoolToString(name) << endl;
 						cout << "Frames received: " << numberOfFrames << endl;
 						cout << "Size frames: " << (size.size() - 1) / APP_DATA_FRAME_SIZE + 1 << endl;
@@ -72,7 +72,7 @@ void AppLayer::receiver(){
 				}
 				else{
 					if (debug) sendMessage(stringToVectorBool("File corrupted!"));
-					if (debug) cout << "File corrupted!" << endl;
+					if (debug || cli) cout << "File corrupted!" << endl;
 				}
 				hash.clear();
 				size.clear();
@@ -88,18 +88,18 @@ void AppLayer::receiver(){
 				requestedFile.insert(requestedFile.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 				if (exists(vectorBoolToString(requestedFile)) && is_regular_file(vectorBoolToString(requestedFile))){
 					if (name.size()){
-						if (debug) cout << "File requested: " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
+						if (debug || cli) cout << "File requested: " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
 						sendFile(requestedFile, name, cmpFlag(frame, endFlag[APP_REQUEST_COMPRESSED_FILE_FLAG]));
-						if (debug) cout << "Sending file " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
+						if (debug || cli) cout << "Sending file " << vectorBoolToString(requestedFile) << " as " << vectorBoolToString(name) << endl;
 					}
 					else{
-						if (debug) cout << "File requested: " << vectorBoolToString(requestedFile) << endl;
+						if (debug || cli) cout << "File requested: " << vectorBoolToString(requestedFile) << endl;
 						sendFile(requestedFile, cmpFlag(frame, endFlag[APP_REQUEST_COMPRESSED_FILE_FLAG]));
-						if (debug) cout << "Sending file " << vectorBoolToString(requestedFile) << endl;
+						if (debug || cli) cout << "Sending file " << vectorBoolToString(requestedFile) << endl;
 					}
 				}
 				else{
-					if (debug) sendMessage(stringToVectorBool("File doesn't exists!"));
+					if (debug || cli) sendMessage(stringToVectorBool("File doesn't exists!"));
 				}
 				requestedFile.clear();
 				requestedFileName.clear();
@@ -119,12 +119,12 @@ void AppLayer::receiver(){
 					////////////////////////
 					
 					if (is_regular_file(vectorBoolToString(name))){
-						if (debug) cout << "Deleting file " << vectorBoolToString(requestedFile) << " (udkommenteret for ikke at slette vigtige filer, men er testet)\n" << endl;
+						if (debug || cli) cout << "Deleting file " << vectorBoolToString(requestedFile) << " (udkommenteret for ikke at slette vigtige filer, men er testet)\n" << endl;
 						//deleteFile(name);
 						if (debug) sendMessage(stringToVectorBool("File deleted! (udkommenteret for ikke at slette vigtige filer, men er testet)\n"));
 					}
 					else if (is_directory(vectorBoolToString(name))){
-						if (debug) cout << "Deleting folder " << vectorBoolToString(requestedFile) << " (udkommenteret for ikke at slette vigtige filer, men er IKKE testet)\n" << endl;
+						if (debug || cli) cout << "Deleting folder " << vectorBoolToString(requestedFile) << " (udkommenteret for ikke at slette vigtige filer, men er IKKE testet)\n" << endl;
 						//remove_all(vectorBoolToString(name));
 						if (debug) sendMessage(stringToVectorBool("Folder deleted!  (udkommenteret for ikke at slette vigtige filer, men er IKKE testet)\n"));
 					}
@@ -154,8 +154,8 @@ void AppLayer::receiver(){
 			else if (cmpFlag(frame, endFlag[APP_FILE_TREE_REQUEST_FLAG])){
 				name.insert(name.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 				
-				if (debug) cout << "File tree requested!" << endl;
-				if (debug) cout << "Sending filetree!\n" << endl;
+				if (debug || cli) cout << "File tree requested!" << endl;
+				if (debug || cli) cout << "Sending filetree!\n" << endl;
 				
 				sendFileTree(name, APP_SHOW_SUBDIRECTORIES);
 				
@@ -172,7 +172,7 @@ void AppLayer::receiver(){
 					if (debug) sendMessage(stringToVectorBool("Can't create folder!\n"));
 				}
 				else{
-					if (debug) cout << "Create folder requested!\n" << endl;
+					if (debug || cli) cout << "Create folder requested!\n" << endl;
 					if (debug) sendMessage(stringToVectorBool("Folder created!\n"));
 				}
 				name.clear();
@@ -338,8 +338,9 @@ void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 		else sendFrames(file, APP_DATA_FLAG);
 	}
 	else{
-		if (debug) cout << "File doesn't exists!" << endl;
+		if (debug || cli) cout << "File doesn't exists!" << endl;
 	}
+	while(dll.dataBufferSize()) usleep(1000);
 }
 
 void AppLayer::sendFile(string fileName,bool compressed){
@@ -360,8 +361,9 @@ void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool comp
 		else sendFrames(file, APP_DATA_FLAG);
 	}
 	else{
-		if (debug) cout << "File doesn't exists!" << endl;
+		if (debug || cli) cout << "File doesn't exists!" << endl;
 	}
+	while(dll.dataBufferSize()) usleep(1000);
 }
 
 void AppLayer::sendFile(string fileName, string targetName,bool compressed){

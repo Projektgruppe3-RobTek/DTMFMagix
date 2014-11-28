@@ -40,7 +40,7 @@ class AppLayer{
 	
 	public:
 		
-		AppLayer();
+		AppLayer(bool _cli = 0);
 		~AppLayer();
 		void sendMessage(string message);
 		void sendFile(string fileName,bool compressed=0);
@@ -69,6 +69,8 @@ class AppLayer{
 		
 		DataLinkLayer dll;
 		
+		
+		bool cli;
 		void sendMessage(vector<bool> message);
 		void sendFile(vector<bool> fileName,bool compressed=0);
 		void sendFile(vector<bool> fileName, vector<bool> targetName,bool compressed=0);

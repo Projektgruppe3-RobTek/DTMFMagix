@@ -25,7 +25,7 @@ static char** customCompletion( const char * text , int start,  int end)
 int main(int argc, char *argv[]){
 	if(argc>=2 and string(argv[1])==string("-cli"))
 	{
-		AppLayer AppL;
+		AppLayer AppL(1);
 		char *input, shell_prompt[1000];
 	
 		// Configure readline to auto-complete paths when the tab key is hit.
