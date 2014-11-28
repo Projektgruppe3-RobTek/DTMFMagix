@@ -1,6 +1,6 @@
 #include "PhysicalLayerEmu.h"
 #include <iostream>
-#define randomflip
+//#define randomflip
 #define flippercent 0.1f
 //#define debug
 using namespace std;

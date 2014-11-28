@@ -29,11 +29,12 @@ using namespace std;
 #define APP_REQUEST_FILE_FLAG               3
 #define APP_DELTE_FILE_FLAG	                4
 #define APP_MESSAGE_FLAG	                5
-#define APP_FILE_TREE_FLAG	                6
+#define APP_FILE_TREE_REQUEST_FLAG	        6
 #define APP_MAKE_FOLDER_FLAG	            7
 #define APP_HASH_FLAG		                8
 #define APP_COMPRESSED_DATA_FLAG            9
 #define APP_REQUEST_COMPRESSED_FILE_FLAG    10
+#define APP_FILE_TREE_FLAG    				11
 
 class AppLayer{
 	
@@ -53,6 +54,7 @@ class AppLayer{
 		void receiver();
 		int getEstimatedSize();
 		int getNumberOfFrames();
+		vector<string> &getFileTree();
 		
 		
 	private:
@@ -96,9 +98,10 @@ class AppLayer{
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
 		int estimatedSize=0;
 		int numberOfFrames=0;
+		vector<string> fileTree;
 		thread receiveThread;
 		bool stop=false;
-		bool startFlag[11][APP_FLAG_SIZE] = {
+		bool startFlag[12][APP_FLAG_SIZE] = {
 			{0,0,0,0,0},// size
 			{0,0,0,1,0},// name
 			{0,0,1,0,0},// data
@@ -109,9 +112,10 @@ class AppLayer{
 			{0,1,1,1,0},// make folder
 			{1,0,0,0,0},// hash (MD5)
 			{1,0,0,1,0},// Compresed data
-			{1,0,1,0,0} // RequestCompressedfile 
+			{1,0,1,0,0}, // RequestCompressedfile 
+			{1,0,1,1,0} // fileTree
 		};
-		bool endFlag[11][APP_FLAG_SIZE] = {
+		bool endFlag[12][APP_FLAG_SIZE] = {
 			{0,0,0,0,1},// size
 			{0,0,0,1,1},// name
 			{0,0,1,0,1},// data
@@ -122,7 +126,8 @@ class AppLayer{
 			{0,1,1,1,1},// make folder
 			{1,0,0,0,1},// hash (MD5)
 			{1,0,0,1,1},// Compresed data
-			{1,0,1,0,1} // RequestCompressedfile
+			{1,0,1,0,1}, // RequestCompressedfile
+			{1,0,1,1,1} // fileTree
 		};		
 };
 
