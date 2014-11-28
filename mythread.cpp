@@ -1,10 +1,10 @@
 #include "mythread.h"
 #include <QtCore>
 
-MyThread::MyThread(QObject *parent,AppLayer *appL_,bool *send) :
+MyThread::MyThread(QObject *parent,AppLayer *appL_,bool &send) :
     QThread(parent),appL(appL_)
 {
-	sending = send;
+	sending = &send;
 }
 
 void MyThread::run()
@@ -12,7 +12,7 @@ void MyThread::run()
 	
     while(true)
     {
-    	if(sending)
+    	if(*sending)
 	{
 	emit NumberChanged(appL->getFramesSend(),appL->getTotalFramesToSend());
 	}
