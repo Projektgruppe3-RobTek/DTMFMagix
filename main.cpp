@@ -25,7 +25,7 @@ static char** customCompletion( const char * text , int start,  int end)
 int main(int argc, char *argv[]){
 	if(argc>=2 and string(argv[1])==string("-cli"))
 	{
-		AppLayer AppL(1);
+		AppLayer *AppL=AppLayer::getInstance(1);
 		char *input, shell_prompt[1000];
 	
 		// Configure readline to auto-complete paths when the tab key is hit.
@@ -59,55 +59,55 @@ int main(int argc, char *argv[]){
 		
 			if (args[0] == "send"){
 				if (arg == 2){
-					AppL.sendFile(args[1], AppL.stripPath(args[1]));
+					AppL->sendFile(args[1], AppL->stripPath(args[1]));
 				}
 				else if (arg == 3){
-					AppL.sendFile(args[1], args[2]);
+					AppL->sendFile(args[1], args[2]);
 				}
 			}
 			else if (args[0] == "sendcompressed"){
 				if (arg == 2){
-					AppL.sendFile(args[1], AppL.stripPath(args[1]),true);
+					AppL->sendFile(args[1], AppL->stripPath(args[1]),true);
 				}
 				else if (arg == 3){
-					AppL.sendFile(args[1], args[2],true);
+					AppL->sendFile(args[1], args[2],true);
 				}
 			} 
 			else if (args[0] == "request"){
 				if (arg == 2){
-					AppL.requestFile(args[1], AppL.stripPath(args[1]));
+					AppL->requestFile(args[1], AppL->stripPath(args[1]));
 				}
 				else if (arg == 3){
-					AppL.requestFile(args[1], args[2]);
+					AppL->requestFile(args[1], args[2]);
 				}
 			}
 			else if (args[0] == "requestcompressed"){
 				if (arg == 2){
-					AppL.requestFile(args[1], AppL.stripPath(args[1]),true);
+					AppL->requestFile(args[1], AppL->stripPath(args[1]),true);
 				}
 				else if (arg == 3){
-					AppL.requestFile(args[1], args[2],true);
+					AppL->requestFile(args[1], args[2],true);
 				}
 			}
 			else if (args[0] == "delete"){
 				if (arg == 2){
-					AppL.requestDeleteFile(args[1]);
+					AppL->requestDeleteFile(args[1]);
 				}
 			}
 			else if (args[0] == "sendmessage"){
 				if (arg == 2){
-					AppL.sendMessage(args[1]);
+					AppL->sendMessage(args[1]);
 				}
 			}
 			else if (args[0] == "filetree"){
 				if (arg == 2){
-					AppL.requestFileTree(args[1]);
+					AppL->requestFileTree(args[1]);
 				}
-				else AppL.requestFileTree(".");
+				else AppL->requestFileTree(".");
 			}
 			else if (args[0] == "makedir"){
 				if (arg == 2){
-					AppL.requestMakeDir(args[1]);
+					AppL->requestMakeDir(args[1]);
 				}
 			}
 			else

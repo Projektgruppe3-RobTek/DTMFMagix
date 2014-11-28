@@ -35,7 +35,7 @@ private slots:
 private:
     QStringList filePath;
     Ui::DTMFMagix *ui;
-    AppLayer appLayer;
+    AppLayer *appLayer;
 };
 
 #endif // DTMFMAGIX_H

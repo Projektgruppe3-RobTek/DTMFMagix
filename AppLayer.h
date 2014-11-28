@@ -40,7 +40,6 @@ class AppLayer{
 	
 	public:
 		
-		AppLayer(bool _cli = 0);
 		~AppLayer();
 		void sendMessage(string message);
 		void sendFile(string fileName,bool compressed=0);
@@ -57,10 +56,11 @@ class AppLayer{
 		int getFramesSend();
 		int getTotalFramesToSend();
 		vector<string> &getFileTree();
-		
+		static AppLayer* getInstance(bool _cli=0);
 		
 	private:
-		
+		static AppLayer* instance;
+		AppLayer(bool _cli=0);
 		#ifdef DEBUG
 			const bool debug = DEBUG;
 		#else

@@ -9,6 +9,13 @@ AppLayer::AppLayer(bool _cli){
 AppLayer::~AppLayer(){
     stop=true;
     receiveThread.join();
+    delete instance;
+}
+AppLayer* AppLayer::instance = nullptr;
+AppLayer *AppLayer::getInstance(bool _cli)
+{
+	if(instance==nullptr) instance = new AppLayer(_cli);
+	return instance;
 }
 void AppLayer::receiver(){
 	vector<bool> size;
