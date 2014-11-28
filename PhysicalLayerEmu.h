@@ -25,6 +25,7 @@ class PhysicalLayer
         static PhysicalLayer* instance;
 		PhysicalLayer();
     public:
+    	~PhysicalLayer();
         static PhysicalLayer* getInstance();
         void pushData(std::vector<bool> );
         bool layerBusy();

@@ -13,13 +13,14 @@ void MyThread::run()
     while(true)
     {
     	if(*sending)
-	{
-	emit NumberChanged(appL->getFramesSend(),appL->getTotalFramesToSend());
-	}
-	else
-	{
-        emit NumberChanged(appL->getEstimatedSize(),appL->getNumberOfFrames());
-	}        
-	usleep(100000);
+		{
+			cout << "SENDING!!" << endl;
+			emit NumberChanged(appL->getTotalFramesToSend(),appL->getFramesSend());
+		}
+		else
+		{
+       		emit NumberChanged(appL->getEstimatedSize(),appL->getNumberOfFrames());
+		}        
+		usleep(100000);
     }
 }

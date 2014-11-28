@@ -5,7 +5,7 @@ INCPATH=-I/usr/include/qt5/QtWidgets/ -I/usr/include/qt5/ -I/usr/include/qt5/QtC
 
 LDFLAGS=-lportaudio -lSDL2 -lboost_filesystem -lboost_system -lcryptopp -lbz2 -lreadline -lQt5Core -lQt5Gui -lQt5Widgets#Linker options
 
-SOURCES= AppLayer.cpp DTMFTones.cpp Player.cpp Recorder.cpp main.cpp Goertzel.cpp PhysicalLayer.cpp DataLinkLayer.cpp autoCompletion.cpp $(QTCPP) $(MOCFILES) #cpp files
+SOURCES= AppLayer.cpp DTMFTones.cpp Player.cpp Recorder.cpp main.cpp Goertzel.cpp PhysicalLayerEmu.cpp DataLinkLayer.cpp autoCompletion.cpp $(QTCPP) $(MOCFILES) #cpp files
 
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files
 EXECUTEABLE=DTMFMagix #Output name
