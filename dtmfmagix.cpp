@@ -1,5 +1,6 @@
 #include "dtmfmagix.h"
 #include "ui_dtmfmagix.h"
+#include <thread>
 
 DTMFMagix::DTMFMagix(QWidget *parent) :
     QMainWindow(parent),
@@ -32,8 +33,8 @@ void DTMFMagix::on_sendButton_clicked()
 {
     filePath[0]=ui->pathEdit->text();
     appLayer->sendFile(filePath[0].toStdString());
+    //sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),appLayer->stripPath(filePath[0].toStdString()));
 }
-
 
 void DTMFMagix::on_requestButton_clicked()
 {
@@ -46,4 +47,9 @@ void DTMFMagix::onNumberChanged(int max, int current)
 {
     ui->progressBar->setMaximum(max);
     ui->progressBar->setValue(current);
+}
+
+void sendFileWrapper(AppLayer *appLayer,string path,string name)
+{
+    appLayer->sendFile(path,name);
 }
