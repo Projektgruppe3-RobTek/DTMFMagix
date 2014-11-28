@@ -36,6 +36,8 @@ private:
     QStringList filePath;
     Ui::DTMFMagix *ui;
     AppLayer appLayer;
+    std::thread sendThread;
 };
+void sendFileWrapper(AppLayer * appLayer,string,string);
 
 #endif // DTMFMAGIX_H
