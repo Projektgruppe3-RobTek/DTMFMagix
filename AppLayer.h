@@ -13,11 +13,10 @@
 #include <cryptopp/hex.h>
 #include <thread>
 #include "DataLinkLayer.h"
-
+#include <boost/algorithm/string.hpp>
 using namespace boost::filesystem;
 using namespace std;
 
-#define APP_SHOW_SUBDIRECTORIES	false
 
 #define APP_MAX_FRAME_SIZE	MAX_FRAMESIZE // bit
 #define APP_FLAG_SIZE		5   // bit
@@ -97,7 +96,7 @@ class AppLayer{
 		void sendFrames(vector<bool> data, int type);
 		bool cmpFlag(vector<bool> dataBin, bool *flag);
 		void sendFileDetail(vector<bool> path);
-		void sendFileTree(vector<bool> pathTarget, bool subdirectories);
+		void sendFileTree(vector<bool> pathTarget);
 		vector<bool> MD5(vector<bool> dataBin);
 		
 		void appendByte(vector<bool> &boolVec, unsigned char byte);

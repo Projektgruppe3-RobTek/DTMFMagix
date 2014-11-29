@@ -165,7 +165,7 @@ void AppLayer::receiver(){
 				if (debug || cli) cout << "File tree requested!" << endl;
 				if (debug || cli) cout << "Sending filetree!\n" << endl;
 				
-				sendFileTree(name, APP_SHOW_SUBDIRECTORIES);
+				sendFileTree(name);
 				
 				name.clear();
 				numberOfFrames = 0;
@@ -193,14 +193,14 @@ void AppLayer::receiver(){
 				hash.insert(hash.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 			}
 			else if (cmpFlag(frame, startFlag[APP_FILE_TREE_FLAG])){
-				data.insert(hash.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
+				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 			}
 			else if (cmpFlag(frame, endFlag[APP_FILE_TREE_FLAG])){
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				fileTree.push_back(vectorBoolToString(data));
-				for (int a = 0; a < fileTree.size(); a++){
-					cout << fileTree[a] << endl;
-				}
+				vector<bool> decompdata=decompress(data);
+				string filetreestr=vectorBoolToString(decompdata);
+				if (debug || cli) cout << filetreestr << endl;
+				boost::split(fileTree,filetreestr,boost::is_any_of("\n"));
 				data.clear();
 			}
 		}
@@ -266,6 +266,7 @@ vector<bool> AppLayer::loadFile(vector<bool> fileName){
 		file.seekg(0, ios::beg);
 		file.read(&dataStr[0], dataStr.size());
 		file.close();
+		
 		return stringToVectorBool(dataStr);
 	}
 	vector<bool> temp;
@@ -331,6 +332,7 @@ void AppLayer::sendMessage(vector<bool> message){
 void AppLayer::sendMessage(string message){
 	sendMessage(stringToVectorBool(message));
 }
+
 
 void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
@@ -406,7 +408,9 @@ void AppLayer::requestDeleteFile(string fileName){
 }
 
 void AppLayer::requestFileTree(vector<bool> path){
+	fileTree.clear();
 	sendFrames(path, APP_FILE_TREE_REQUEST_FLAG);
+	while(fileTree.size() ==0) usleep(1000);
 }
 
 void AppLayer::requestFileTree(string path){
@@ -434,26 +438,29 @@ void AppLayer::sendFileDetail(vector<bool> fileName){
 	sendFrames(fileName, APP_FILE_TREE_FLAG);
 }
 
-void AppLayer::sendFileTree(vector<bool> pathTarget, bool subdirectories){
+void AppLayer::sendFileTree(vector<bool> pathTarget){
 	vector<path> filePath;
+	string filetreeToSend;
+	if (!is_directory( vectorBoolToString(pathTarget) ) ) 
+	{
+		sendFrames(compress(stringToVectorBool("")), APP_FILE_TREE_FLAG);
+		return;
+	}
 	copy(directory_iterator(vectorBoolToString(pathTarget)), directory_iterator(), back_inserter(filePath));
 	sort(filePath.begin(), filePath.end());
-	sendFileDetail(pathTarget);
-	for (unsigned int a = 0; a < filePath.size(); a++){
+	for (path &file : filePath){
 	    if(stop) return;
 	    
-		if (is_regular_file(filePath[a])){
-			sendFileDetail(stringToVectorBool(filePath[a].string()));
+		if (is_regular_file(file))
+		{
+			filetreeToSend+=file.string()+"\n";
 		}
-		else{
-			if (subdirectories){
-				sendFileTree(stringToVectorBool(filePath[a].string()), 0);
-			}
-			else{
-				sendFileDetail(stringToVectorBool(filePath[a].string()));
-			}
+		else
+		{
+			filetreeToSend+=file.string()+"/\n";
 		}
 	}
+	sendFrames(compress(stringToVectorBool(filetreeToSend)), APP_FILE_TREE_FLAG);
 }
 
 void AppLayer::appendByte(vector<bool> &dataBin, unsigned char byte){
@@ -482,6 +489,7 @@ vector<bool> AppLayer::MD5(vector<bool> dataBin){
 		appendByte(md5, digest[a]);
 	}
 	return md5;
+
 }
 
 vector<bool> AppLayer::compress (vector<bool> uncompressed)
@@ -542,6 +550,9 @@ int AppLayer::getEstimatedSize()
 }
 int AppLayer::getNumberOfFrames()
 {
+
+
+
     return numberOfFrames;
 }
 int AppLayer::getFramesSend()

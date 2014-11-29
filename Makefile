@@ -1,5 +1,5 @@
 CC=clang++ #Compiler
-CFLAGS= -c -std=c++11 -w    -fPIE   #Compiler Flags
+CFLAGS= -c -std=c++11 -w -g   -fPIE   #Compiler Flags
 DEFINES=
 INCPATH=-I/usr/include/qt5/QtWidgets/ -I/usr/include/qt5/ -I/usr/include/qt5/QtCore/ -I/usr/include/qt/QtWidgets/ -I/usr/include/qt/ -I/usr/include/qt/QtCore/
 
