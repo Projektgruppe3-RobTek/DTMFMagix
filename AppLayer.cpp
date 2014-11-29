@@ -199,8 +199,9 @@ void AppLayer::receiver(){
 				data.insert(data.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
 				vector<bool> decompdata=decompress(data);
 				string filetreestr=vectorBoolToString(decompdata);
-				if (debug || cli) cout << filetreestr << endl;
+				if (debug || cli) cout << filetreestr;
 				boost::split(fileTree,filetreestr,boost::is_any_of("\n"));
+				if (fileTree.size()>1) fileTree.pop_back();
 				data.clear();
 			}
 		}
@@ -439,23 +440,27 @@ void AppLayer::sendFileDetail(vector<bool> fileName){
 }
 
 void AppLayer::sendFileTree(vector<bool> pathTarget){
+	auto pathstr=vectorBoolToString(pathTarget);
+	if (pathstr.back()!='/') pathstr+="/";
 	vector<path> filePath;
 	string filetreeToSend;
-	if (!is_directory( vectorBoolToString(pathTarget) ) ) 
+	if (!is_directory( pathstr ) ) 
 	{
 		sendFrames(compress(stringToVectorBool("")), APP_FILE_TREE_FLAG);
 		return;
 	}
-	copy(directory_iterator(vectorBoolToString(pathTarget)), directory_iterator(), back_inserter(filePath));
+	copy(directory_iterator(pathstr), directory_iterator(), back_inserter(filePath));
 	sort(filePath.begin(), filePath.end());
+	if( is_directory(pathstr+".")) filetreeToSend+="./\n";
+	if( is_directory(pathstr+"..")) filetreeToSend+="../\n";
 	for (path &file : filePath){
 	    if(stop) return;
 	    
-		if (is_regular_file(file))
+		if (is_regular_file(file) or is_symlink(file))
 		{
 			filetreeToSend+=file.string()+"\n";
 		}
-		else
+		else if( is_directory(file))
 		{
 			filetreeToSend+=file.string()+"/\n";
 		}
@@ -525,6 +530,7 @@ string AppLayer::stripPath(string filename)
 }
 vector<bool> AppLayer::decompress(vector<bool> compressed)
 {
+	cout << compressed.size() << endl;
     vector<bool> decompressed;
     string compressedstr = vectorBoolToString(compressed);
     unsigned int compressedsize=compressedstr.size();
@@ -541,6 +547,7 @@ vector<bool> AppLayer::decompress(vector<bool> compressed)
 	{
 	    appendByte(decompressed,decompressedmem[i]);
 	}
+		cout << decompressed.size() << endl;
     delete decompressedmem;
     return decompressed;
 }
