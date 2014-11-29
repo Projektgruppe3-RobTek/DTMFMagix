@@ -40,13 +40,15 @@ void DTMFMagix::on_sendButton_clicked()
     sending = true;
     filePath[0]=ui->pathEdit->text();
     //appLayer->sendFile(filePath[0].toStdString());
-    sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),appLayer->stripPath(filePath[0].toStdString()),this);
+    string path=filePath[0].toStdString();
+    string stripedpath=appLayer->stripPath(path);
+    sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),stripedpath,this);
 }
 
 void DTMFMagix::on_requestButton_clicked()
 {
-
-    appLayer->requestFileTree(filePath[0].toStdString());
+	string path=filePath[0].toStdString();
+    appLayer->requestFileTree(path);
 
 }
 
