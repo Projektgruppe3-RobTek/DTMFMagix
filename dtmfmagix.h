@@ -20,6 +20,7 @@ public:
     explicit DTMFMagix(QWidget *parent = 0);
     ~DTMFMagix();
     MyThread *mThread;
+    void setDone();
 
 public slots:
     void onNumberChanged(int, int);
@@ -39,6 +40,6 @@ private:
     std::thread sendThread;
     bool sending;
 };
-void sendFileWrapper(AppLayer * appLayer,string,string);
+void sendFileWrapper(AppLayer * appLayer,string,string,DTMFMagix *magix);
 
 #endif // DTMFMAGIX_H
