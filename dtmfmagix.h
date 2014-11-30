@@ -3,6 +3,7 @@
 
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QListWidgetItem>
 #include <thread>
 #include <unistd.h>
 #include "mythread.h"
@@ -33,12 +34,18 @@ private slots:
 
     void on_requestButton_clicked();
 
+    void on_listWidget_itemClicked(QListWidgetItem *item);
+
+    void on_downloadButton_clicked();
+
 private:
     QStringList filePath;
     Ui::DTMFMagix *ui;
     AppLayer *appLayer;
     std::thread sendThread;
     bool sending;
+    vector<string> fileTree;
+    QString fileName;
 };
 void sendFileWrapper(AppLayer * appLayer,string,string,DTMFMagix *magix);
 
