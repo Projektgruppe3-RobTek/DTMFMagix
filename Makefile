@@ -17,6 +17,7 @@ all: $(HEADERS) $(SOURCES) $(EXECUTEABLE)
 $(EXECUTEABLE): $(OBJECTS) 
 	$(CC)    $(OBJECTS) -o $(EXECUTEABLE) $(LDFLAGS)
 
+
 .cpp.o:
 	$(CC)  $(CFLAGS) $(INCPATH) $(DEFINES)   $< -o $@
 

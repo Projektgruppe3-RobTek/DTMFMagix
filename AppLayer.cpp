@@ -519,7 +519,7 @@ vector<bool> AppLayer::compress (vector<bool> uncompressed)
 }
 string AppLayer::stripPath(string filename)
 {
-    int lastslashpos=filename.find_last_of("/");
+    int lastslashpos=filename.find_last_of("/",filename.length()-2);
     return filename.substr(lastslashpos+1);
     
 }

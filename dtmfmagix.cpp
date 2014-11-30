@@ -26,7 +26,9 @@ void DTMFMagix::on_browseButton_clicked()
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setViewMode(QFileDialog::Detail);
     if (dialog.exec())
+    {
         filePath = dialog.selectedFiles();
+    }
     ui->pathEdit->setText(filePath[0]);
 }
 
@@ -42,17 +44,23 @@ void DTMFMagix::on_sendButton_clicked()
     sendThread = std::thread(sendFileWrapper,appLayer,filePath[0].toStdString(),appLayer->stripPath(filePath[0].toStdString()),this);
 }
 
-void DTMFMagix::on_requestButton_clicked()
+void DTMFMagix::fileTreeSetup(string path)
 {
 	ui->listWidget->clear();
-    appLayer->requestFileTree(".");
+	new QListWidgetItem("..", ui->listWidget);
+    appLayer->requestFileTree(path);
     fileTree=appLayer->getFileTree();
+    currentFolder = path;
+	cout << currentFolder << endl;
     for(int i=0;i<fileTree.size();i++)
     {
-    	QString path = QString::fromStdString(fileTree[i]);
-        new QListWidgetItem(path, ui->listWidget);
+        new QListWidgetItem(QString::fromStdString(appLayer->stripPath(fileTree[i])), ui->listWidget);
     }
+}
 
+void DTMFMagix::on_requestButton_clicked()
+{
+	fileTreeSetup("./");
 }
 
 void DTMFMagix::onNumberChanged(int max, int current)
@@ -75,10 +83,21 @@ void DTMFMagix::setDone()
 void DTMFMagix::on_listWidget_itemClicked(QListWidgetItem *item)
 {
     fileName=item->text();
-    cout << fileName.toStdString() << endl;
 }
 
 void DTMFMagix::on_downloadButton_clicked()
 {
     appLayer->requestFile(fileName.toStdString());
+}
+
+void DTMFMagix::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
+{
+	if(item->text().toStdString().back() == '/')
+	{
+		fileTreeSetup(currentFolder+item->text().toStdString());
+	}
+	else if(item==ui->listWidget->item(0))
+	{
+		fileTreeSetup(currentFolder.substr(0,currentFolder.length()-appLayer->stripPath(currentFolder).length()));
+	}
 }
