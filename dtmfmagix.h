@@ -46,7 +46,6 @@ private:
     AppLayer *appLayer;
     std::thread sendThread;
     bool sending;
-    vector<string> fileTree;
     QString fileName;
     void fileTreeSetup(string);
     string currentFolder;

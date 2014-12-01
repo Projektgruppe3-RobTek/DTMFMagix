@@ -49,7 +49,7 @@ void DTMFMagix::fileTreeSetup(string path)
 	ui->listWidget->clear();
 	new QListWidgetItem("..", ui->listWidget);
     appLayer->requestFileTree(path);
-    fileTree=appLayer->getFileTree();
+    vector<string> fileTree=appLayer->getFileTree();
     currentFolder = path;
 	cout << currentFolder << endl;
     for(int i=0;i<fileTree.size();i++)
@@ -87,7 +87,7 @@ void DTMFMagix::on_listWidget_itemClicked(QListWidgetItem *item)
 
 void DTMFMagix::on_downloadButton_clicked()
 {
-    appLayer->requestFile(fileName.toStdString());
+    appLayer->requestFile(currentFolder+fileName.toStdString(),"./"+fileName.toStdString());
 }
 
 void DTMFMagix::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
@@ -98,6 +98,6 @@ void DTMFMagix::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
 	}
 	else if(item==ui->listWidget->item(0))
 	{
-		fileTreeSetup(currentFolder.substr(0,currentFolder.length()-appLayer->stripPath(currentFolder).length()));
+		fileTreeSetup(currentFolder+"../");
 	}
 }
