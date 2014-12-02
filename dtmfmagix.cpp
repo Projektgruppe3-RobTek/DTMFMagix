@@ -16,6 +16,8 @@ DTMFMagix::DTMFMagix(QWidget *parent) :
 
 DTMFMagix::~DTMFMagix()
 {
+	mThread->Stop();
+	mThread->wait();
     delete ui;
 }
 
@@ -29,11 +31,12 @@ void DTMFMagix::on_browseButton_clicked()
     {
         filePath = dialog.selectedFiles();
     }
-    ui->pathEdit->setText(filePath[0]);
+    if(filePath.size()>0) ui->pathEdit->setText(filePath[0]);
 }
 
 void DTMFMagix::on_sendButton_clicked()
 {
+    if(!filePath.size()) return;
     ui->sendButton->setEnabled(false);
     if(sendThread.joinable())
     {

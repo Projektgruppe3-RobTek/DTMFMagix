@@ -49,6 +49,7 @@ class AppLayer{
 		void requestFileTree(string path);
 		void requestMakeDir(string path);
 		string stripPath(string filename);
+		string shortenPath(string path);
 		void receiver();
 		int getEstimatedSize();
 		int getNumberOfFrames();
