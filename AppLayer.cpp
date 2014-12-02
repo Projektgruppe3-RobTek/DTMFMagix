@@ -523,26 +523,6 @@ string AppLayer::stripPath(string filename)
     return filename.substr(lastslashpos+1);
     
 }
-string AppLayer::shortenPath(string path)
-{
-	vector<string> pathSections;
-	boost::split(pathSections,path,boost::is_any_of("/"));
-	for(int i=2;i<pathSections.size(); i++)
-	{
-		if (i<2) i=2;
-		if(pathSections[i]==".." and i!=(int)pathSections.size()-1)
-		{
-			if(!(pathSections[i-1]==".." or pathSections[i-1]=="." or pathSections[i-1]==""));
-			pathSections.erase(pathSections.begin()+i-1,pathSections.begin()+i+1);
-			i--;
-		}
-		
-	}
-	path="";
-	for(auto str : pathSections) path+=str+"/";
-	path.pop_back();
-	return path;
-}
 vector<bool> AppLayer::decompress(vector<bool> compressed)
 {
     vector<bool> decompressed;
