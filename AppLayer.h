@@ -40,15 +40,16 @@ class AppLayer{
 	public:
 		
 		~AppLayer();
-		void sendMessage(string &message);
-		void sendFile(string &fileName,bool compressed=0);
-		void sendFile(string &fileName, string &targetName,bool compressed=0);
-		void requestFile(string &fileName,bool compressed=0);
-		void requestFile(string &fileName, string &targetName,bool compressed=0);
-		void requestDeleteFile(string &fileName);
-		void requestFileTree(string &path);
-		void requestMakeDir(string &path);
-		string stripPath(string &filename);
+		void sendMessage(string message);
+		void sendFile(string fileName,bool compressed=0);
+		void sendFile(string fileName, string targetName,bool compressed=0);
+		void requestFile(string fileName,bool compressed=0);
+		void requestFile(string fileName, string targetName,bool compressed=0);
+		void requestDeleteFile(string fileName);
+		void requestFileTree(string path);
+		void requestMakeDir(string path);
+		string stripPath(string filename);
+		string shortenPath(string path);
 		void receiver();
 		int getEstimatedSize();
 		int getNumberOfFrames();
@@ -70,34 +71,34 @@ class AppLayer{
 		
 		
 		bool cli;
-		void sendMessage(vector<bool> &message);
-		void sendFile(vector<bool> &fileName,bool compressed=0);
-		void sendFile(vector<bool> &fileName, vector<bool> &targetName,bool compressed=0);
-		void requestFile(vector<bool> &fileName,bool compressed=0);
-		void requestFile(vector<bool> &fileName, vector<bool> &targetName,bool compressed=0);
-		void requestDeleteFile(vector<bool> &fileName);
-		void requestFileTree(vector<bool> &path);
-		void requestMakeDir(vector<bool> &path);
-		vector<bool> compress(vector<bool> &uncompressed);
-		vector<bool> decompress(vector<bool> &compressed);
-		vector<bool> loadFile(vector<bool> &filename);
-		vector<bool> stringToVectorBool(string &dataStr);
-		string vectorBoolToString(vector<bool> &dataBin);
-		int vectorBoolToInt(vector<bool> &dataBin);
+		void sendMessage(vector<bool> message);
+		void sendFile(vector<bool> fileName,bool compressed=0);
+		void sendFile(vector<bool> fileName, vector<bool> targetName,bool compressed=0);
+		void requestFile(vector<bool> fileName,bool compressed=0);
+		void requestFile(vector<bool> fileName, vector<bool> targetName,bool compressed=0);
+		void requestDeleteFile(vector<bool> fileName);
+		void requestFileTree(vector<bool> path);
+		void requestMakeDir(vector<bool> path);
+		vector<bool> compress(vector<bool> uncompressed);
+		vector<bool> decompress(vector<bool> compressed);
+		vector<bool> loadFile(vector<bool> filename);
+		vector<bool> stringToVectorBool(string dataStr);
+		string vectorBoolToString(vector<bool> dataBin);
+		int vectorBoolToInt(vector<bool> dataBin);
 		int totalFramesToSend=0;
 		int FramesSend=0;
 		//bool copyFile(vector<bool> source, vector<bool> destination, bool force);
 		//bool moveFile(vector<bool> source, vector<bool> destination, bool force);
 		
-		bool saveFile(vector<bool> &dataBin, vector<bool> &fileName, bool force);
-		vector<bool> loadFileSize(vector<bool> &filename);
-		bool deleteFile(vector<bool> &fileName);
+		bool saveFile(vector<bool> dataBin, vector<bool> fileName, bool force);
+		vector<bool> loadFileSize(vector<bool> filename);
+		bool deleteFile(vector<bool> fileName);
 		
-		void sendFrames(vector<bool> &data, int type);
-		bool cmpFlag(vector<bool> &dataBin, bool *flag);
-		void sendFileDetail(vector<bool> &path);
-		void sendFileTree(vector<bool> &pathTarget);
-		vector<bool> MD5(vector<bool> &dataBin);
+		void sendFrames(vector<bool> data, int type);
+		bool cmpFlag(vector<bool> dataBin, bool *flag);
+		void sendFileDetail(vector<bool> path);
+		void sendFileTree(vector<bool> pathTarget);
+		vector<bool> MD5(vector<bool> dataBin);
 		
 		void appendByte(vector<bool> &boolVec, unsigned char byte);
 		int estimatedSize=0;
@@ -138,3 +139,4 @@ class AppLayer{
 void receiverWrapper(AppLayer *APObj);
 
 #endif
+

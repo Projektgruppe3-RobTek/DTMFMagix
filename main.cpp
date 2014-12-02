@@ -59,8 +59,9 @@ int main(int argc, char *argv[]){
 		
 			if (args[0] == "send"){
 				if (arg == 2){
-					auto stripedpath= AppL->stripPath(args[1]);
-					AppL->sendFile(args[1], stripedpath);
+					cout << args[1] << endl;
+					cout << AppL->shortenPath(args[1]) << endl;
+					//AppL->sendFile(args[1], AppL->stripPath(args[1]));
 				}
 				else if (arg == 3){
 					AppL->sendFile(args[1], args[2]);
@@ -68,8 +69,7 @@ int main(int argc, char *argv[]){
 			}
 			else if (args[0] == "sendcompressed"){
 				if (arg == 2){
-					auto stripedpath= AppL->stripPath(args[1]);
-					AppL->sendFile(args[1], stripedpath,true);
+					AppL->sendFile(args[1], AppL->stripPath(args[1]),true);
 				}
 				else if (arg == 3){
 					AppL->sendFile(args[1], args[2],true);
@@ -77,8 +77,7 @@ int main(int argc, char *argv[]){
 			} 
 			else if (args[0] == "request"){
 				if (arg == 2){
-					auto stripedpath= AppL->stripPath(args[1]);
-					AppL->requestFile(args[1], stripedpath);
+					AppL->requestFile(args[1], AppL->stripPath(args[1]));
 				}
 				else if (arg == 3){
 					AppL->requestFile(args[1], args[2]);
@@ -86,8 +85,7 @@ int main(int argc, char *argv[]){
 			}
 			else if (args[0] == "requestcompressed"){
 				if (arg == 2){
-					auto stripedpath= AppL->stripPath(args[1]);
-					AppL->requestFile(args[1], stripedpath,true);
+					AppL->requestFile(args[1], AppL->stripPath(args[1]),true);
 				}
 				else if (arg == 3){
 					AppL->requestFile(args[1], args[2],true);
@@ -107,12 +105,7 @@ int main(int argc, char *argv[]){
 				if (arg == 2){
 					AppL->requestFileTree(args[1]);
 				}
-
-				else
-				{	
-					string curdir=".";
-					AppL->requestFileTree(curdir);
-				}
+				else AppL->requestFileTree(".");
 			}
 			else if (args[0] == "makedir"){
 				if (arg == 2){
