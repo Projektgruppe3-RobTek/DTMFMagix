@@ -28,7 +28,7 @@ void DataLinkLayer::getFrames()
         {
             if(stop) return;
             usleep(1000);
-            if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + 25) * SENDTIME){
+            if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + ACKLENGHT) * SENDTIME){
                 mode = Mode::idle; //release connection if server is dead
                 #ifdef DLLDEBUG
                 cout << "timeout " << endl;
@@ -468,7 +468,7 @@ bool DataLinkLayer::connectionRequest(){
  
     while(conWait.waiting and !stop){
         if (requestsSend % 3 == 2){
-            usleep((((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4 + rand() % (2000 + requestsSend * MAX_FRAMESIZE * 2)) * 1000); //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard and a random time
+            usleep((((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4 + rand() % (2000 + requestsSend * MAX_FRAMESIZE * 2)) * 1000); //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard and a random time
             #ifdef DLLDEBUG
             cout << "Stepping down, failed to send request (DLL)" << endl;
             #endif
@@ -477,7 +477,7 @@ bool DataLinkLayer::connectionRequest(){
 
         startTimer();
         sendRequest();
-        while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(!stop and conWait.waiting and getTimer() < ((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
@@ -498,7 +498,7 @@ bool DataLinkLayer::releaseConnection(){
 
         startTimer();
         sendTerminate();
-        while(!stop and conWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(!stop and conWait.waiting and getTimer() < ((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE / 4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
@@ -518,17 +518,11 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
             mode = Mode::idle;
             return false;
         }
-
-		while(physLayer->layerBusy())
-		{
-			if(stop) return true;
-			usleep(1000);
-		}
         startTimer();
         cout <<" Pushed:" <<  ++packagesend << endl;
         physLayer->pushData(packet);
 
-        while(!stop and ackWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(!stop and ackWait.waiting and getTimer() < ((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
