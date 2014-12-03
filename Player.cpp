@@ -90,13 +90,13 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
             // Run for current fillup.
             while (sampleRun > 0)           // Run for current fillup (buffer full, end of tone/delay)
             {
-                if(endOfTone < 10)          // Fade out 1/10 for each last 10 samples.
+                if(endOfTone < 3)          // Fade out 1/10 for each last 10 samples.
                 {
-                    fadeOut -= (1./10.);
+                    fadeOut -= (1./3.);
                 }
-                if(startOfTone < 10)        // Fade in 1/10 for each first 10 samples.
+                if(startOfTone < 3)        // Fade in 1/10 for each first 10 samples.
                 {
-                    fadeIn +=(1./10.);
+                    fadeIn +=(1./3.);
                 }
                 // Generate samples for buffer (sinus generator)
                 stream[streamPlace] = fadeIn*fadeOut*AMPLITUDEaudio*(sin(sinStep1*2*M_PI/FREQUENCYaudio)+sin(sinStep2*2*M_PI/FREQUENCYaudio))/2;
