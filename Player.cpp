@@ -110,7 +110,7 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
 
             if (samplesLeft == 0 && delayFlag == 0)         // End of tone, set for delay.
             {
-                delayFlag = true;
+                //delayFlag = true;
             }
             else if(samplesLeft == 0 && delayFlag == true)  // End of delay, set for tone.
             {
@@ -157,8 +157,8 @@ void DTMFPlayer::delaySetup()
                 freq1 = 0;
                 freq2 = 0;
                 samplesLeft = delayLength;
-                //sinStep1 = 0;
-                //sinStep2 = 0;
+                sinStep1 = 0;
+                sinStep2 = 0;
 }
 
 void DTMFPlayer::sampleAdjust(int length)
@@ -190,8 +190,6 @@ void DTMFPlayer::zeroFill(Sint16 *stream, int length)
 void DTMFPlayer::PlayDTMF(vector<char> tones,int duration,int delay)
 {
     // Method called by Physical layer.
-    sinStep1 = 0;
-    sinStep2 = 0;
     toneIndput = tones;
     toneNumber = 0;
     totalTones = tones.size();
@@ -204,7 +202,6 @@ void DTMFPlayer::PlayDTMF(vector<char> tones,int duration,int delay)
     SDL_PauseAudio(0);                  //Start audio
     DTMFPlayer::WaitForFinish();        // Wait until finished.
     SDL_PauseAudio(1);                  // Pause audio device
-
 
 }
 
