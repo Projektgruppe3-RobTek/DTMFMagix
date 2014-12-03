@@ -28,7 +28,7 @@ void DataLinkLayer::getFrames()
         {
             if(stop) return;
             usleep(1000);
-            if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + ACKLENGHT) * SENDTIME){
+            if(mode==Mode::client and getTimer() > 4 * ((MAX_FRAMESIZE / 4) + ACKLENGHT) * SENDTIME){
             	
                 mode = Mode::idle; //release connection if server is dead
                 #ifdef DLLDEBUG
@@ -514,7 +514,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
     ackWait.waiting=true;
     
     while(!stop and ackWait.waiting){
-        if (packetsSend > 5){
+        if (packetsSend > 3){
             sendTerminate();
             mode = Mode::idle;
             return false;

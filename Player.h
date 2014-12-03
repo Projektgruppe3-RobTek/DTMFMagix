@@ -5,7 +5,7 @@
 #include <vector>
 #include "DTMFTones.h"
 #define  AMPLITUDEaudio 28000
-#define  FREQUENCYaudio 4000   //Highest freq = 1633*2 = 3266 Hz min. sampling rate
+#define  FREQUENCYaudio 8000   //Highest freq = 1633*2 = 3266 Hz min. sampling rate
 #define  AUDIOCHANNELS 1       // 1 for Mono, 2 for Sterio
 #define  BUFFERaudio 1024       // Buffersize for audio output.
 
