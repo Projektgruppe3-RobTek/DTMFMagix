@@ -141,8 +141,8 @@ void DTMFPlayer::toneSetup()
                 freq2 = Tones.getFreqH(toneIndput[toneNumber]);
                 samplesLeft = toneLength;
 
-                sinStep1 = 0;
-                sinStep2 = 0;
+                //sinStep1 = 0;
+                //sinStep2 = 0;
 
                 endOfTone = toneLength;
                 fadeOut = 1.0;
@@ -157,8 +157,8 @@ void DTMFPlayer::delaySetup()
                 freq1 = 0;
                 freq2 = 0;
                 samplesLeft = delayLength;
-                sinStep1 = 0;
-                sinStep2 = 0;
+                //sinStep1 = 0;
+                //sinStep2 = 0;
 }
 
 void DTMFPlayer::sampleAdjust(int length)
