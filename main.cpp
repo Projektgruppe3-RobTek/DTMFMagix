@@ -59,7 +59,9 @@ int main(int argc, char *argv[]){
 		
 			if (args[0] == "send"){
 				if (arg == 2){
-					AppL->sendFile(args[1], AppL->stripPath(args[1]));
+					cout << args[1] << endl;
+					cout << AppL->shortenPath(args[1]) << endl;
+					//AppL->sendFile(args[1], AppL->stripPath(args[1]));
 				}
 				else if (arg == 3){
 					AppL->sendFile(args[1], args[2]);

@@ -11,8 +11,7 @@ class MyThread : public QThread
 public:
     explicit MyThread(QObject *parent = 0,AppLayer *appL_ = 0,bool *send=0);
     void run();
-    bool Stop();
-    
+    void Stop();
 
     AppLayer *appL;
     bool *sending;
@@ -21,6 +20,9 @@ signals:
 
 
 public slots:
+
+private:
+	bool stop=false;
 
 };
 

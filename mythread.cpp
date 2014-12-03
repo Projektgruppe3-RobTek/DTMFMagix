@@ -6,11 +6,14 @@ MyThread::MyThread(QObject *parent,AppLayer *appL_,bool *send) :
 {
 	sending = send;
 }
-
+void MyThread::Stop()
+{
+	stop=true;
+}
 void MyThread::run()
 {
 	
-    while(true)
+    while(!stop)
     {
     	
 		if(*sending && appL->getTotalFramesToSend() == appL->getFramesSend())

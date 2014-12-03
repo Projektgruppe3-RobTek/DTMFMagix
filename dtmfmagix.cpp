@@ -16,6 +16,8 @@ DTMFMagix::DTMFMagix(QWidget *parent) :
 
 DTMFMagix::~DTMFMagix()
 {
+	mThread->Stop();
+	mThread->wait();
     delete ui;
 }
 
@@ -28,11 +30,12 @@ void DTMFMagix::on_browseButton_clicked()							//SLOT: called when browseButton
     {
         filePath = dialog.selectedFiles();							//Show Dialog. Save path to selected file as filePath
     }
-    ui->pathEdit->setText(filePath[0]);								//Set text in pathEdit to filePath
+    if(filePath.size()>0) ui->pathEdit->setText(filePath[0]);		//If filePath is not empty, set text in pathEdit to filePath
 }
 
 void DTMFMagix::on_sendButton_clicked()								//SLOT: called when sendButton is clicked
 {
+	if(!filePath.size()) return;
     ui->sendButton->setEnabled(false);								//Disable buttons while sending
     ui->downloadButton->setEnabled(false);
     ui->requestButton->setEnabled(false);
