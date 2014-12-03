@@ -519,7 +519,11 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
             return false;
         }
 
-
+		while(physLayer->layerBusy())
+		{
+			if(stop) return true;
+			usleep(1000);
+		}
         startTimer();
         cout <<" Pushed:" <<  ++packagesend << endl;
         physLayer->pushData(packet);
