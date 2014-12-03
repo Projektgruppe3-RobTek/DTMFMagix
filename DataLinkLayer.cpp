@@ -181,6 +181,7 @@ void DataLinkLayer::getDatagrams(){
             if(mode != Mode::server and !connectionRequest()) break;
             if(!connectionLost)
             {
+            	cout << "poped " << ++packagetosend << endl;
                 data_to_send = outBuffer.pop_front();
 
                 setType(data_to_send, 0);
@@ -520,6 +521,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
 
 
         startTimer();
+        cout <<" Pushed:" <<  ++packagesend << endl;
         physLayer->pushData(packet);
 
         while(!stop and ackWait.waiting and getTimer() < ((25 + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 

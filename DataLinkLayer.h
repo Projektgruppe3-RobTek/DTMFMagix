@@ -4,8 +4,8 @@
 #include <thread>
 #include <array>
 #include <iostream>
-//#include "PhysicalLayer.h" // Lyd
-#include "PhysicalLayerEmu.h" // Fil
+#include "PhysicalLayer.h" // Lyd
+//#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
@@ -56,6 +56,8 @@ enum class Mode {idle, server, client};
 class DataLinkLayer
 {
     private:
+    	int packagetosend=0; 
+    	int packagesend=0;
         void bitStuff(vector<bool> &frame); //Stuff frame to avoid flags in data.
         void revBitStuff(vector<bool> &frame); //Remove stuffing.
 

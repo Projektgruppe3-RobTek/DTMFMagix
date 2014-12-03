@@ -1,11 +1,11 @@
 CC=clang++ #Compiler
-CFLAGS= -c -std=c++11 -Ofast   -fPIE   #Compiler Flags
-DEFINES=
+CFLAGS= -c -std=c++11 -Ofast -fPIE   #Compiler Flags
+DEFINES= 
 INCPATH=-I/usr/include/qt5/QtWidgets/ -I/usr/include/qt5/ -I/usr/include/qt5/QtCore/ -I/usr/include/qt/QtWidgets/ -I/usr/include/qt/ -I/usr/include/qt/QtCore/
 
-LDFLAGS=-lportaudio -lSDL2 -lboost_filesystem -lboost_system -lcryptopp -lbz2 -lreadline -lQt5Core -lQt5Gui -lQt5Widgets#Linker options
+LDFLAGS= -lportaudio -lSDL2 -lboost_filesystem -lboost_system -lcryptopp -lbz2 -lreadline -lQt5Core -lQt5Gui -lQt5Widgets#Linker options
 
-SOURCES= AppLayer.cpp DTMFTones.cpp Player.cpp Recorder.cpp main.cpp Goertzel.cpp PhysicalLayerEmu.cpp DataLinkLayer.cpp autoCompletion.cpp $(QTCPP) $(MOCFILES) #cpp files
+SOURCES= AppLayer.cpp DTMFTones.cpp Player.cpp Recorder.cpp main.cpp Goertzel.cpp PhysicalLayer.cpp DataLinkLayer.cpp autoCompletion.cpp $(QTCPP) $(MOCFILES) #cpp files
 
 OBJECTS=$(SOURCES:.cpp=.o)  #Object files
 EXECUTEABLE=DTMFMagix #Output name
