@@ -524,7 +524,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
         physLayer->pushData(packet);
         startTimer();
 
-        while(!stop and ackWait.waiting and getTimer() < (((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4)){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(!stop and ackWait.waiting and getTimer() < (((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4)*1.5){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
