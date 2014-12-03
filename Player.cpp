@@ -90,13 +90,13 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
             // Run for current fillup.
             while (sampleRun > 0)           // Run for current fillup (buffer full, end of tone/delay)
             {
-                if(endOfTone < 10)          // Fade out 1/10 for each last 10 samples.
+                if(endOfTone < 3)          // Fade out 1/10 for each last 10 samples.
                 {
-                    fadeOut -= 0.1;
+                    fadeOut -= 0.3333;
                 }
-                if(startOfTone < 10)        // Fade in 1/10 for each first 10 samples.
+                if(startOfTone < 3)        // Fade in 1/10 for each first 10 samples.
                 {
-                    fadeIn +=0.1;
+                    fadeIn +=0.3333;
                 }
                 // Generate samples for buffer (sinus generator)
                 stream[streamPlace] = fadeIn*fadeOut*AMPLITUDEaudio*(sin(sinStep1*2*M_PI/FREQUENCYaudio)+sin(sinStep2*2*M_PI/FREQUENCYaudio))/2;
@@ -110,7 +110,7 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
 
             if (samplesLeft == 0 && delayFlag == 0)         // End of tone, set for delay.
             {
-                delayFlag = true;
+                //delayFlag = true;
             }
             else if(samplesLeft == 0 && delayFlag == true)  // End of delay, set for tone.
             {
@@ -141,8 +141,8 @@ void DTMFPlayer::toneSetup()
                 freq2 = Tones.getFreqH(toneIndput[toneNumber]);
                 samplesLeft = toneLength;
 
-                sinStep1 = 0;
-                sinStep2 = 0;
+                //sinStep1 = 0;
+                //sinStep2 = 0;
 
                 endOfTone = toneLength;
                 fadeOut = 1.0;
