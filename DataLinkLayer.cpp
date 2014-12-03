@@ -520,11 +520,11 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
             return false;
         }
         while(physLayer->layerBusy()) usleep(1000);
-        startTimer();
         cout <<" Pushed:" <<  ++packagesend << endl;
         physLayer->pushData(packet);
+        startTimer();
 
-        while(!stop and ackWait.waiting and getTimer() < (((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4)*2){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(!stop and ackWait.waiting and getTimer() < (((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4)){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 
