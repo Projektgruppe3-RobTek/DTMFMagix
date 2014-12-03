@@ -203,6 +203,5 @@ void DTMFPlayer::PlayDTMF(vector<char> tones,int duration,int delay)
     DTMFPlayer::WaitForFinish();        // Wait until finished.
     SDL_PauseAudio(1);                  // Pause audio device
 
-
 }
 

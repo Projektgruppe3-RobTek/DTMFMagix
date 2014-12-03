@@ -76,6 +76,7 @@ void PhysicalLayer::playFrame()                  // If sendFlag = true, play out
         if(sendFlag)
         {
             Player->PlayDTMF(outgoingFrame,TONELENGTH,SILENTLENGTH);
+            cout << "test" << endl;
             sendFlag=false;
         }
 
