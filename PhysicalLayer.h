@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <thread>
 #define TONELENGTH 25
-#define SILENTLENGTH 0
+#define SILENTLENGTH 1
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
 #endif
