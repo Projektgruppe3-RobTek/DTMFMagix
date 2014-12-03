@@ -29,6 +29,7 @@ void DataLinkLayer::getFrames()
             if(stop) return;
             usleep(1000);
             if(mode==Mode::client and getTimer() > 5 * ((MAX_FRAMESIZE / 4) + ACKLENGHT) * SENDTIME){
+            	
                 mode = Mode::idle; //release connection if server is dead
                 #ifdef DLLDEBUG
                 cout << "timeout " << endl;
@@ -518,11 +519,12 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
             mode = Mode::idle;
             return false;
         }
+        while(physLayer->layerBusy()) usleep(1000);
         startTimer();
         cout <<" Pushed:" <<  ++packagesend << endl;
         physLayer->pushData(packet);
 
-        while(!stop and ackWait.waiting and getTimer() < ((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
+        while(!stop and ackWait.waiting and getTimer() < (((ACKLENGHT + MAX_FRAMESIZE / 4) * SENDTIME) + MAX_FRAMESIZE/4)*1.1){ //ack 25 tones, data max length MAX_FRAMESIZE/4 tones, MAX_FRAMESIZE/4 is added as a guard 
             usleep(2000);
         }
 

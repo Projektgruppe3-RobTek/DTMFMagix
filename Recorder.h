@@ -3,7 +3,7 @@
 #include "RingBuffer.h"
 #include <vector>
 #define INPUTBUFFERSIZE 882000   // 2* sample rate
-#define REC_SAMPLE_RATE 12000
+#define REC_SAMPLE_RATE 24000
 #define INPUTCHANNELS 1
 #define OUTPUTCHANNELS 0
 #define REC_BUFFER_SIZE 8
