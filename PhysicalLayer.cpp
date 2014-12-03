@@ -13,7 +13,7 @@ void PhysicalLayer::applyHamming(vector<float> &data) // Applies Hamming to give
 
     for(unsigned int i=0;i<data.size();i++)
     {
-        data[i]*=0.53836-0.46164*cos((2*M_PI*i)/(data.size()-1)); //Hamming
+        data[i]*=0.54-0.46*cos((2*M_PI*i)/(data.size()-1)); //Hamming
         //data[i]*=0.5*(1-cos((2*M_PI*i)/(data.size()-1))); //hanning
         /*
         double a=0.16;
