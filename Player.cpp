@@ -110,7 +110,7 @@ void DTMFPlayer::generateSamples(Sint16 *stream, int length)
 
             if (samplesLeft == 0 && delayFlag == 0)         // End of tone, set for delay.
             {
-                //delayFlag = true;
+                delayFlag = true;
             }
             else if(samplesLeft == 0 && delayFlag == true)  // End of delay, set for tone.
             {
@@ -141,8 +141,8 @@ void DTMFPlayer::toneSetup()
                 freq2 = Tones.getFreqH(toneIndput[toneNumber]);
                 samplesLeft = toneLength;
 
-                //sinStep1 = 0;
-                //sinStep2 = 0;
+                sinStep1 = 0;
+                sinStep2 = 0;
 
                 endOfTone = toneLength;
                 fadeOut = 1.0;
