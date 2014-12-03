@@ -10,11 +10,11 @@ PhysicalLayer::PhysicalLayer() // Default constructer
 
 void PhysicalLayer::applyHamming(vector<float> &data) // Applies Hamming to given vector
 {
-	return;
+
     for(unsigned int i=0;i<data.size();i++)
     {
-        //data[i]*=0.53836-0.46164*cos((2*M_PI*i)/(data.size()-1)); //Hamming
-        data[i]*=0.5*(1-cos((2*M_PI*i)/(data.size()-1))); //hanning
+        data[i]*=0.53836-0.46164*cos((2*M_PI*i)/(data.size()-1)); //Hamming
+        //data[i]*=0.5*(1-cos((2*M_PI*i)/(data.size()-1))); //hanning
         /*
         double a=0.16;
         double a_0=(1-a)/2.;
