@@ -473,7 +473,7 @@ bool DataLinkLayer::connectionRequest(){
     conWait.type=1;
 
     while(conWait.waiting and !stop){
-        if (requestsSend > 3){
+        if (requestsSend > 2){
             usleep(((PACKET_SIZE / 4) * SENDTIME) + rand() % (requestsSend * ((PACKET_SIZE / 4) * SENDTIME))); //Minimum sleep = the time it takes to send 1 packet and get ack
             #ifdef DLLDEBUG                                                                         //Maximum sleep = the time it takes to send 3 packet and get ack
             cout << "Stepping down, failed to send request (DLL)" << endl;
@@ -498,7 +498,7 @@ bool DataLinkLayer::releaseConnection(){
     conWait.type=0;
 
     while(!stop and conWait.waiting){
-        if (terminateSend > 3){
+        if (terminateSend > 2){
             mode = Mode::idle;
             return false;
         }

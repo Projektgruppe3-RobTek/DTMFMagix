@@ -74,7 +74,7 @@ void DTMFMagix::onNumberChanged(int max, int current)				//SLOT: called when a f
 
 void sendFileWrapper(AppLayer *appLayer,string path,string name,DTMFMagix *Magix)	//Wrapper for sendThread
 {
-    appLayer->sendFile(path,name);													//Send file
+    appLayer->sendFile(path,name,1);													//Send file
     Magix->setDone();																//Call setDone
 }
 
