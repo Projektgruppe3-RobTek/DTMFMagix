@@ -175,7 +175,6 @@ void AppLayer::receiver(){
 			}
 			else if (cmpFlag(frame, endFlag[APP_MAKE_FOLDER_FLAG])){
 				name.insert(name.end(), frame.begin() + APP_FLAG_SIZE, frame.end());
-				cout << "1" << endl;
 				if (!create_directory(vectorBoolToString(name))){
 					if (debug) sendMessage(stringToVectorBool("Can't create folder!\n"));
 				}
