@@ -30,7 +30,7 @@ void DataLinkLayer::getFrames()
             usleep(2000);
             //If the client have not heard from the server in the time it takes to send 5 packet and send 5 connection release
             //The mode is set to idle
-            if(mode == Mode::client and getTimer() > 5 * (((PACKET_SIZE + 100) / 4) * SENDTIME)){
+            if(mode == Mode::client and getTimer() > 5 * (((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME)){
                 mode = Mode::idle; //release connection if server is dead
                 #ifdef DLLDEBUG
                 cout << "timeout " << endl;
@@ -484,7 +484,7 @@ bool DataLinkLayer::connectionRequest(){
         startTimer();
         cout << "conReq" << endl;
         sendRequest();
-        while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + 100) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
+        while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
         }
         requestsSend++;
@@ -505,7 +505,7 @@ bool DataLinkLayer::releaseConnection(){
 
         startTimer();
         sendTerminate();
-        while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + 100) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
+        while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
         }
         terminateSend++;
@@ -527,7 +527,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
         startTimer();
         cout << "pack" << endl;
         physLayer->pushData(packet);
-        while(!stop and ackWait.waiting and getTimer() < ((PACKET_SIZE + 100) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
+        while(!stop and ackWait.waiting and getTimer() < ((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
         }
         packetsSend++;

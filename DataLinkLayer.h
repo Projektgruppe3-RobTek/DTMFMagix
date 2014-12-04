@@ -10,7 +10,8 @@
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-#define PACKET_SIZE (MAX_FRAMESIZE + 60 + 16 + 4 + 5 + 32 + 116) //Framesize + Preamble + Flag + ID&Type + Padding + CRC + ACK
+#define ACKLENGHT (60 + 16 + 4 + 5 + 32 + 3)
+#define PACKET_SIZE (MAX_FRAMESIZE + 60 + 16 + 4 + 5 + 32 + ACKLENGHT) //Framesize + Preamble + Flag + ID&Type + Padding + CRC + ACK
 //#define DLLDEBUG
 using namespace std;
 /*
