@@ -6,8 +6,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <thread>
-#define TONELENGTH 35
-#define SILENTLENGTH 2
+#define TONELENGTH 28
+#define SILENTLENGTH 3
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
 #endif
@@ -59,3 +59,4 @@ void getFrameWrapper(PhysicalLayer * DaLLObj);
 void playFrameWrapper(PhysicalLayer * DaLLObj);
 template <typename Type>
 bool ArrayComp(Type *Array1, Type *Array2,int size,int index=0);
+

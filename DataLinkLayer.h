@@ -4,13 +4,13 @@
 #include <thread>
 #include <array>
 #include <iostream>
-//#include "PhysicalLayer.h" // Lyd
-#include "PhysicalLayerEmu.h" // Fil
+#include "PhysicalLayer.h" // Lyd
+//#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
 #define MAX_FRAMESIZE 512
-#define PACKET_SIZE (MAX_FRAMESIZE + 60 + 16 + 4 + 5 + 16 + 100) //Framesize + Preamble + Flag + ID&Type + Padding + CRC + ACK
+#define PACKET_SIZE (MAX_FRAMESIZE + 60 + 16 + 4 + 5 + 32 + 116) //Framesize + Preamble + Flag + ID&Type + Padding + CRC + ACK
 //#define DLLDEBUG
 using namespace std;
 /*
@@ -95,6 +95,7 @@ class DataLinkLayer
         ~DataLinkLayer();
         static DataLinkLayer *getInstance();
     private:
+    	bool connectionLost;
     	static DataLinkLayer *instance;
         PhysicalLayer *physLayer;// Lyd
         bool lastinID=0;

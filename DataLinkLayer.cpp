@@ -44,9 +44,9 @@ void DataLinkLayer::getFrames()
         revBitStuff(receivedFrame);
         if(!CRCdecoder(receivedFrame))
         {
-            #ifdef DLLDEBUG
+            //#ifdef DLLDEBUG
             cout << "Fejl i CRC!!!" << endl;
-            #endif
+            //#endif
             continue;
         }
         int frameID=getID(receivedFrame);
@@ -97,7 +97,7 @@ void DataLinkLayer::getFrames()
                     if (frameID == lastinID)
                     {
                         sendACK(frameID);
-                        //cout << "Discarded frame" << endl;
+                        cout << "Discarded frame" << endl;
                         continue;
                     }
                     lastinID = frameID;
@@ -152,7 +152,9 @@ void DataLinkLayer::getFrames()
                 }
                 else
                 {
-                    sendTerminate(); //If any other message is received that must mean the other computer is not in client mode
+                	cout << "Du ligner en fisk" << endl;
+                    releaseConnection(); //If any other message is received that must mean the other computer is not in client mode
+                    connectionLost=true;
                     #ifdef DLLDEBUG
                     cout << "ERROR in server receive (got a frame with wrong ID)" << endl;
                     cout << "frameID=" << frameID << ", frametype=" << frameType << endl;
@@ -173,7 +175,7 @@ void DataLinkLayer::getFrames()
 
 void DataLinkLayer::getDatagrams(){
     vector<bool> data_to_send;
-    bool connectionLost = false;
+    connectionLost = false;
 
     while(!stop){
         while((mode == Mode::client or outBuffer.empty()) and !connectionLost and !stop){
@@ -308,6 +310,7 @@ void DataLinkLayer::setType(vector<bool> &frame, int Type)
 
 void DataLinkLayer::sendControl(int Type, bool ID)
 {
+	cout << "Control " << Type << endl;
     vector<bool> Control;
     setType(Control, Type);
     setID(Control, ID);
@@ -335,6 +338,7 @@ void DataLinkLayer::sendAccept()
 
 void DataLinkLayer::sendTerminate()
 {
+	cout << "term" << endl;
     sendControl(4,0);
 }
 
@@ -358,8 +362,8 @@ int DataLinkLayer::getTimer()
 bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 {
     //vector<bool> Divisor = {0,0,0,0,0,1,0,0,0,0,1,0,1,1,1,1,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,0,1,1,1,1,0,1,0,1,0,0,0,1,1,0,1,1,0,1,0,0,1,0,0,1,1};    //CRC-64
-    //vector<bool> Divisor = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
-    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    vector<bool> Divisor = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
+    //vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
     //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                                     //CRC 8
     //vector<bool> Divisor = {1,0,0,1,1};                      // CRC 4 generator
     vector<bool> Dividend   = codeWord;
@@ -397,8 +401,8 @@ bool DataLinkLayer::CRCdecoder(vector<bool> &codeWord)
 void DataLinkLayer::CRCencoder(vector<bool> &dataWord)
 {
     //vector<bool> Divisor = {0,0,0,0,0,1,0,0,0,0,1,0,1,1,1,1,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,0,1,0,1,1,1,0,1,0,1,0,0,1,1,1,1,0,1,0,1,0,0,0,1,1,0,1,1,0,1,0,0,1,0,0,1,1};    //CRC-64
-    //vector<bool> Divisor = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
-    vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
+    vector<bool> Divisor = {1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,1,1,0,1,1,1};                      // CRC-32 generator
+    //vector<bool> Divisor = {1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1};                 //CRC 16
     //vector<bool> Divisor = {1,1,1,0,1,0,1,0,1};                               //CRC 8
     //vector<bool> Divisor = {1,0,0,1,1};                                       //CRC 4 generator
     vector<bool> Dividend   = dataWord;
@@ -478,6 +482,7 @@ bool DataLinkLayer::connectionRequest(){
         }
 
         startTimer();
+        cout << "conReq" << endl;
         sendRequest();
         while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + 100) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
@@ -514,12 +519,13 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
     ackWait.waiting=true;
 
     while(!stop and ackWait.waiting){
-        if (packetsSend > 5){
-            sendTerminate();
+        if (packetsSend > 4){
+            releaseConnection();
             return false;
         }
 
         startTimer();
+        cout << "pack" << endl;
         physLayer->pushData(packet);
         while(!stop and ackWait.waiting and getTimer() < ((PACKET_SIZE + 100) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
