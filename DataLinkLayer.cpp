@@ -474,7 +474,7 @@ bool DataLinkLayer::connectionRequest(){
 
     while(conWait.waiting and !stop){
         if (requestsSend > 3){
-            usleep(((PACKET_SIZE / 4) * SENDTIME) + rand() % (requestsSend * ((PACKET_SIZE / 4) * SENDTIME))); //Minimum sleep = the time it takes to send 1 packet and get ack
+            usleep(((data_to_send.size() / 4) * SENDTIME) + rand() % (requestsSend * ((data_to_send.size() / 4) * SENDTIME))); //Minimum sleep = the time it takes to send 1 packet and get ack
             #ifdef DLLDEBUG                                                                         //Maximum sleep = the time it takes to send 3 packet and get ack
             cout << "Stepping down, failed to send request (DLL)" << endl;
             #endif
@@ -484,7 +484,7 @@ bool DataLinkLayer::connectionRequest(){
         startTimer();
         cout << "conReq" << endl;
         sendRequest();
-        while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
+        while(!stop and conWait.waiting and getTimer() < ((data_to_send.size() + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
         }
         requestsSend++;
@@ -505,7 +505,7 @@ bool DataLinkLayer::releaseConnection(){
 
         startTimer();
         sendTerminate();
-        while(!stop and conWait.waiting and getTimer() < ((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
+        while(!stop and conWait.waiting and getTimer() < ((data_to_send.size() + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
         }
         terminateSend++;
@@ -527,7 +527,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
         startTimer();
         cout << "pack" << endl;
         physLayer->pushData(packet);
-        while(!stop and ackWait.waiting and getTimer() < ((PACKET_SIZE + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
+        while(!stop and ackWait.waiting and getTimer() < ((data_to_send.size() + ACKLENGHT) / 4) * SENDTIME){ //Time out happen after the time it takes to send a packet and get ack + an extra ack as guard
             usleep(2000);
         }
         packetsSend++;

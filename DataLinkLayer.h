@@ -97,6 +97,7 @@ class DataLinkLayer
         static DataLinkLayer *getInstance();
     private:
     	bool connectionLost;
+    	vector<bool> data_to_send;
     	static DataLinkLayer *instance;
         PhysicalLayer *physLayer;// Lyd
         bool lastinID=0;
