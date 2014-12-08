@@ -28,7 +28,7 @@ Frametypes:
 100 = terminate
 
 */
-/* Befor sending frame, we do this in this order:
+/* Before sending frame, we do this in this order:
 1. Prepend Type.
 2. Prepend ID.
 3. Do CRC
