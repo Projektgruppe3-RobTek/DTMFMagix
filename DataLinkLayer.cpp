@@ -472,6 +472,7 @@ bool DataLinkLayer::connectionRequest(){
     conWait.waiting=true;
     conWait.type=1;
 
+
     while(conWait.waiting and !stop){
         if (requestsSend > 2){
             usleep(((PACKET_SIZE / 4) * SENDTIME) + rand() % (requestsSend * ((PACKET_SIZE / 4) * SENDTIME))); //Minimum sleep = the time it takes to send 1 packet and get ack
@@ -519,6 +520,7 @@ bool DataLinkLayer::sendPacket(vector<bool> &packet){
     ackWait.waiting=true;
 
     while(!stop and ackWait.waiting){
+    	if (mode!=Mode::server) return false;
         if (packetsSend > 4){
             releaseConnection();
             return false;

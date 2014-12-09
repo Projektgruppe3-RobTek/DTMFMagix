@@ -8,7 +8,7 @@
 **https://courses.cs.washington.edu/courses/cse466/12au/calendar/Goertzel-EETimes.pdf
 */
 //Computes the goertzel transform and returns the magnitude at the desired frequency
-//Samples should be send throug a windows function beforehand to prevent
+//Samples should be send throug a window function beforehand to prevent
 //Spectral leakage.
 float doGoertzel(int sampleRate/*Rate the signal is sampled at*/, float targetFreq/*The frequency to find the applitude at*/, std::vector<float> &samples/*The samples*/)
 {
