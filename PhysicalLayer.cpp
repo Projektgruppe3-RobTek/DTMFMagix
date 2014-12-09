@@ -150,7 +150,7 @@ void PhysicalLayer::getFrame()
             if(stop) return;
             do
             {                                                                               
-                usleep(1000);
+                usleep(10);
                 gettimeofday(&tv,NULL);
             } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>1); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
             usleep(TONELENGTH*1000);
