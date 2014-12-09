@@ -138,7 +138,7 @@ void PhysicalLayer::getFrame()
             {
                 SequenceCounter=(SequenceCounter+1)%SYNCLENGHT;
                 gettimeofday(&tv,NULL);                                             
-                synctime=tv.tv_sec*1000+tv.tv_usec/1000-TONELENGTH/2;
+                synctime=tv.tv_sec*1000+tv.tv_usec/1000-(TONELENGTH+SILENTLENGTH)/2;
                 if(bugfix) cout << Note << endl;
             }
                 

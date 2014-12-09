@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <thread>
-#define TONELENGTH 30
+#define TONELENGTH 28
 #define SILENTLENGTH 3
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
