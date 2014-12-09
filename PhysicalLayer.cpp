@@ -150,9 +150,9 @@ void PhysicalLayer::getFrame()
             if(stop) return;
             do
             {                                                                               
-                usleep(10);
+                usleep(1000);
                 gettimeofday(&tv,NULL);
-            } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>1); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
+            } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
             usleep(TONELENGTH*1000);
             vector<float> in2=Rec->GetAudioData(TONELENGTH,0);                               // Save samples made last TONELENGTH ms in vector in2
             applyHamming(in2);
