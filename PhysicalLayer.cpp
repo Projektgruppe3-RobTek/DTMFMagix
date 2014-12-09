@@ -103,8 +103,7 @@ void PhysicalLayer::getFrame()
         {
             usleep(250);
             if(stop) return;
-            while(sendFlag) usleep(2000);                                   // If sendFlag = true sleep until sendFlag = false
-            while(receiveFlag) usleep(2000);                                // If receiveFlag = true sleep until receiveFlag = false
+            while(sendFlag or receiveFlag) usleep(2000);                                   // If sendFlag or receiveFlag  = true sleep until sendFlag and receiveFlag = false
             vector<float> in1=Rec->GetAudioData(TONELENGTH,0);               // Save samples made last TONELENGTH ms in vector in1
             applyHamming(in1);                                              // Apply Hamming to in1
             float freq1max=0;
@@ -153,7 +152,7 @@ void PhysicalLayer::getFrame()
             {                                                                               
                 usleep(1000);
                 gettimeofday(&tv,NULL);
-            } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>4); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
+            } while((tv.tv_sec*1000+tv.tv_usec/1000-synctime)%(TONELENGTH+SILENTLENGTH)>1); // Sleep until SILENTLENGTH + TONELENGTH ms since start of last DTMF
             usleep(TONELENGTH*1000);
             vector<float> in2=Rec->GetAudioData(TONELENGTH,0);                               // Save samples made last TONELENGTH ms in vector in2
             applyHamming(in2);
