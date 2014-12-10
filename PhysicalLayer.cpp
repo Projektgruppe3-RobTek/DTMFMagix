@@ -26,9 +26,9 @@ void PhysicalLayer::applyHamming(vector<float> &data) // Applies Hamming to give
 
 vector<char> PhysicalLayer::applyPreambleTrailer(vector<char> data)
 {
-    vector<char> syncSequenceVec(SyncSequence, SyncSequence + 4);   //  
-    vector<char> startFlagVec(startFlag, startFlag + 4);            //
-    vector<char> endFlagVec(endFlag, endFlag + 4);                  // Save sync and flag arrays, as vectors
+    vector<char> syncSequenceVec(SyncSequence, SyncSequence + SYNCLENGHT);   //  
+    vector<char> startFlagVec(startFlag, startFlag + sizeof(startFlag)/sizeof(char) );            //
+    vector<char> endFlagVec(endFlag, endFlag + sizeof(endFlag)/sizeof(char));                  // Save sync and flag arrays, as vectors
     vector<char> frame;                                             // Create empty vector
     for(int i = 0; i<SYNCREPEAT; i++)
     {
@@ -99,7 +99,7 @@ void PhysicalLayer::getFrame()
         int SequenceCounter=0;
         char previousNote='!';
         if(bugfix) cout << "entering sync" << endl;
-        while(!ArrayComp(RecordedSequence,SyncSequence,SYNCLENGHT,SequenceCounter))  // Compare last 4 recorded notes with sync sequence
+        while(!ArrayComp(RecordedSequence,SyncSequence,SYNCLENGHT,SequenceCounter))  // Compare last SYNCLENGHT recorded notes with sync sequence
         {
             usleep(250);
             if(stop) return;
@@ -145,7 +145,7 @@ void PhysicalLayer::getFrame()
         }                                                               
         SequenceCounter=0;
         if(bugfix) cout << "entering start" << endl;
-        while(!ArrayComp(RecordedSequence,startFlag,4,SequenceCounter))                     // Compare last 4 recorded notes with start flag sequence
+        while(!ArrayComp(RecordedSequence,startFlag,sizeof(startFlag)/sizeof(char),SequenceCounter))                     // Compare last 4 recorded notes with start flag sequence
         {
             if(stop) return;
             do
@@ -182,12 +182,12 @@ void PhysicalLayer::getFrame()
             char Note=DTMFTones[freq1Index*4+freq2Index];                                   // Determine DTMF by frequency index
             if(bugfix) cout << Note << endl;
             RecordedSequence[SequenceCounter]=Note;                                         // Save recorded DTMF in RecordedSequence array
-            SequenceCounter=(SequenceCounter+1)%4;
+            SequenceCounter=(SequenceCounter+1)%(sizeof(startFlag)/sizeof(char));
         }
         vector<char> data;                                                                  // Initiate datagram
         SequenceCounter=0;
         if(bugfix) cout << "entering end" << endl;
-        while(!ArrayComp(RecordedSequence,endFlag,4,SequenceCounter))                       // Compare last 4 recorded notes with end flag sequence
+        while(!ArrayComp(RecordedSequence,endFlag,sizeof(endFlag)/sizeof(char),SequenceCounter))                       // Compare last 4 recorded notes with end flag sequence
         {
             if(stop) return;
             do
@@ -224,11 +224,11 @@ void PhysicalLayer::getFrame()
             char Note=DTMFTones[freq1Index*4+freq2Index];                                   // Determine DTMF by frequency index
             if(bugfix) cout << Note << endl;
             RecordedSequence[SequenceCounter]=Note;                                         // Save recorded DTMF in RecordedSequence array
-            SequenceCounter=(SequenceCounter+1)%4;
+            SequenceCounter=(SequenceCounter+1)%(sizeof(endFlag)/sizeof(char));
             data.push_back(Note);                                                           // Save DTMF to datagram
         }
         if(bugfix) cout << "Frame successfull" << endl;
-        data.erase(data.end()-4,data.end());                                                // Remove end flag from datagram
+        data.erase(data.end()-sizeof(startFlag)/sizeof(char),data.end());                                                // Remove end flag from datagram
         incommingFrame=data;                                                                // Save datagram to incomming frame, to allow popFrame()
         receiveFlag=true;                                                                   
     }

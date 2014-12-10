@@ -40,8 +40,8 @@ private:
     int             Freqarray1[4]={697,770,852,941};
     int             Freqarray2[4]={1209,1336,1477,1633};
     char            SyncSequence[SYNCLENGHT]={'A','6','8'}; //Should not contain the same note two times in a row.
-    char            startFlag[4]={'1','2','3','4'};
-    char            endFlag[4]={'*','8','6','A'};
+    char            startFlag[2]={'A','*'};
+    char            endFlag[2]={'9','#'};
     char            DTMFTones[16]={'1','2','3','A','4','5','6','B','7','8','9','C','*','0','#','D'};
     DTMFPlayer      *Player;
     DTMFRecorder    *Rec;
