@@ -127,14 +127,20 @@ void AppLayer::receiver(){
 					////////////////////////
 					
 					if (is_regular_file(vectorBoolToString(name))){
-						if (debug || cli) cout << "Deleting file " << vectorBoolToString(requestedFile) << " (udkommenteret for ikke at slette vigtige filer, men er testet)\n" << endl;
-						//deleteFile(name);
-						if (debug) sendMessage(stringToVectorBool("File deleted! (udkommenteret for ikke at slette vigtige filer, men er testet)\n"));
+						if (deleteFile(name)) 
+						{
+						    sendMessage(stringToVectorBool("File deleted!\n"));
+						    if (debug || cli) cout << "Deleting file " << vectorBoolToString(name)  << endl;
+						}
+						else sendMessage(stringToVectorBool("Couldn't delete file\n"));
 					}
 					else if (is_directory(vectorBoolToString(name))){
-						if (debug || cli) cout << "Deleting folder " << vectorBoolToString(requestedFile) << " (udkommenteret for ikke at slette vigtige filer, men er IKKE testet)\n" << endl;
-						//remove_all(vectorBoolToString(name));
-						if (debug) sendMessage(stringToVectorBool("Folder deleted!  (udkommenteret for ikke at slette vigtige filer, men er IKKE testet)\n"));
+					    if(remove_all(vectorBoolToString(name))
+					    {
+						    if (debug || cli) cout << "Deleting folder " << vectorBoolToString(requestedFile) <<  endl;
+						    if (debug) sendMessage(stringToVectorBool("Folder deleted!");
+						}
+						else sendMessage(stringToVectorBool("Couldn't delete folder\n"));
 					}
 				}
 				else{
@@ -338,7 +344,7 @@ void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	
 	    vector<bool> file=loadFile(fileName);
 	    if (compressed) file=compress(file);
-	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + fileName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 3;
+	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + fileName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 4;
 	    FramesSend=0;
 		sendFrames(stringToVectorBool(to_string(totalFramesToSend)), APP_SIZE_FLAG);
 		sendFrames(fileName, APP_NAME_FLAG);
@@ -361,7 +367,7 @@ void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool comp
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
 	    vector<bool> file=loadFile(fileName);
 	    if (compressed) file=compress(file);
-	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + targetName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 3;
+	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + targetName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 4;
 	    FramesSend=0;
 		sendFrames(stringToVectorBool(to_string(totalFramesToSend)), APP_SIZE_FLAG);
 		sendFrames(targetName, APP_NAME_FLAG);
