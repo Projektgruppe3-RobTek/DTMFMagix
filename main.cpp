@@ -11,7 +11,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>  
 #include "autoCompletion.h"  
-
 static char** customCompletion( const char * text , int start,  int end)
 {
     char **matches;

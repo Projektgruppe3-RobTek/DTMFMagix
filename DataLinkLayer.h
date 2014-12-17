@@ -4,8 +4,8 @@
 #include <thread>
 #include <array>
 #include <iostream>
-#include "PhysicalLayer.h" // Lyd
-//#include "PhysicalLayerEmu.h" // Fil
+//#include "PhysicalLayer.h" // Lyd
+#include "PhysicalLayerEmu.h" // Fil
 #include "RingBuffer.h"
 #define BUFFERSIZE 100
 #define SENDTIME (TONELENGTH+SILENTLENGTH)
@@ -16,10 +16,10 @@
 using namespace std;
 /*
 Layout of frame:
-|-----------------|----|----|----|---|
-|Length of padding| ID |Type|Data|CRC|
-|       2         | 1  | 3  |  ? | 4 |
-|-----------------|----|----|----|---|
+|-----------------|----|----|---------|-----|
+|Length of padding| ID |Type|  Data   | CRC |
+|       2         | 1  | 3  | max 512 | 32  |
+|-----------------|----|----|---------|-----|
 Frametypes:
 000 = data
 001 = ACK

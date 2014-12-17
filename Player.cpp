@@ -21,7 +21,7 @@ DTMFPlayer::DTMFPlayer()
     }
     else
     {
-        //cout << "Could not obtain desired specs" << endl;
+        cout << "Could not obtain desired specs" << endl;
 
     }
 
@@ -34,20 +34,15 @@ DTMFPlayer::~DTMFPlayer()
     delete instance;
 }
 
-
-
-//This syntax is lend from the internet, and makes it possible to use SDL audio inside a class.
-//http://stackoverflow.com/questions/10110905/simple-wave-generator-with-sdl-in-c
-// CHECK UP ON THIS, some sort of cast?
  void DTMFCallBack(void *DualToneP, Uint8 *_stream, int _length)
 {
 
     Sint16 *stream =(Sint16*) _stream;
     int length=_length/2;
-    DTMFPlayer *Player =(DTMFPlayer *) DualToneP;
+    DTMFPlayer *Player =(DTMFPlayer *) DualToneP; 
     Player->generateSamples(stream,length);
 }
-DTMFPlayer* DTMFPlayer::instance = nullptr;
+DTMFPlayer *DTMFPlayer::instance = nullptr;
 DTMFPlayer *DTMFPlayer::getInstance()
 {
 	if(instance==nullptr) instance = new DTMFPlayer;

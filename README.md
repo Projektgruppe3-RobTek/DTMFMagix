@@ -40,10 +40,6 @@ Run the application
 
 `./DTMFMagix`
 
-###ArchLinux
-
-Install the Arch flavor of the above libraries.
-
 ### Windows
 
 Download the required libraries and link them corretly (this should be possible. It is a challenge however)

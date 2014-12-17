@@ -16,7 +16,7 @@ DTMFRecorder::DTMFRecorder()
                                 paFloat32, /* 32 bit floating point output */
                           REC_SAMPLE_RATE, /* Sample Rate */
                           REC_BUFFER_SIZE, /* frames per buffer */
-                           RecCallback, /* this is your callback function */
+                              RecCallback, /* this is your callback function */
                                   &RecData ); /* Point passed to callback */
 
     if (err != paNoError)			// Check for errors

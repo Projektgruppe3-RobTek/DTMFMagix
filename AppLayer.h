@@ -86,8 +86,8 @@ class AppLayer{
 		int vectorBoolToInt(vector<bool> dataBin);
 		int totalFramesToSend=0;
 		int FramesSend=0;
-		//bool copyFile(vector<bool> source, vector<bool> destination, bool force);
-		//bool moveFile(vector<bool> source, vector<bool> destination, bool force);
+		bool copyFile(vector<bool> source, vector<bool> destination, bool force);
+		bool moveFile(vector<bool> source, vector<bool> destination, bool force);
 		
 		bool saveFile(vector<bool> dataBin, vector<bool> fileName, bool force);
 		vector<bool> loadFileSize(vector<bool> filename);

@@ -34,7 +34,6 @@ void AppLayer::receiver(){
 		while (!stop and dll->dataAvailable()){
 			
 			vector<bool> frame = dll->popData();
-			cout << "Frame size: " << frame.size() <<  endl;
 			numberOfFrames++;
 			
 			if (estimatedSize != 0) if (debug || cli) cout << "frames received: " << numberOfFrames << " of " << estimatedSize << endl;
@@ -122,10 +121,6 @@ void AppLayer::receiver(){
 				#ifdef ENABLE_DELETE
 				if (exists(vectorBoolToString(name))){
 					
-					////////////////////////
-					// Don't delete files //
-					////////////////////////
-					
 					if (is_regular_file(vectorBoolToString(name))){
 						if (deleteFile(name)) 
 						{
@@ -135,10 +130,10 @@ void AppLayer::receiver(){
 						else sendMessage(stringToVectorBool("Couldn't delete file\n"));
 					}
 					else if (is_directory(vectorBoolToString(name))){
-					    if(remove_all(vectorBoolToString(name))
+					    if(remove_all(vectorBoolToString(name)))
 					    {
 						    if (debug || cli) cout << "Deleting folder " << vectorBoolToString(requestedFile) <<  endl;
-						    if (debug) sendMessage(stringToVectorBool("Folder deleted!");
+						    if (debug) sendMessage(stringToVectorBool("Folder deleted!"));
 						}
 						else sendMessage(stringToVectorBool("Couldn't delete folder\n"));
 					}
@@ -147,8 +142,8 @@ void AppLayer::receiver(){
 					if (debug) sendMessage(stringToVectorBool("Path doesn't exists!"));
 				}
 				#else
-				cout << "Can delete files (Define ENABLE_DELETE)" << endl;
-				sendMessage("Can delete files (Define ENABLE_DELETE)");
+				cout << "Can't delete files (Define ENABLE_DELETE)" << endl;
+				sendMessage("Can't delete files (Define ENABLE_DELETE)");
 				#endif
 				name.clear();
 				numberOfFrames = 0;
@@ -207,6 +202,7 @@ void AppLayer::receiver(){
 				if (debug || cli) cout << filetreestr << endl;
 				boost::split(fileTree,filetreestr,boost::is_any_of("\n"));
 				data.clear();
+				numberOfFrames = 0;
 			}
 		}
 		usleep(1000);
@@ -286,7 +282,7 @@ bool AppLayer::deleteFile(vector<bool> fileName){
 	return remove(vectorBoolToString(fileName));
 }
 
-/*
+
 bool AppLayer::copyFile(vector<bool> source, vector<bool> destination, bool force){
 	return saveFile(loadFile(source), destination, force);
 }
@@ -300,7 +296,7 @@ bool AppLayer::moveFile(vector<bool> source, vector<bool> destination, bool forc
 	}
 	return false;
 }
-*/
+
 
 void AppLayer::sendFrames(vector<bool> dataBin, int type){
 
@@ -344,7 +340,7 @@ void AppLayer::sendFile(vector<bool> fileName,bool compressed){
 	
 	    vector<bool> file=loadFile(fileName);
 	    if (compressed) file=compress(file);
-	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + fileName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 4;
+	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + fileName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 3;
 	    FramesSend=0;
 		sendFrames(stringToVectorBool(to_string(totalFramesToSend)), APP_SIZE_FLAG);
 		sendFrames(fileName, APP_NAME_FLAG);
@@ -367,7 +363,7 @@ void AppLayer::sendFile(vector<bool> fileName, vector<bool> targetName,bool comp
 	if (exists(vectorBoolToString(fileName)) && is_regular_file(vectorBoolToString(fileName))){
 	    vector<bool> file=loadFile(fileName);
 	    if (compressed) file=compress(file);
-	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + targetName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 4;
+	    totalFramesToSend=(file.size() + stringToVectorBool(to_string(file.size()/8)).size() + targetName.size() + CryptoPP::Weak1::MD5::DIGESTSIZE*8) / APP_DATA_FRAME_SIZE + 3;
 	    FramesSend=0;
 		sendFrames(stringToVectorBool(to_string(totalFramesToSend)), APP_SIZE_FLAG);
 		sendFrames(targetName, APP_NAME_FLAG);

@@ -246,7 +246,6 @@ bool PhysicalLayer::dataAvailable()
 
 void PhysicalLayer::pushData(vector<bool> frame)                
 {
-    //for(auto bit : frame) std::cout << bit; std::cout << endl;
     outgoingFrame=applyPreambleTrailer(convertToDTMF(frame));       // Convert binary frame to DTMF, and save as outgoingFrame
     sendFlag=true;
 }
